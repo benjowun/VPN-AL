@@ -7,6 +7,7 @@
 from scapy.layers.inet import IP, UDP
 from scapy.layers.isakmp import ISAKMP, ISAKMP_payload_SA, ISAKMP_payload_Transform
 from scapy.utils import randstring
+from scapy.all import sr1
 
 
 class IPSEC_Mapper:
@@ -22,6 +23,8 @@ class IPSEC_Mapper:
         p = IP(src=self.src_ip, dst=self.dst_ip)/UDP(sport=500, dport=500)/ISAKMP(init_cookie=b"\xa2\xee\x50\xbb\x20\xdf\x2d\xfd", next_payload=1, exch_type=2)/ISAKMP_payload_SA(prop=ISAKMP_payload_Transform(
             transforms=[('Encryption', 'AES-CBC'), ('Hash', 'SHA'), ('Authentication', 'PSK'), ('GroupDesc', '1024MODPgr'), ('KeyLength', 256), ('LifeType', 'Seconds'), ('LifeDuration', 28800)]))
         p.show()
+        response = sr1(p)
+        print(response)
         
         self.state = 'P1_SA'
         return self.state
