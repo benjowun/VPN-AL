@@ -1,6 +1,7 @@
 from ctypes import sizeof
 from scapy.all import raw
-from scapy.layers.isakmp import *
+from isakmp import *
+from scapy.layers.l2 import Ether
 import socket
 
 class Connector:
@@ -15,11 +16,15 @@ class Connector:
         self._sock.close()
 
     # takes a Scapy packet as data
+    # TODO: error handling
     def send_recv_data(self, data):
         self._sock.sendto(self.scapy_isakmp_to_bytes(data), self._dest)
         data, address = self._sock.recvfrom(1200)
         print(f"Received {len(data)} bytes from {address}")
-        return data
+        return self.bytes_to_scapy_isakmp(data)
 
     def scapy_isakmp_to_bytes(self, p : Packet):  
         return raw(p)
+
+    def bytes_to_scapy_isakmp(self, b):
+        return Ether()/IP()/UDP()/ISAKMP(bytes(b))

@@ -1,18 +1,12 @@
-from scapy.layers.inet import IP, UDP, ICMP
-from scapy.layers.isakmp import *
-from scapy.utils import randstring
-from scapy.all import sr1, send, raw
-from scapy.supersocket import StreamSocket
-import socket
+from scapy.layers.inet import IP, UDP
+from isakmp import *
 from Connector import Connector
+from utils import get_transform_value
 
 
 state = 'DISCONNECTED'
 src_ip = "10.0.2.2"  # initiator
 dst_ip = "10.0.2.1"  # responder
-
-def scapy_isakmp_to_bytes(p : Packet):  
-    return raw(p)
 
 # Scapy to build our packets
 
@@ -50,9 +44,25 @@ b"\x00\x00\x00\x14\x90\xcb\x80\x91\x3e\xbb\x69\x6e\x08\x63\x81\xb5" \
 b"\xec\x42\x7b\x1f"
 
 
-
-msg = scapy_isakmp_to_bytes(policy_neg_vendors)
+msg = policy_neg
 
 conn = Connector(dst_ip, 500, 500)
-res = conn.send_recv_data(msg)
-print(res)
+resp = conn.send_recv_data(msg)
+
+# example read specific field:
+agreed_transform = resp[ISAKMP_payload_Transform].transforms
+print(f"Agreed upon transforms: {agreed_transform}")
+print(f"Auth: {get_transform_value(agreed_transform, 'Authentication')}")
+
+
+# Public key (TODO: generate one / fuzz one?): 
+p_key = b"\x5e\xc6\x34\x7d\x6b\x9e\xea\xbe\x0d\xf9\x8d\xe3\xbf\x53\x1b\x24\x8d\x2e\x5e\x2c\x4b\xb8\xdc\x7b\xd4\xb2\xf0\xad\x6b\xd5\x86\x28\xd1\x25\x88\xb3\x46\x0e\xeb\x58\xa8\x2f\xac\x1d\xb7\xf3\x1b\x61\xcc\x7c\x84\xfc\x2e\xb5\x2c\x02\xd1\xc6\x38\x8d\x12\x38\x01\xb0\xba\x8b\x58\xc5\x5a\x99\xe0\xe8\x64\xaa\x67\x51\x5f\x3e\x57\x8c\xf4\xc0\xd1\xc3\x74\x1f\x82\x59\x5b\x26\x29\x0a\xd1\x66\xc2\xd3\xe4\x00\x4f\xa2\x51\x9b\x66\xae\x6d\xb2\x5f\x41\x1d\x59\xc3\xb5\x1f\x26\x2f\x78\xf4\x60\xa6\xd4\x2c\xad\xa3\x4a\xe4\x25\x70\xbd"
+# Nonce (TODO: generate one / fuzz one?):
+nonce = b"\x12\x16\x3c\xdf\x99\x2a\xad\x47\x31\x8c\xbb\x8a\x76\x84\xb4\x44\xee\x47\x48\xa6\x87\xc6\x02\x9a\x99\x5d\x08\xbf\x70\x4e\x56\x2b"
+
+key_ex_faulty = ISAKMP(init_cookie=resp[ISAKMP].init_cookie, resp_cookie=resp[ISAKMP].resp_cookie, next_payload=4, exch_type=2)/ISAKMP_payload_KE(next_payload=10)/ISAKMP_payload_Nonce() #/ISAKMP_payload_NAT_D()
+key_ex = ISAKMP(init_cookie=resp[ISAKMP].init_cookie, resp_cookie=resp[ISAKMP].resp_cookie, next_payload=4, exch_type=2)/ISAKMP_payload_KE(next_payload=10,load=p_key)/ISAKMP_payload_Nonce(load=nonce) #/ISAKMP_payload_NAT_D()
+resp = conn.send_recv_data(key_ex_faulty)
+resp = conn.send_recv_data(key_ex)
+resp.show()
+conn.__del__()
