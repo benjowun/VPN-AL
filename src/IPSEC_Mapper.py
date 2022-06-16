@@ -2,6 +2,7 @@
 from isakmp import *
 from Connector import Connector
 from utils import get_transform_value
+from diffiehellman import DiffieHellman
 
 # TODO: additional options --> NAT-D if supported: https://datatracker.ietf.org/doc/html/rfc3947
 
@@ -14,6 +15,13 @@ class IPSEC_Mapper:
         self._port = 500
         self._conn = Connector(self._dst_ip, self._port, self._port)
         self._resp = ISAKMP()
+        # TODO: create a key-class / dict
+        self._seed_key = 0
+        self._nonce_client = 0
+        self._nonce_server = 0
+        self._skey_d = 0
+        self._skey_a = 0
+        self._skey_e = 0
 
     def sa_main(self):
         # attempt to agree on security params.
@@ -28,7 +36,7 @@ class IPSEC_Mapper:
             agreed_transform = self._resp[ISAKMP_payload_SA].trans
             print(f"Agreed upon transform: {agreed_transform}")
             self.state = 'P1_SA'
-        except: # some sort of error: TODO: better error handling
+        except: # some sort of error: TODO: better error handling --> stay or parse informational
             self.state = 'DISCONNECTED'
 
         return self.state
@@ -37,21 +45,28 @@ class IPSEC_Mapper:
         # DH-Key exchange
         # Send key and nonce --> valid response: agree -> P1_KE, else -> P1_SA as it appears to stay here (TODO: test when it dies fully)
         # Public key (TODO: generate one / fuzz one?): 
-        p_key = b"\x5e\xc6\x34\x7d\x6b\x9e\xea\xbe\x0d\xf9\x8d\xe3\xbf\x53\x1b\x24\x8d\x2e\x5e\x2c\x4b\xb8\xdc\x7b\xd4\xb2\xf0\xad\x6b\xd5\x86\x28\xd1\x25\x88\xb3\x46\x0e\xeb\x58\xa8\x2f\xac\x1d\xb7\xf3\x1b\x61\xcc\x7c\x84\xfc\x2e\xb5\x2c\x02\xd1\xc6\x38\x8d\x12\x38\x01\xb0\xba\x8b\x58\xc5\x5a\x99\xe0\xe8\x64\xaa\x67\x51\x5f\x3e\x57\x8c\xf4\xc0\xd1\xc3\x74\x1f\x82\x59\x5b\x26\x29\x0a\xd1\x66\xc2\xd3\xe4\x00\x4f\xa2\x51\x9b\x66\xae\x6d\xb2\x5f\x41\x1d\x59\xc3\xb5\x1f\x26\x2f\x78\xf4\x60\xa6\xd4\x2c\xad\xa3\x4a\xe4\x25\x70\xbd"
-        # Nonce (TODO: generate one / fuzz one?):
-        nonce = b"\x12\x16\x3c\xdf\x99\x2a\xad\x47\x31\x8c\xbb\x8a\x76\x84\xb4\x44\xee\x47\x48\xa6\x87\xc6\x02\x9a\x99\x5d\x08\xbf\x70\x4e\x56\x2b"
+        # private key and public key
 
-        key_ex = ISAKMP(init_cookie=self._resp[ISAKMP].init_cookie, resp_cookie=self._resp[ISAKMP].resp_cookie, next_payload=1, exch_type=2)/ISAKMP_payload_KE(load=p_key)/ISAKMP_payload_Nonce(load=nonce) #/ISAKMP_payload_NAT_D()
+        # TODO: have bitlength and group be variable
+        dh = DiffieHellman(group=2, key_bits=256)
+        public_key = dh.get_public_key()
+
+        # Nonce (TODO: generate one / fuzz one?):
+        self._nonce_client = b"\x12\x16\x3c\xdf\x99\x2a\xad\x47\x31\x8c\xbb\x8a\x76\x84\xb4\x44\xee\x47\x48\xa6\x87\xc6\x02\x9a\x99\x5d\x08\xbf\x70\x4e\x56\x2b"
+
+        key_ex = ISAKMP(init_cookie=self._resp[ISAKMP].init_cookie, resp_cookie=self._resp[ISAKMP].resp_cookie, next_payload=1, exch_type=2)/ISAKMP_payload_KE(load=public_key)/ISAKMP_payload_Nonce(load=self._nonce_client) #/ISAKMP_payload_NAT_D()
         resp_key_ex = self._conn.send_recv_data(key_ex)
         try:
             target_key = self._resp[ISAKMP_payload_KE].load
-            target_nonce = self._resp[ISAKMP_payload_Nonce].load
-            print(f"Target Key: {target_key}")
-            print(f"Target Nonce: {target_nonce}")
-            self.state = 'P1_KE'
-        except: # some sort of error: TODO: better error handling TODO: maybe stay in P1_SA?
-            self.state = 'P1_SA'
+            self._nonce_server = self._resp[ISAKMP_payload_Nonce].load
+            self._seed_key = dh.generate_shared_key(target_key)
 
+            # generate further keys
+            
+            self.state = 'P1_KE'
+        except: # some sort of error: TODO: better error handling
+            # TODO: chance to stay, chance to return to base?
+            self.state = 'P1_SA'
         return self.state
 
     def authenticate(self):

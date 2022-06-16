@@ -182,6 +182,39 @@ ISAKMP_payload_type = ["None", "SA", "Proposal", "Transform", "KE", "ID",
 ISAKMP_exchange_type = ["None", "base", "identity prot.",
                         "auth only", "aggressive", "info"]
 
+ISAKMP_notification_types = {1: "INVALID-PAYLOAD-TYPE",             
+                             2: "DOI-NOT-SUPPORTED",                
+                             3: "SITUATION-NOT-SUPPORTED",          
+                             4: "INVALID-COOKIE",                   
+                             5: "INVALID-MAJOR-VERSION",            
+                             6: "INVALID-MINOR-VERSION",            
+                             7: "INVALID-EXCHANGE-TYPE",            
+                             8: "INVALID-FLAGS",                    
+                             9: "INVALID-MESSAGE-ID",               
+                             10: "INVALID-PROTOCOL-ID",             
+                             11: "INVALID-SPI",
+                             12: "INVALID-TRANSFORM-ID",            
+                             13: "ATTRIBUTES-NOT-SUPPORTED",        
+                             14: "NO-PROPOSAL-CHOSEN",              
+                             15: "BAD-PROPOSAL-SYNTAX",             
+                             16: "PAYLOAD-MALFORMED",               
+                             17: "INVALID-KEY-INFORMATION",         
+                             18: "INVALID-ID-INFORMATION",          
+                             19: "INVALID-CERT-ENCODING",           
+                             20: "INVALID-CERTIFICATE",             
+                             21: "CERT-TYPE-UNSUPPORTED",           
+                             22: "INVALID-CERT-AUTHORITY",          
+                             23: "INVALID-HASH-INFORMATION",        
+                             24: "AUTHENTICATION-FAILED",           
+                             25: "INVALID-SIGNATURE",               
+                             26: "ADDRESS-NOTIFICATION",            
+                             27: "NOTIFY-SA-LIFETIME",              
+                             28: "CERTIFICATE-UNAVAILABLE",         
+                             29: "UNSUPPORTED-EXCHANGE-TYPE",       
+                             30: "UNEQUAL-PAYLOAD-LENGTHS",         
+                             16384: "CONNECTED"                   
+                             }
+
 
 class ISAKMP_class(Packet):
     def guess_payload_class(self, payload):
@@ -301,12 +334,30 @@ class ISAKMP_payload_SA(ISAKMP_class):
 class ISAKMP_payload_Nonce(ISAKMP_payload):
     name = "ISAKMP Nonce"
 
+# notification payload implementation
+
+
+class ISAKMP_payload_Notification(ISAKMP_payload):
+    name = "ISAKMP Notification"
+    fields_desc = [
+        ByteEnumField("next_payload", None, ISAKMP_payload_type),
+        ByteField("res", 0),
+        FieldLenField("length", None, "prop", "H", adjust=lambda pkt, x:x + 12),  # noqa: E501
+        IntEnumField("DOI", 1, {1: "IPSEC"}),
+        ByteEnumField("ProtoID", 0, {0: "Unused"}),
+        FieldLenField("SPIsize", None, "SPI", "B"),
+        ShortEnumField("not_type", 1, ISAKMP_notification_types),
+        StrLenField("SPI", "", length_from=lambda x: x.SPIsize),
+        ByteField("not_data", None)
+    ]
 
 class ISAKMP_payload_KE(ISAKMP_payload):
     name = "ISAKMP Key Exchange"
 
+
 class ISAKMP_payload_NAT_D(ISAKMP_payload):
     name = "ISAKMP NAT-D"
+
 
 class ISAKMP_payload_ID(ISAKMP_class):
     name = "ISAKMP Identification"
@@ -343,11 +394,10 @@ bind_top_down(ISAKMP_class, ISAKMP_payload_ID, next_payload=5)
 bind_top_down(ISAKMP_class, ISAKMP_payload_Hash, next_payload=8)
 # bind_top_down(ISAKMP_class, ISAKMP_payload_SIG, next_payload=9)
 bind_top_down(ISAKMP_class, ISAKMP_payload_Nonce, next_payload=10)
-# bind_top_down(ISAKMP_class, ISAKMP_payload_Notification, next_payload=11)
+bind_top_down(ISAKMP_class, ISAKMP_payload_Notification, next_payload=11)
 # bind_top_down(ISAKMP_class, ISAKMP_payload_Delete, next_payload=12)
 bind_top_down(ISAKMP_class, ISAKMP_payload_VendorID, next_payload=13)
 bind_top_down(ISAKMP_class, ISAKMP_payload_NAT_D, next_payload=20)
-
 
 
 def ikescan(ip):
