@@ -116,7 +116,7 @@ if 'key_ex_main' in test:
         print(f"SKEYID_a: {SKEYID_a}\n")
         print(f"SKEYID_e len: {len(SKEYID_e)}")
         print(f"SKEYID_e: {SKEYID_e}\n")
-        
+
         cur_key_dict = make_key_dict(psk=PSK, pub_client=public_key, pub_serv=public_key_server, shared=shared_key, SKEYID_d=SKEYID_d, SKEYID_a=SKEYID_a, SKEYID_e=SKEYID_e)
         keys.new_key(cur_key_dict)
         # return 'CONNECTING_KEYED'
@@ -131,6 +131,9 @@ if 'key_ex_main' in test:
 if 'authenticate' in test:
     cur_key_dict = keys.get_latest_key()    
     h = SHA1.new()
+    # TODO: iv is hash of conc pub keys. enc key is conc of e key multiple times and then trimmed to needed length
+    # Note that notification data is hashed with SKEYID_a once keys are established --> TODO: parsing those
+
     h.update(cur_key_dict["pub_client"] + cur_key_dict["pub_serv"])
     iv = h.digest()[:16] #trim to needed length
     print(f"iv: {len(iv)}")
