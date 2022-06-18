@@ -335,8 +335,6 @@ class ISAKMP_payload_Nonce(ISAKMP_payload):
     name = "ISAKMP Nonce"
 
 # notification payload implementation
-
-
 class ISAKMP_payload_Notification(ISAKMP_payload):
     name = "ISAKMP Notification"
     fields_desc = [

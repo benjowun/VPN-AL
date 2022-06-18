@@ -17,12 +17,13 @@ class Keys:
             return self._keys[index] # TODO check
         return None
 
-def make_key_dict(psk, pub_serv, pub_client, shared, SKEYID_d, SKEYID_a, SKEYID_e):
+def make_key_dict(psk, pub_serv, pub_client, shared, SKEYID, SKEYID_d, SKEYID_a, SKEYID_e):
     key_dict = {
         "psk" : psk,
         "pub_serv" : pub_serv,
         "pub_client" : pub_client,
         "shared" : shared,
+        "SKEYID" : SKEYID,
         "SKEYID_d" : SKEYID_d,
         "SKEYID_a" : SKEYID_a,
         "SKEYID_e" : SKEYID_e
