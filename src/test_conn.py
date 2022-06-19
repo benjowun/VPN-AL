@@ -185,12 +185,14 @@ if 'authenticate' in test:
     cipher = AES.new(aes_key, AES.MODE_CBC, iv)
     payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
 
-    # TODO: set encrpytion flag, set length
     auth_mes = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=5, exch_type=2, flags=["encryption"])/Raw(load=payload_enc)
     auth_mes.show()
     msg = auth_mes
     resp = conn.send_recv_data(msg)
-    # resp.show()
-
-    # cipher = AES.new(aes_key, AES.MODE_CBC, iv)
-    # print(f"decrypt test: {unpad(cipher.decrypt(enc_data), AES.block_size)}")
+    print("Encrypted resp:")
+    resp.show()
+    print("Decrypted resp:")
+    cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+    resp = cipher.decrypt(raw(resp[Raw]))
+    print(f"data: {resp}") # TODO: make sure this matches what server sent --> check iv as well
+    
