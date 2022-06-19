@@ -18,7 +18,7 @@ from scapy.packet import Packet, bind_bottom_up, bind_top_down, bind_layers
 from scapy.compat import chb
 from scapy.fields import ByteEnumField, ByteField, FieldLenField, FlagsField, \
     IntEnumField, IntField, PacketLenField, ShortEnumField, ShortField, \
-    StrFixedLenField, StrLenField, XByteField
+    StrFixedLenField, StrLenField, XByteField, IPField
 from scapy.layers.inet import IP, UDP
 from scapy.sendrecv import sr
 from scapy.volatile import RandString
@@ -340,7 +340,7 @@ class ISAKMP_payload_Notification(ISAKMP_payload):
     fields_desc = [
         ByteEnumField("next_payload", None, ISAKMP_payload_type),
         ByteField("res", 0),
-        FieldLenField("length", None, "prop", "H", adjust=lambda pkt, x:x + 12),  # noqa: E501
+        FieldLenField("length", None, "not_data", "H", adjust=lambda pkt, x:x + 12), #TODO correct x + what?
         IntEnumField("DOI", 1, {1: "IPSEC"}),
         ByteEnumField("ProtoID", 0, {0: "Unused"}),
         FieldLenField("SPIsize", None, "SPI", "B"),
@@ -362,11 +362,11 @@ class ISAKMP_payload_ID(ISAKMP_class):
     fields_desc = [
         ByteEnumField("next_payload", None, ISAKMP_payload_type),
         ByteField("res", 0),
-        FieldLenField("length", None, "load", "H", adjust=lambda pkt, x:x + 8),
+        FieldLenField("length", 12, "load", "H", adjust=lambda pkt, x:x + 12), # includes ip
         ByteEnumField("IDtype", 1, {1: "IPv4_addr", 11: "Key"}),
         ByteEnumField("ProtoID", 0, {0: "Unused"}),
         ShortEnumField("Port", 0, {0: "Unused"}),
-        #        IPField("IdentData","127.0.0.1"),
+        IPField("IdentData","127.0.0.1"),
         StrLenField("load", "", length_from=lambda x: x.length - 8),
     ]
 

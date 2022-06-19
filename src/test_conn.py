@@ -60,8 +60,11 @@ if 'sa_main' in test:
     msg = policy_neg
     resp = conn.send_recv_data(msg)
 
-    resp.show()
+    #resp.show()
     print(f"exch type: {resp[ISAKMP].exch_type}")
+
+    # save SA_body for later use (the important fields)
+    sa_body_init = raw(sa_body_init)[4:]
 
     # example parse resp
     cookie_r = resp[ISAKMP].resp_cookie
@@ -93,19 +96,19 @@ if 'key_ex_main' in test:
     key_ex = ISAKMP(init_cookie=resp[ISAKMP].init_cookie, resp_cookie=resp[ISAKMP].resp_cookie, next_payload=4, exch_type=2)/ISAKMP_payload_KE(next_payload=10,load=public_key)/ISAKMP_payload_Nonce(load=nonce) #/ISAKMP_payload_NAT_D()
     msg = key_ex
     resp = conn.send_recv_data(msg)
-    resp.show()
+    #resp.show()
 
     if resp[ISAKMP].next_payload == ISAKMP_payload_type.index("KE") and ISAKMP_payload_Nonce in resp:
         public_key_server = resp[ISAKMP_payload_KE].load
         nonce_server = resp[ISAKMP_payload_Nonce].load
         shared_key = dh.generate_shared_key(public_key_server) # Is correct
         print(f"SK len: {len(shared_key)}")
-        print(f"SK: {shared_key}\n")
+        #print(f"SK: {shared_key}\n")
 
         prf_SKEYID = HMAC.new(PSK, nonce + nonce_server, SHA1) # nonces used for added security
         SKEYID = prf_SKEYID.digest()
         print(f"SKEYID len: {len(SKEYID)}")
-        print(f"SKEYID: {SKEYID}\n")
+        #print(f"SKEYID: {SKEYID}\n")
 
         prf_SKEYID_d = HMAC.new(SKEYID, shared_key + cookie_i + cookie_r + b"\x00", SHA1) # an authenticated key is generated (cookies used to identify specific ISAKMP exchanges later)
         SKEYID_d = prf_SKEYID_d.digest() 
@@ -116,11 +119,11 @@ if 'key_ex_main' in test:
 
 
         print(f"SKEYI_d len: {len(SKEYID_d)}")
-        print(f"SKEYI_d: {SKEYID_d}\n")
+        #print(f"SKEYI_d: {SKEYID_d}\n")
         print(f"SKEYID_a len: {len(SKEYID_a)}")
-        print(f"SKEYID_a: {SKEYID_a}\n")
+        #print(f"SKEYID_a: {SKEYID_a}\n")
         print(f"SKEYID_e len: {len(SKEYID_e)}")
-        print(f"SKEYID_e: {SKEYID_e}\n")
+        #print(f"SKEYID_e: {SKEYID_e}\n")
 
         cur_key_dict = make_key_dict(psk=PSK, pub_client=public_key, pub_serv=public_key_server, shared=shared_key, SKEYID=SKEYID, SKEYID_d=SKEYID_d, SKEYID_a=SKEYID_a, SKEYID_e=SKEYID_e)
         keys.new_key(cur_key_dict)
@@ -145,7 +148,7 @@ if 'authenticate' in test:
     tmp2 = prf_AES.digest()
     aes_key = (tmp + tmp2)[0:32]
     print(f"AES-Key len: {len(aes_key)}")
-    print(f"AES-Key: {aes_key}")
+    #print(f"AES-Key: {aes_key}")
 
     # generate initial IV from pub keys (subsequent messages use previous CBC encrypted block as IV)
     h = SHA1.new(cur_key_dict["pub_client"] + cur_key_dict["pub_serv"])
@@ -153,10 +156,10 @@ if 'authenticate' in test:
     print(f"iv nat len: {len(iv)}")
     iv = iv[:16] #trim to needed length
     print(f"iv len: {len(iv)}")
-    print(f"iv: {iv}")
+    #print(f"iv: {iv}")
 
     # create unencrypted id packet
-    id_plain = ISAKMP_payload_ID(load=inet_aton(src_ip))
+    id_plain = ISAKMP_payload_ID(IdentData=src_ip)
 
     # create unencrypted hash packet
     # HASH_I = prf(SKEYID, g^xi | g^xr | CKY-I | CKY-R | SAi_b | IDii_b )
@@ -165,13 +168,19 @@ if 'authenticate' in test:
     # transforms offered by the Initiator.
     # ISii_b is generic ID payload including ID type, port and protocol
     SAi_b = raw(sa_body_init)
-    ISii_b = raw(id_plain)
-    prf_HASH_i = HMAC.new(cur_key_dict["SKEYID"], cur_key_dict["pub_client"] + cur_key_dict["pub_serv"] + cookie_i + cookie_r + SAi_b + ISii_b, SHA1)
-    hash_data = prf_HASH_i.digest()
-    print(f"HASH_i len: {len(hash_data)}")
-    print(f"HASH_i: {hash_data}")
+    IDii_b = raw(id_plain)[4:] # only need fields after length
+    prf_HASH_i = HMAC.new(cur_key_dict["SKEYID"], cur_key_dict["pub_client"] + cur_key_dict["pub_serv"] + cookie_i + cookie_r + SAi_b + IDii_b, SHA1)
+    hash_data = prf_HASH_i.digest() 
+    hashdata = hash_data + b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 
-    payload_plain = id_plain/ISAKMP_payload_Hash(load=hash_data) # /ISAKMP_payload_Notification(initial contact)
+    hd = "".join("%02x " % b for b in hash_data)
+    print(f"HASH_i len: {len(hash_data)}")
+    print(f"HASH_i: {hd}")
+
+    # TODO: why is it 24 Bytes here? Just for some padding purposes?
+    payload_plain = id_plain/ISAKMP_payload_Hash(length=24, load=hash_data) # /ISAKMP_payload_Notification(initial contact)
+
+    payload_plain.show()
 
     cipher = AES.new(aes_key, AES.MODE_CBC, iv)
     payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
@@ -181,7 +190,7 @@ if 'authenticate' in test:
     auth_mes.show()
     msg = auth_mes
     resp = conn.send_recv_data(msg)
-    resp.show()
+    # resp.show()
 
     # cipher = AES.new(aes_key, AES.MODE_CBC, iv)
     # print(f"decrypt test: {unpad(cipher.decrypt(enc_data), AES.block_size)}")
