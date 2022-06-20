@@ -1,5 +1,6 @@
 from re import I
 from scapy.layers.inet import IP, UDP
+from scapy.layers.l2 import Ether
 from isakmp import *
 from utils import get_transform_value
 from diffiehellman import DiffieHellman
@@ -153,20 +154,21 @@ if 'authenticate' in test:
     # generate initial IV from pub keys (subsequent messages use previous CBC encrypted block as IV)
     h = SHA1.new(cur_key_dict["pub_client"] + cur_key_dict["pub_serv"])
     iv = h.digest()
+    iv_first = iv
     print(f"iv nat len: {len(iv)}")
     iv = iv[:16] #trim to needed length
     print(f"iv len: {len(iv)}")
-    #print(f"iv: {iv}")
+    print(f"iv: {iv}")
 
     # create unencrypted id packet
     id_plain = ISAKMP_payload_ID(IdentData=src_ip)
 
     # create unencrypted hash packet
     # HASH_I = prf(SKEYID, g^xi | g^xr | CKY-I | CKY-R | SAi_b | IDii_b )
-    # SAi_b is the entire body of the SA payload (minus the ISAKMP
-    # generic header)-- i.e. the DOI, situation, all proposals and all
-    # transforms offered by the Initiator.
-    # ISii_b is generic ID payload including ID type, port and protocol
+    #   SAi_b is the entire body of the SA payload (minus the ISAKMP
+    #   generic header)-- i.e. the DOI, situation, all proposals and all
+    #   transforms offered by the Initiator.
+    # ISii_b is generic ID payload including ID type, port and protocol (only important fields)
     SAi_b = raw(sa_body_init)
     IDii_b = raw(id_plain)[4:] # only need fields after length
     prf_HASH_i = HMAC.new(cur_key_dict["SKEYID"], cur_key_dict["pub_client"] + cur_key_dict["pub_serv"] + cookie_i + cookie_r + SAi_b + IDii_b, SHA1)
@@ -184,6 +186,14 @@ if 'authenticate' in test:
 
     cipher = AES.new(aes_key, AES.MODE_CBC, iv)
     payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
+    hd = "".join("%02x " % b for b in payload_enc)
+    print(f"payload len: {len(payload_enc)}")
+    print(f"payload: {hd}")
+
+    iv = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+    hd = "".join("%02x " % b for b in iv)
+    print(f"iv_new len: {len(iv)}")
+    print(f"iv_new: {hd}")
 
     auth_mes = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=5, exch_type=2, flags=["encryption"])/Raw(load=payload_enc)
     auth_mes.show()
@@ -193,6 +203,47 @@ if 'authenticate' in test:
     resp.show()
     print("Decrypted resp:")
     cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+    iv = (raw(resp[Raw])[-AES.block_size:])
+    print(f"iv new: {iv}")
     resp = cipher.decrypt(raw(resp[Raw]))
-    print(f"data: {resp}") # TODO: make sure this matches what server sent --> check iv as well
-    
+
+    hd = "".join("%02x " % b for b in resp)
+    print(f"data: {hd}")
+
+    p = ISAKMP_payload_ID(bytes(resp[:12]))/ISAKMP_payload_Hash(bytes(resp[12:]))
+    p.show()
+    print(f"Verifiying resceived hash of len: {len(p[ISAKMP_payload_Hash].load)}...")
+    # HASH_R = prf(SKEYID, g^xr | g^xi | CKY-R | CKY-I | SAi_b | IDir_b )
+    id_plain = ISAKMP_payload_ID(IdentData=dst_ip)
+    SAr_b = SAi_b
+    IDir_b = raw(id_plain)[4:] # only need fields after length
+    prf_HASH_r = HMAC.new(cur_key_dict["SKEYID"], cur_key_dict["pub_serv"] + cur_key_dict["pub_client"] + cookie_r + cookie_i + SAr_b + IDir_b, SHA1)
+    hash_data = prf_HASH_r.digest()
+    if hash_data == p[ISAKMP_payload_Hash].load:
+        print("OK")
+    else:
+        print(f"recved: {p[ISAKMP_payload_Hash].load}\nshould be: {hash_data}")
+
+    # test for informational -> manually close connection
+    info_mesg = conn.send_recv_data(b"test")
+
+    # iv for encryption: HASH(last recved encrypted block | m_id)
+    m_id = (info_mesg[ISAKMP].id).to_bytes(4, 'big')
+
+    print(f"last block {iv}")
+    print(f"m_id: {m_id}")
+
+    h = SHA1.new(iv + m_id)
+    iv = h.digest()[:16]
+
+    hd = "".join("%02x " % b for b in iv)
+    print(f"new iv len: {len(iv)}")
+    print(f"new iv: {hd}")
+
+    # TODO decrypt using iv
+    cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+    resp = cipher.decrypt(raw(info_mesg[Raw]))
+    print(f"Decrypted: {resp}")
+    p = ISAKMP_payload_Delete(resp) # TODO: parse better --> probably have to add a delete-message type to isakmp
+    p.show()
+    # TODO: create a crypto class that handles the IV updates for me
