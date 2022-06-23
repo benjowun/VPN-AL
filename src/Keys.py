@@ -17,7 +17,7 @@ class Keys:
             return self._keys[index] # TODO check
         return None
 
-def make_key_dict(psk, pub_serv, pub_client, shared, SKEYID, SKEYID_d, SKEYID_a, SKEYID_e):
+def make_key_dict(psk, pub_serv, pub_client, shared, SKEYID, SKEYID_d, SKEYID_a, SKEYID_e, iv, key):
     key_dict = {
         "psk" : psk,
         "pub_serv" : pub_serv,
@@ -26,7 +26,9 @@ def make_key_dict(psk, pub_serv, pub_client, shared, SKEYID, SKEYID_d, SKEYID_a,
         "SKEYID" : SKEYID,
         "SKEYID_d" : SKEYID_d,
         "SKEYID_a" : SKEYID_a,
-        "SKEYID_e" : SKEYID_e
+        "SKEYID_e" : SKEYID_e,
+        "iv" : iv,
+        "key" : key
     }
 
     return key_dict

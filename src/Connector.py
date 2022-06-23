@@ -1,4 +1,3 @@
-from ctypes import sizeof
 from scapy.all import raw
 from isakmp import *
 from scapy.layers.l2 import Ether
@@ -34,3 +33,8 @@ class Connector:
 
     def bytes_to_scapy_isakmp(self, b):
         return Ether()/IP()/UDP()/ISAKMP(bytes(b))
+
+    def recv_data(self):
+        data, address = self._sock.recvfrom(1200)
+        print(f"Received {len(data)} bytes from {address}")
+        return self.bytes_to_scapy_isakmp(data)
