@@ -419,10 +419,6 @@ for t in test:
 
 print("Testcases completed")
 
-p = ISAKMP_payload_Delete(SPIsize=16, SPI=[(cookie_i+cookie_r), (cookie_i+cookie_r)])
-p.show()
-print(hexify(raw(p)))
-
 ## Info - notify
 
 # Frame 43: 118 bytes on wire (944 bits), 118 bytes captured (944 bits) on interface enp0s3, id 0
