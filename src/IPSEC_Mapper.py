@@ -253,7 +253,7 @@ class IPSEC_Mapper:
 
             decrypted = cipher.decrypt(raw(resp[Raw]))
 
-            p = ISAKMP_payload_ID(bytes(decrypted[:12]))/ISAKMP_payload_Hash(bytes(decrypted[12:]))
+            p = ISAKMP_payload_ID(bytes(decrypted[:12]))/ISAKMP_payload_Hash(bytes(decrypted[12:])) # TODO change
 
             # HASH_R = prf(SKEYID, g^xr | g^xi | CKY-R | CKY-I | SAi_b | IDir_b )
             id_plain = ISAKMP_payload_ID(IdentData=self._dst_ip)

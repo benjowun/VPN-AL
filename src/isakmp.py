@@ -356,7 +356,7 @@ class ISAKMP_payload_Delete(ISAKMP_payload):
         ByteField("res", 0),
         FieldLenField("length", None, "SPI", "H", adjust=lambda pkt, x:x + 8), #TODO correct x + what?
         IntEnumField("DOI", 1, {1: "IPSEC"}),
-        ByteEnumField("ProtoID", 0, {0: "Unused"}),
+        ByteEnumField("ProtoID", 1, {1: "ISAKMP"}),
         FieldLenField("SPIsize", None, "SPIs", "B"),
         ShortField("SPInum", 0),#TODO: this add spis etc
         StrLenField("SPI", "", length_from=lambda x: x.SPIsize * x.SPInum),

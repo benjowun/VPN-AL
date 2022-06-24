@@ -35,7 +35,7 @@ class IPSEC_IKEv1_SUL(SUL):
         
 
 sul = IPSEC_IKEv1_SUL()
-input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'informational']
+input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'informational', 'delete']
 
 eq_oracle = RandomWalkEqOracle(input_al, sul, num_steps=2000, reset_after_cex=True, reset_prob=0.15)
 
