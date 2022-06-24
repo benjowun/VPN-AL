@@ -336,6 +336,56 @@ def decrypt_info():
     
     # TODO: create a crypto class that handles the IV updates for me
 
+# TODO: this will need better IV / crypto handeling
+# TODO: if no SA has been established yet, send in plain without hash
+def delete():
+    global resp
+    global iv
+    # p = ISAKMP()/ISAKMP_payload_Hash/ISAKMP_payload_Delete
+    # keys
+    cur_key_dict = keys.get_latest_key()
+    m_id = (7777).to_bytes(4, 'big') # random id
+    print(f"id: {int.from_bytes(m_id, 'big')}")
+
+    # create unencrypted delete message
+    p_delete = ISAKMP_payload_Delete(length=28,  SPIsize=16, SPInum=1, ProtoID=1, SPI=(cookie_i+cookie_r))
+
+    print(f"delete: {hexify(raw(p_delete))}")
+
+    # create unencrypted hash packet
+    # HASH(1) = prf(SKEYID_a, M-ID | N/D)
+    prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id + raw(p_delete), SHA1)
+    hash_data = prf_HASH.digest()
+    print(f"hash: {hexify(hash_data)}")
+
+    payload_plain = ISAKMP_payload_Hash(length=24, load=hash_data)/p_delete
+    payload_raw = raw(payload_plain) + 12*b"\x00"
+
+    print(f"payload plain: {hexify(raw(payload_plain))}")
+
+    # iv for encryption: HASH(last recved encrypted block | m_id)
+    print(f"last block {iv}")
+    print(f"m_id: {m_id}")
+
+    h = SHA1.new(iv + m_id)
+    iv_new = h.digest()[:16]
+
+    print(f"new iv len: {len(iv_new)}")
+    print(f"new iv: {hexify(iv_new)}") # correct (if first message)
+
+    cipher = AES.new(aes_key, AES.MODE_CBC, iv_new)
+    payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
+    print(f"payload len: {len(payload_enc)}")
+    print(f"payload: {hexify(payload_enc)}")
+
+    iv = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+    print(f"iv_new len: {len(iv)}")
+    print(f"iv_new: {hexify(iv)}")
+
+    p = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=92)/Raw(load=payload_enc)
+    p.show()
+    resp = conn.send_data(p)
+
 def recv_delete():
     global resp
 
@@ -356,8 +406,9 @@ tc3 = [sa_main, key_ex_main, sa_main, decrypt_info] # shows that the packets mus
 tc4 = [sa_main, key_ex_main, authenticate, sa_main] # sa_main is ignored if connection is already established 
 tc4 = [sa_main, key_ex_main, authenticate, key_ex_main] # once connection is established, no phase 2 messges seem to have an effect
 tc5 = [sa_main, key_ex_main, authenticate, authenticate] # once connection is established, no phase 2 messges seem to have an effect
+tc6 = [sa_main, key_ex_main, authenticate, delete, sa_main]
 full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, informational]
-test = full
+test = tc6
 
 for t in test:
     if type(t) is str:
@@ -431,3 +482,39 @@ print("Testcases completed")
 #             Number of SPIs: 1
 #             Delete SPI: 9dd2ecf3ea8a473717e82eb671f70ae2
 #         Extra data: 000000000000000000000000
+
+
+# ref_payload:
+# HASH (24)
+# \x0c - next payload
+# \x00 - res
+# \x00\x18 - length
+# \x46\x0c\x8d\x6a\x05\x76\xde\x34\x9b\xfb\x8a\x6b\xfc\x4d\xaf\x29\xfa\xa4\x23\x21 - payload (20)
+# DELETE (12)
+# \x00 - next payload
+# \x00 - res 
+# \x00\x1c - length
+# \x00\x00\x00\x01 - DOI
+# \x01 - PROT ID
+# \x10 - SPI SIZE
+# \x00\x01 - #SPI
+# \xbf\x46\x11\x76\xf8\x95\x9f\x8f\x85\x0c\x49\x36\x5c\xb6\xed\x65 - DELETE
+
+
+
+# act_payload:
+# HASH (24)
+# \x0c
+# \x00
+# \x00\x18
+# \xf7\xb3\xb0\x19\xa5\x63\xe0\xa2\xf4\x2f\x10\x4c\xaf\x25\x32\x7a\xa7\x18\x14\x58
+# DELETE (12)
+# \x00
+# \x00
+# \x00\x1c
+# \x00\x00\x00\x01
+# \x00 <---
+# \x10
+# \x00\x01
+# \x1b\x5c\x77\x7b\x73\xa7\x8b\xc4\x9d\xd2\xec\xf3\xea\x8a\x47\x37
+

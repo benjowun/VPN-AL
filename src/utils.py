@@ -1,5 +1,5 @@
 valid_names = ['Encryption', 'KeyLength', 'Hash', 'GroupDesc', 'Authentication', 'LifeType', 'LifeDuration']
-debug = True
+debug = False
 
 def get_transform_value(list, name):
     assert(name in valid_names)

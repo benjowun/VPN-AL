@@ -38,3 +38,6 @@ class Connector:
         data, address = self._sock.recvfrom(1200)
         print(f"Received {len(data)} bytes from {address}")
         return self.bytes_to_scapy_isakmp(data)
+
+    def send_data(self, data):
+        self._sock.sendto(self.scapy_isakmp_to_bytes(data), self._dest)

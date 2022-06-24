@@ -94,8 +94,10 @@ class IPSEC_Mapper:
             print("Error, package type not implemented yet / Error parsing - maybe encryption faulty?")
             return False
 
+    ############################################################################################################################
     # actual methods
     def sa_main(self):
+        show(self._resp)
         # attempt to agree on security params.
         # Send suggestion --> parse response: agree -> P1_SA, else -> DISCONNECTED
         # create an ISAKMP packet with scapy:
@@ -110,9 +112,10 @@ class IPSEC_Mapper:
         resp = self._conn.send_recv_data(policy_neg)
         self._resp = resp # gets updated in any case
 
-        # TODO None state, for now assume there was a response
+        # TODO None state timeout, for now assume there was a response
 
         self._cookie_r = resp[ISAKMP].resp_cookie
+        sa_body_init = raw(sa_body_init)[4:] # only need interesting bytes of packet
 
         # response contains transform --> good --> update internal data structs if we think the server also did so
         if resp[ISAKMP].next_payload == ISAKMP_payload_type.index("SA") and ISAKMP_payload_Proposal in resp and ISAKMP_payload_Transform in resp:
@@ -137,6 +140,7 @@ class IPSEC_Mapper:
             return 'DISCONNECTED' # ? Probably?
 
     def key_ex_main(self):
+        show(self._resp)
         # DH-Key exchange
 
         # pre-shared-key is known
@@ -199,6 +203,7 @@ class IPSEC_Mapper:
 
     # everything is fine up till here
     def authenticate(self):
+        show(self._resp)
         # keys
         cur_key_dict = self._keys.get_latest_key()
 
@@ -220,20 +225,20 @@ class IPSEC_Mapper:
         print(f"HASH_i len: {len(hash_data)}")
         print(f"HASH_i: {hexify(hash_data)}")
 
-        print(f"id plain: {hexify(raw(id_plain))}")
+        print(f"id data:: {hexify(raw(IDii_b))}")
 
         # TODO: why is it 24 Bytes here? Just for some padding purposes?
         payload_plain = id_plain/ISAKMP_payload_Hash(length=24, load=hash_data) # /ISAKMP_payload_Notification(initial contact)
 
-        print(f"plain: {hexify(raw(payload_plain))}")
+        print(f"payload plain: {hexify(raw(payload_plain))}")
 
         cipher = AES.new(cur_key_dict["key"], AES.MODE_CBC, cur_key_dict["iv"])
         payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
 
-        print(f"enc: {hexify(raw(payload_enc))}")
-
         iv = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
         cur_key_dict["iv"] = iv # TODO check that this updates the class one!
+
+        print(f"next iv: {hexify(raw(iv))}")
 
         auth_mes = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=5, exch_type=2, flags=["encryption"])/Raw(load=payload_enc)
         resp = self._conn.send_recv_data(auth_mes)
@@ -242,7 +247,7 @@ class IPSEC_Mapper:
         # check that the next payload is correct and that it is encrypted
         if resp[ISAKMP].next_payload == ISAKMP_payload_type.index("ID") and Raw in resp: # Raw means that its encrypted (or extra data was sent)
             # decrypt resp body
-            cipher = AES.new(cur_key_dict["key]"], AES.MODE_CBC, iv)
+            cipher = AES.new(cur_key_dict["key"], AES.MODE_CBC, iv)
             iv = (raw(resp[Raw])[-AES.block_size:])
             cur_key_dict["iv"] = iv # TODO check that this updates the class one!
 
