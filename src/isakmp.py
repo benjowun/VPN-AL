@@ -18,7 +18,7 @@ from scapy.packet import Packet, bind_bottom_up, bind_top_down, bind_layers
 from scapy.compat import chb
 from scapy.fields import ByteEnumField, ByteField, FieldLenField, FlagsField, \
     IntEnumField, IntField, PacketLenField, ShortEnumField, ShortField, \
-    StrFixedLenField, StrLenField, XByteField, IPField
+    StrFixedLenField, StrLenField, XByteField, IPField, FieldListField
 from scapy.layers.inet import IP, UDP
 from scapy.sendrecv import sr
 from scapy.volatile import RandString
@@ -354,12 +354,12 @@ class ISAKMP_payload_Delete(ISAKMP_payload):
     fields_desc = [
         ByteEnumField("next_payload", None, ISAKMP_payload_type),
         ByteField("res", 0),
-        FieldLenField("length", None, "SPI", "H", adjust=lambda pkt, x:x + 8), #TODO correct x + what?
+        FieldLenField("length", None, "SPI", adjust=lambda pkt, x:x + 12), #TODO correct x + what?
         IntEnumField("DOI", 1, {1: "IPSEC"}),
         ByteEnumField("ProtoID", 1, {1: "ISAKMP"}),
-        FieldLenField("SPIsize", None, "SPIs", "B"),
-        ShortField("SPInum", 0),#TODO: this add spis etc
-        StrLenField("SPI", "", length_from=lambda x: x.SPIsize * x.SPInum),
+        FieldLenField("SPIsize", None, "spi", "B"),
+        FieldLenField("SPInum", None, count_of="SPI"),#TODO: this add spis etc
+        FieldListField("SPI", None, StrLenField("spi", None, length_from=lambda x: x.SPIsize), length_from=lambda x: x.length - 12, count_from=lambda x:x.SPInum)
     ]
 
 class ISAKMP_payload_KE(ISAKMP_payload):

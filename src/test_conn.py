@@ -348,7 +348,7 @@ def delete():
     print(f"id: {int.from_bytes(m_id, 'big')}")
 
     # create unencrypted delete message
-    p_delete = ISAKMP_payload_Delete(length=28,  SPIsize=16, SPInum=1, ProtoID=1, SPI=(cookie_i+cookie_r))
+    p_delete = ISAKMP_payload_Delete(SPIsize=16, SPI=[(cookie_i+cookie_r), (cookie_i+cookie_r)])
 
     print(f"delete: {hexify(raw(p_delete))}")
 
@@ -362,6 +362,7 @@ def delete():
     payload_raw = raw(payload_plain) + 12*b"\x00"
 
     print(f"payload plain: {hexify(raw(payload_plain))}")
+    payload_plain.show()
 
     # iv for encryption: HASH(last recved encrypted block | m_id)
     print(f"last block {iv}")
@@ -383,7 +384,6 @@ def delete():
     print(f"iv_new: {hexify(iv)}")
 
     p = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=92)/Raw(load=payload_enc)
-    p.show()
     resp = conn.send_data(p)
 
 def recv_delete():
@@ -419,6 +419,9 @@ for t in test:
 
 print("Testcases completed")
 
+p = ISAKMP_payload_Delete(SPIsize=16, SPI=[(cookie_i+cookie_r), (cookie_i+cookie_r)])
+p.show()
+print(hexify(raw(p)))
 
 ## Info - notify
 
@@ -517,4 +520,3 @@ print("Testcases completed")
 # \x10
 # \x00\x01
 # \x1b\x5c\x77\x7b\x73\xa7\x8b\xc4\x9d\xd2\xec\xf3\xea\x8a\x47\x37
-
