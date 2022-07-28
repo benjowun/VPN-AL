@@ -13,11 +13,6 @@ from scapy.layers.l2 import Ether
 
 # TODO: additional options --> NAT-D if supported: https://datatracker.ietf.org/doc/html/rfc3947
 
-
-def is_encypted(packet):
-    print(f"Flags: {packet[ISAKMP].flags}")
-    return packet[ISAKMP].flags == 1 # TODO: ensure it also works for other combinations (bit set)
-
 class IPSEC_Mapper:
     def __init__(self):
         self._state = 'DISCONNECTED'
@@ -32,7 +27,7 @@ class IPSEC_Mapper:
         self._keys = Keys() # holds relevant key data (optional param how many to remember)
 
     # helper methods
-    # tries to decrypt an informational packet
+    # tries to decrypt an informational packet -->  decryption should be generalized in own class
     def decrypt_info(self):
 
         assert(is_encypted(resp))
@@ -236,7 +231,7 @@ class IPSEC_Mapper:
         payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
 
         iv = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
-        cur_key_dict["iv"] = iv # TODO check that this updates the class one!
+        cur_key_dict["iv"] = iv # updates class iv because dict is mutable
 
         print(f"next iv: {hexify(raw(iv))}")
 
@@ -266,7 +261,7 @@ class IPSEC_Mapper:
             else: # We probably messed up somewhere / packets got mixed up, hash could not be verified --> this is a strange case as it shouldnt happen. Either a server bug or in our implementation. Either way, have to restart the connection.
                 # TODO: restart connection
                 return "DISCONNECTED"
-        elif self.parse_notification(resp): # if a message is returned, there was an error and server reset --> TODO: this message is encrypted, I predict problems
+        elif self.parse_notification(resp): # if a message is returned, there was an error and server reset
             self._state = 'DISCONNECTED'
             return 'DISCONNECTED'
         else:

@@ -287,7 +287,16 @@ def authenticate():
         print(f"recved: {p[ISAKMP_payload_Hash].load}\nshould be: {hash_data}")
 
 def sa_quick():
-    pass
+    global cookie_i
+    global cookie_r
+
+    # super hacky, using overridden isakmp attribute types --> TODO: make appropriate structure in isakmp
+    sa_body_quick = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(proto=3, SPIsize=4, trans_nb=1, trans=ISAKMP_payload_Transform(length=28, num=1, transforms=[('KeyLength', 256), ('GroupType', 'ECP'), ('GroupDesc', '768MODPgr'), ('LifeType', 'Seconds'), ('LifeDuration', 3600)])))
+    policy_neg_quick = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, exch_type=32)/sa_body_quick
+    show(policy_neg_quick)
+
+    msg = policy_neg_quick
+    resp = conn.send_recv_data(msg)
 
 def ack_quick():
     pass
@@ -320,7 +329,7 @@ def decrypt_info():
     print(f"new iv len: {len(iv_new)}")
     print(f"new iv: {hexify(iv_new)}")
 
-    # TODO decrypt using iv
+    # decrypt using iv
     cipher = AES.new(aes_key, AES.MODE_CBC, iv_new)
     resp = cipher.decrypt(raw(info_mesg[Raw]))
     print(f"Decrypted: {resp}")
@@ -404,11 +413,11 @@ tc1 = [sa_main, sa_main, sa_main, sa_main, sa_main] # each considered a retransm
 tc2 = [sa_main, sa_main_fail, sa_main, key_ex_main, decrypt_info] # key_ex must follow an established transform or it will fail
 tc3 = [sa_main, key_ex_main, sa_main, decrypt_info] # shows that the packets must arrive in the expected order here, or there will be an error and the server resets
 tc4 = [sa_main, key_ex_main, authenticate, sa_main] # sa_main is ignored if connection is already established 
-tc4 = [sa_main, key_ex_main, authenticate, key_ex_main] # once connection is established, no phase 2 messges seem to have an effect
-tc5 = [sa_main, key_ex_main, authenticate, authenticate] # once connection is established, no phase 2 messges seem to have an effect
+tc4 = [sa_main, key_ex_main, authenticate, key_ex_main] # once connection is established, no phase 1 messges seem to have an effect
+tc5 = [sa_main, key_ex_main, authenticate, authenticate] # once connection is established, no phase 1 messges seem to have an effect
 tc6 = [sa_main, key_ex_main, authenticate, delete, sa_main]
 full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, informational]
-test = tc6
+test = full
 
 for t in test:
     if type(t) is str:

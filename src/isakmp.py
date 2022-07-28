@@ -28,6 +28,13 @@ from functools import reduce
 # TODO: some ISAKMP payloads are not implemented,
 # and inherit a default ISAKMP_payload
 
+ISAKMPEspAttributeTypes = {
+    "LifeType": (1, {"Seconds": 1}, 0),
+    "LifeDuration": (2, {}, 1),
+    "Encapsulation": (4, {"Tunnel": 1}, 0),
+    "Authentication": (5, {"HMAC-SHA": 2}, 0),
+    "KeyLength": (6, {}, 0),
+}
 
 # see http://www.iana.org/assignments/ipsec-registry for details
 ISAKMPAttributeTypes = {"Encryption": (1, {"DES-CBC": 1,
@@ -77,7 +84,7 @@ ISAKMPAttributeTypes = {"Encryption": (1, {"DES-CBC": 1,
                                           "6144MODPgr": 17,
                                           "8192MODPgr": 18, }, 0),
                         "GroupType": (5, {"MODP": 1,
-                                          "ECP": 2,
+                                          "ECP": 2, # also esp auth alg hmac
                                           "EC2N": 3}, 0),
                         "GroupPrime": (6, {}, 1),
                         "GroupGenerator1": (7, {}, 1),
@@ -267,7 +274,7 @@ class ISAKMP_payload_Transform(ISAKMP_class):
         #        ShortField("len",None),
         ShortField("length", None),
         ByteField("num", None),
-        ByteEnumField("id", 1, {1: "KEY_IKE"}),
+        ByteEnumField("id", 1, {1: "KEY_IKE", 12: "AES"}),
         ShortField("res2", 0),
         ISAKMPTransformSetField("transforms", None, length_from=lambda x: x.length - 8)  # noqa: E501
         #        XIntField("enc",0x80010005L),
@@ -297,7 +304,7 @@ class ISAKMP_payload_Proposal(ISAKMP_class):
         ByteField("res", 0),
         FieldLenField("length", None, "trans", "H", adjust=lambda pkt, x:x + 8),  # noqa: E501
         ByteField("proposal", 1),
-        ByteEnumField("proto", 1, {1: "ISAKMP"}),
+        ByteEnumField("proto", 1, {1: "ISAKMP", 3: "IPSEC_ESP"}),
         FieldLenField("SPIsize", None, "SPI", "B"),
         ByteField("trans_nb", None),
         StrLenField("SPI", "", length_from=lambda x: x.SPIsize),
