@@ -28,12 +28,12 @@ from functools import reduce
 # TODO: some ISAKMP payloads are not implemented,
 # and inherit a default ISAKMP_payload
 
-ISAKMPEspAttributeTypes = {
-    "LifeType": (1, {"Seconds": 1}, 0),
-    "LifeDuration": (2, {}, 1),
-    "Encapsulation": (4, {"Tunnel": 1}, 0),
-    "Authentication": (5, {"HMAC-SHA": 2}, 0),
-    "KeyLength": (6, {}, 0),
+ESPAttributeTypes = {
+    "LifeTypeESP": (1, {"Seconds": 1}, 0),
+    "LifeDurationESP": (2, {}, 1),
+    "EncapsulationESP": (4, {"Tunnel": 1}, 0),
+    "AuthenticationESP": (5, {"HMAC-SHA": 2}, 0),
+    "KeyLengthESP": (6, {}, 0),
 }
 
 # see http://www.iana.org/assignments/ipsec-registry for details
@@ -84,7 +84,7 @@ ISAKMPAttributeTypes = {"Encryption": (1, {"DES-CBC": 1,
                                           "6144MODPgr": 17,
                                           "8192MODPgr": 18, }, 0),
                         "GroupType": (5, {"MODP": 1,
-                                          "ECP": 2, # also esp auth alg hmac
+                                          "ECP": 2,
                                           "EC2N": 3}, 0),
                         "GroupPrime": (6, {}, 1),
                         "GroupGenerator1": (7, {}, 1),
@@ -103,7 +103,9 @@ ISAKMPAttributeTypes = {"Encryption": (1, {"DES-CBC": 1,
 # the name 'ISAKMPTransformTypes' is actually a misnomer (since the table
 # holds info for all ISAKMP Attribute types, not just transforms, but we'll
 # keep it for backwards compatibility... for now at least
-ISAKMPTransformTypes = ISAKMPAttributeTypes
+ISAKMPTransformTypes = {}
+ISAKMPTransformTypes.update(ISAKMPAttributeTypes)
+ISAKMPTransformTypes.update(ESPAttributeTypes)
 
 ISAKMPTransformNum = {}
 for n in ISAKMPTransformTypes:

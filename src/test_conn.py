@@ -290,8 +290,9 @@ def sa_quick():
     global cookie_i
     global cookie_r
 
-    # super hacky, using overridden isakmp attribute types --> TODO: make appropriate structure in isakmp
-    sa_body_quick = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(proto=3, SPIsize=4, trans_nb=1, trans=ISAKMP_payload_Transform(length=28, num=1, transforms=[('KeyLength', 256), ('GroupType', 'ECP'), ('GroupDesc', '768MODPgr'), ('LifeType', 'Seconds'), ('LifeDuration', 3600)])))
+    # esp attributes --> works now, spi must be fully filled. length 40 is needed, so that padding is correct
+    # TODO: check that spi is correct and can really be chosen freely
+    sa_body_quick = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(length=40, proto=3, SPIsize=4, trans_nb=1, SPI=b"\xcf\x64\x5a\x13", trans=ISAKMP_payload_Transform(length=28, num=1, id=12, transforms=[('KeyLengthESP', 256), ('AuthenticationESP', 'HMAC-SHA'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)])))
     policy_neg_quick = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, exch_type=32)/sa_body_quick
     show(policy_neg_quick)
 
@@ -416,8 +417,9 @@ tc4 = [sa_main, key_ex_main, authenticate, sa_main] # sa_main is ignored if conn
 tc4 = [sa_main, key_ex_main, authenticate, key_ex_main] # once connection is established, no phase 1 messges seem to have an effect
 tc5 = [sa_main, key_ex_main, authenticate, authenticate] # once connection is established, no phase 1 messges seem to have an effect
 tc6 = [sa_main, key_ex_main, authenticate, delete, sa_main]
+tc7 = [sa_quick]
 full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, informational]
-test = full
+test = tc7
 
 for t in test:
     if type(t) is str:
