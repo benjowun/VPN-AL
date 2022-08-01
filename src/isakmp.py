@@ -385,7 +385,7 @@ class ISAKMP_payload_ID(ISAKMP_class):
         ByteEnumField("next_payload", None, ISAKMP_payload_type),
         ByteField("res", 0),
         FieldLenField("length", 12, "load", "H", adjust=lambda pkt, x:x + 12), # includes ip
-        ByteEnumField("IDtype", 1, {1: "IPv4_addr", 11: "Key"}),
+        ByteEnumField("IDtype", 1, {1: "IPv4_addr", 4: "IPv4_ADDR_SUBNET", 11: "Key"}),
         ByteEnumField("ProtoID", 0, {0: "Unused"}),
         ShortEnumField("Port", 0, {0: "Unused"}),
         IPField("IdentData","127.0.0.1"),

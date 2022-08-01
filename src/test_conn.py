@@ -290,13 +290,31 @@ def sa_quick():
     global cookie_i
     global cookie_r
 
+    # TODO: generate message ID randomly:
+    m_id = 3244232844
+
     # esp attributes --> works now, spi must be fully filled. length 40 is needed, so that padding is correct
     # TODO: check that spi is correct and can really be chosen freely
-    sa_body_quick = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(length=40, proto=3, SPIsize=4, trans_nb=1, SPI=b"\xcf\x64\x5a\x13", trans=ISAKMP_payload_Transform(length=28, num=1, id=12, transforms=[('KeyLengthESP', 256), ('AuthenticationESP', 'HMAC-SHA'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)])))
-    policy_neg_quick = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, exch_type=32)/sa_body_quick
-    show(policy_neg_quick)
+    sa_body_quick = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(next_payload=10, length=40, proto=3, SPIsize=4, trans_nb=1, SPI=b"\xcf\x64\x5a\x13", trans=ISAKMP_payload_Transform(length=28, num=1, id=12, transforms=[('KeyLengthESP', 256), ('AuthenticationESP', 'HMAC-SHA'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)])))
 
-    msg = policy_neg_quick
+    # Nonce (TODO: generate one / fuzz one?):
+    nonce = b"\x55\x0d\xff\x82\xf4\xa7\x7c\x27\x2a\x94\x96\x2d\x1a\x5b\xff\x35\xe4\x4a\x6c\xfd\xc2\x57\xf8\xcb\xe4\x0b\xd8\xb2\x14\xba\xbb\xe0"
+    nonce_quick = ISAKMP_payload_Nonce(next_payload=5, load=nonce)
+
+    # generate identifications
+    # current (10.0.2.2)
+    mask = b"\xff\xff\xff\x00" # 255.255.255.0 TODO: fix this
+    id_src_quick = ISAKMP_payload_ID(next_payload=5, length=8, IdentData=src_ip, load=mask)
+    id_dst_quick = ISAKMP_payload_ID(IdentData=dst_ip, length=8, load=mask)
+
+
+    # generate hash (for now without KE):
+    # HASH(1) = prf(SKEYID_a, M-ID | SA | Ni [ | KE ] [ | IDci | IDcr )
+
+    policy_neg_quick = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, exch_type=32, id=m_id)/sa_body_quick/nonce_quick/id_src_quick/id_dst_quick
+
+
+    msg=policy_neg_quick
     resp = conn.send_recv_data(msg)
 
 def ack_quick():
