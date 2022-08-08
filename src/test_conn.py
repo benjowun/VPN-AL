@@ -303,9 +303,9 @@ def sa_quick():
 
     # generate identifications
     # current (10.0.2.2)
-    mask = b"\xff\xff\xff\x00" # 255.255.255.0 TODO: fix this
-    id_src_quick = ISAKMP_payload_ID(next_payload=5, length=8, IdentData=src_ip, load=mask)
-    id_dst_quick = ISAKMP_payload_ID(IdentData=dst_ip, length=8, load=mask)
+    mask = b"\xff\xff\xff\x00" # 255.255.255.0
+    id_src_quick = ISAKMP_payload_ID(next_payload=5, length=16, IDtype="IPv4_ADDR_SUBNET", IdentData=src_ip, load=mask)
+    id_dst_quick = ISAKMP_payload_ID(length=16, IDtype="IPv4_ADDR_SUBNET", IdentData=dst_ip, load=mask)
 
 
     # generate hash (for now without KE):
