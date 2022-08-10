@@ -286,6 +286,7 @@ def authenticate():
     else:
         print(f"recved: {p[ISAKMP_payload_Hash].load}\nshould be: {hash_data}")
 
+# TODO: check for INVALID-ID-INFORMATION notifications on invalid IDs
 def sa_quick():
     global cookie_i
     global cookie_r
@@ -310,6 +311,10 @@ def sa_quick():
 
     # generate hash (for now without KE):
     # HASH(1) = prf(SKEYID_a, M-ID | SA | Ni [ | KE ] [ | IDci | IDcr )
+
+
+    # key material (without KE), see appendix B for info on encryption! (seems similar to what is used for notifications)
+    # KEYMAT = prf(SKEYID_d, protocol | SPI | Ni_b | Nr_b)
 
     policy_neg_quick = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, exch_type=32, id=m_id)/sa_body_quick/nonce_quick/id_src_quick/id_dst_quick
 
@@ -432,8 +437,8 @@ tc1 = [sa_main, sa_main, sa_main, sa_main, sa_main] # each considered a retransm
 tc2 = [sa_main, sa_main_fail, sa_main, key_ex_main, decrypt_info] # key_ex must follow an established transform or it will fail
 tc3 = [sa_main, key_ex_main, sa_main, decrypt_info] # shows that the packets must arrive in the expected order here, or there will be an error and the server resets
 tc4 = [sa_main, key_ex_main, authenticate, sa_main] # sa_main is ignored if connection is already established 
-tc4 = [sa_main, key_ex_main, authenticate, key_ex_main] # once connection is established, no phase 1 messges seem to have an effect
-tc5 = [sa_main, key_ex_main, authenticate, authenticate] # once connection is established, no phase 1 messges seem to have an effect
+tc4 = [sa_main, key_ex_main, authenticate, key_ex_main] # once connection is established, no phase 1 messages seem to have an effect
+tc5 = [sa_main, key_ex_main, authenticate, authenticate] # once connection is established, no phase 1 messages seem to have an effect
 tc6 = [sa_main, key_ex_main, authenticate, delete, sa_main]
 tc7 = [sa_quick]
 full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, informational]
