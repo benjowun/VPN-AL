@@ -288,15 +288,16 @@ def authenticate():
 
 # TODO: check for INVALID-ID-INFORMATION notifications on invalid IDs
 def sa_quick():
-    global cookie_i
-    global cookie_r
+    global iv
+    # keys
+    cur_key_dict = keys.get_latest_key()
 
     # TODO: generate message ID randomly:
-    m_id = 3244232844
+    m_id = (3244232844).to_bytes(4, 'big')
 
     # esp attributes --> works now, spi must be fully filled. length 40 is needed, so that padding is correct
     # TODO: check that spi is correct and can really be chosen freely
-    sa_body_quick = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(next_payload=10, length=40, proto=3, SPIsize=4, trans_nb=1, SPI=b"\xcf\x64\x5a\x13", trans=ISAKMP_payload_Transform(length=28, num=1, id=12, transforms=[('KeyLengthESP', 256), ('AuthenticationESP', 'HMAC-SHA'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)])))
+    sa_body_quick = ISAKMP_payload_SA(next_payload=10, length=52, prop=ISAKMP_payload_Proposal(length=40, proto=3, SPIsize=4, trans_nb=1, SPI=b"\xcf\x64\x5a\x13", trans=ISAKMP_payload_Transform(length=28, num=1, id=12, transforms=[('KeyLengthESP', 256), ('AuthenticationESP', 'HMAC-SHA'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)])))
 
     # Nonce (TODO: generate one / fuzz one?):
     nonce = b"\x55\x0d\xff\x82\xf4\xa7\x7c\x27\x2a\x94\x96\x2d\x1a\x5b\xff\x35\xe4\x4a\x6c\xfd\xc2\x57\xf8\xcb\xe4\x0b\xd8\xb2\x14\xba\xbb\xe0"
@@ -311,16 +312,37 @@ def sa_quick():
 
     # generate hash (for now without KE):
     # HASH(1) = prf(SKEYID_a, M-ID | SA | Ni [ | KE ] [ | IDci | IDcr )
+    prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id + raw(sa_body_quick) + raw(nonce_quick) + raw(id_src_quick) + raw(id_dst_quick), SHA1)
+    hash_data = prf_HASH.digest()
+    print(f"hash quick: {hexify(hash_data)}")
+    hash_quick = ISAKMP_payload_Hash(length=24, load=hash_data)
+
+    # unencrypted but authenticated packet
+    policy_neg_quick_raw = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, exch_type=32, id=int.from_bytes(m_id, 'big'))/hash_quick/sa_body_quick/nonce_quick/id_src_quick/id_dst_quick
 
 
-    # key material (without KE), see appendix B for info on encryption! (seems similar to what is used for notifications)
-    # KEYMAT = prf(SKEYID_d, protocol | SPI | Ni_b | Nr_b)
+    # calc IV (hash of last block and id)
+    print(f"last block {iv}")
+    print(f"m_id: {m_id}")
+    h = SHA1.new(iv + m_id)
+    iv_new = h.digest()[:16]
+    print(f"iv quick: {hexify(iv_new)}")
 
-    policy_neg_quick = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, exch_type=32, id=m_id)/sa_body_quick/nonce_quick/id_src_quick/id_dst_quick
+    # encrypt
+    cipher = AES.new(aes_key, AES.MODE_CBC, iv_new) # TODO: check?
+    payload_quick_enc = cipher.encrypt(pad(raw(policy_neg_quick_raw), AES.block_size))
+    print(f"payload len: {len(payload_quick_enc)}")
+    print(f"payload: {hexify(payload_quick_enc)}")
+    print(f"payload plain: {hexify(raw(policy_neg_quick_raw))}")
 
+    iv = payload_quick_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+    print(f"iv_new len: {len(iv)}")
+    print(f"iv_new: {hexify(iv)}")
 
-    msg=policy_neg_quick
+    msg = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=32, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=188)/Raw(load=payload_quick_enc)
+
     resp = conn.send_recv_data(msg)
+    resp.show()
 
 def ack_quick():
     pass
@@ -351,7 +373,7 @@ def decrypt_info():
     iv_new = h.digest()[:16]
 
     print(f"new iv len: {len(iv_new)}")
-    print(f"new iv: {hexify(iv_new)}")
+    print(f"new iv: {hexify(iv_new)}") # correct (if first message)
 
     # decrypt using iv
     cipher = AES.new(aes_key, AES.MODE_CBC, iv_new)
@@ -392,7 +414,6 @@ def delete():
     print(f"hash: {hexify(hash_data)}")
 
     payload_plain = ISAKMP_payload_Hash(length=24, load=hash_data)/p_delete
-    payload_raw = raw(payload_plain) + 12*b"\x00"
 
     print(f"payload plain: {hexify(raw(payload_plain))}")
     payload_plain.show()
@@ -440,7 +461,7 @@ tc4 = [sa_main, key_ex_main, authenticate, sa_main] # sa_main is ignored if conn
 tc4 = [sa_main, key_ex_main, authenticate, key_ex_main] # once connection is established, no phase 1 messages seem to have an effect
 tc5 = [sa_main, key_ex_main, authenticate, authenticate] # once connection is established, no phase 1 messages seem to have an effect
 tc6 = [sa_main, key_ex_main, authenticate, delete, sa_main]
-tc7 = [sa_quick]
+tc7 = [sa_main, key_ex_main, authenticate, sa_quick]
 full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, informational]
 test = tc7
 
@@ -517,36 +538,11 @@ print("Testcases completed")
 #         Extra data: 000000000000000000000000
 
 
-# ref_payload:
-# HASH (24)
-# \x0c - next payload
-# \x00 - res
-# \x00\x18 - length
-# \x46\x0c\x8d\x6a\x05\x76\xde\x34\x9b\xfb\x8a\x6b\xfc\x4d\xaf\x29\xfa\xa4\x23\x21 - payload (20)
-# DELETE (12)
-# \x00 - next payload
-# \x00 - res 
-# \x00\x1c - length
-# \x00\x00\x00\x01 - DOI
-# \x01 - PROT ID
-# \x10 - SPI SIZE
-# \x00\x01 - #SPI
-# \xbf\x46\x11\x76\xf8\x95\x9f\x8f\x85\x0c\x49\x36\x5c\xb6\xed\x65 - DELETE
-
-
-
-# act_payload:
-# HASH (24)
-# \x0c
-# \x00
-# \x00\x18
-# \xf7\xb3\xb0\x19\xa5\x63\xe0\xa2\xf4\x2f\x10\x4c\xaf\x25\x32\x7a\xa7\x18\x14\x58
-# DELETE (12)
-# \x00
-# \x00
-# \x00\x1c
-# \x00\x00\x00\x01
-# \x00 <---
-# \x10
-# \x00\x01
-# \x1b\x5c\x77\x7b\x73\xa7\x8b\xc4\x9d\xd2\xec\xf3\xea\x8a\x47\x37
+#                         0a 00 00 34 00 00 00 01 
+# 00 00 00 01 0a 00 00 28 01 03 04 01 cf 64 5a 13 # the 01 0a appears to be incorrect?
+# 00 00 00 1c 01 0c 00 00 80 06 01 00 80 05 00 02 
+# 80 04 00 01 80 01 00 01 80 02 0e 10 05 00 00 24 
+# 55 0d ff 82 f4 a7 7c 27 2a 94 96 2d 1a 5b ff 35 
+# e4 4a 6c fd c2 57 f8 cb e4 0b d8 b2 14 ba bb e0 
+# 05 00 00 10 04 00 00 00 0a 00 02 02 ff ff ff 00 
+# 00 00 00 10 04 00 00 00 0a 00 02 01 ff ff ff 00
