@@ -343,7 +343,26 @@ def sa_quick():
     msg = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=32, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=188)/Raw(load=payload_quick_enc)
 
     resp = conn.send_recv_data(msg)
-    #resp.show()
+    print("Encrypted resp:")
+    show(resp)
+
+    # TODO: error handling
+
+    print("Decrypted resp:")
+    cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+    iv = (raw(resp[Raw])[-AES.block_size:])
+    print(f"iv new: {iv}")
+    decrypted = cipher.decrypt(raw(resp[Raw]))
+    print(f"data: {hexify(decrypted)}")
+    p = ISAKMP_payload_Hash(bytes(decrypted[:24]))/ISAKMP_payload_SA(bytes(decrypted[24:76]))/ISAKMP_payload_Nonce(bytes(decrypted[76:112]))/ISAKMP_payload_ID(bytes(decrypted[112:128]))/ISAKMP_payload_ID(bytes(decrypted[128:144]))
+    show(p)
+
+    # parse response
+    print(f"Verifiying resceived hash of len: {len(p[ISAKMP_payload_Hash].load)}...")
+    # HASH(2) = prf(SKEYID_a, M-ID | Ni_b | SA | Nr [ | KE ] [ | IDci | IDcr )
+    # TODO: this :prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id + raw(sa_body_quick) + raw(nonce_quick) + raw(id_src_quick) + raw(id_dst_quick), SHA1)
+    hash_data = prf_HASH.digest()
+
 
 def ack_quick():
     pass

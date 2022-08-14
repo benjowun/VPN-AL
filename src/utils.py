@@ -13,6 +13,8 @@ def get_transform_value(list, name):
 def show(packet):
     if debug:
         packet.show()
+    else:
+        print("Debug prints disabled.")
 
 # shows if a returned packet is encrypted
 def is_encypted(packet):
