@@ -301,13 +301,14 @@ def sa_quick():
 
     # Nonce (TODO: generate one / fuzz one?):
     nonce = b"\x55\x0d\xff\x82\xf4\xa7\x7c\x27\x2a\x94\x96\x2d\x1a\x5b\xff\x35\xe4\x4a\x6c\xfd\xc2\x57\xf8\xcb\xe4\x0b\xd8\xb2\x14\xba\xbb\xe0"
-    nonce_quick = ISAKMP_payload_Nonce(next_payload=5, load=nonce)
+    nonce_quick = ISAKMP_payload_Nonce(next_payload=5, length=36, load=nonce)
 
     # generate identifications
-    # current (10.0.2.2)
+    # should both be (10.0.2.0)
+    address = "10.0.2.0"
     mask = b"\xff\xff\xff\x00" # 255.255.255.0
-    id_src_quick = ISAKMP_payload_ID(next_payload=5, length=16, IDtype="IPv4_ADDR_SUBNET", IdentData=src_ip, load=mask)
-    id_dst_quick = ISAKMP_payload_ID(length=16, IDtype="IPv4_ADDR_SUBNET", IdentData=dst_ip, load=mask)
+    id_src_quick = ISAKMP_payload_ID(next_payload=5, length=16, IDtype="IPv4_ADDR_SUBNET", IdentData=address, load=mask)
+    id_dst_quick = ISAKMP_payload_ID(length=16, IDtype="IPv4_ADDR_SUBNET", IdentData=address, load=mask)
 
 
     # generate hash (for now without KE):
@@ -318,8 +319,8 @@ def sa_quick():
     hash_quick = ISAKMP_payload_Hash(length=24, load=hash_data)
 
     # unencrypted but authenticated packet
-    policy_neg_quick_raw = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, exch_type=32, id=int.from_bytes(m_id, 'big'))/hash_quick/sa_body_quick/nonce_quick/id_src_quick/id_dst_quick
-
+    policy_neg_quick_raw = hash_quick/sa_body_quick/nonce_quick/id_src_quick/id_dst_quick
+    show(policy_neg_quick_raw)
 
     # calc IV (hash of last block and id)
     print(f"last block {iv}")
@@ -342,7 +343,7 @@ def sa_quick():
     msg = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=32, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=188)/Raw(load=payload_quick_enc)
 
     resp = conn.send_recv_data(msg)
-    resp.show()
+    #resp.show()
 
 def ack_quick():
     pass
@@ -536,13 +537,3 @@ print("Testcases completed")
 #             Number of SPIs: 1
 #             Delete SPI: 9dd2ecf3ea8a473717e82eb671f70ae2
 #         Extra data: 000000000000000000000000
-
-
-#                         0a 00 00 34 00 00 00 01 
-# 00 00 00 01 0a 00 00 28 01 03 04 01 cf 64 5a 13 # the 01 0a appears to be incorrect?
-# 00 00 00 1c 01 0c 00 00 80 06 01 00 80 05 00 02 
-# 80 04 00 01 80 01 00 01 80 02 0e 10 05 00 00 24 
-# 55 0d ff 82 f4 a7 7c 27 2a 94 96 2d 1a 5b ff 35 
-# e4 4a 6c fd c2 57 f8 cb e4 0b d8 b2 14 ba bb e0 
-# 05 00 00 10 04 00 00 00 0a 00 02 02 ff ff ff 00 
-# 00 00 00 10 04 00 00 00 0a 00 02 01 ff ff ff 00
