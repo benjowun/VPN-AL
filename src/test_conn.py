@@ -25,7 +25,7 @@ cookie_i = b""
 sa_body_init = b""
 aes_key = b""
 resp = None
-iv = b""
+ivs = {} # keep ivs (and technically also enc key, but for now only iv) per m_id  
 m_id = b""
 nonce_i = b"" # without payload header
 nonce_r = b""
@@ -145,7 +145,7 @@ def key_ex_main():
     global resp
     global keys
     global aes_key
-    global iv
+    global ivs
 
     # Public key generation
     PSK = b"AahBd2cTvEyGevxO08J7w2SqRGbnIeBc"
@@ -205,13 +205,13 @@ def key_ex_main():
 
         # generate initial IV from pub keys (subsequent messages use previous CBC encrypted block as IV)
         h = SHA1.new(public_key + public_key_server)
-        iv = h.digest()
-        print(f"iv nat len: {len(iv)}")
-        iv = iv[:16] #trim to needed length
-        print(f"iv len: {len(iv)}")
-        print(f"iv: {iv}")
+        ivs[0] = h.digest()
+        print(f"iv nat len: {len(ivs[0])}")
+        ivs[0] = ivs[0][:16] #trim to needed length
+        print(f"iv len: {len(ivs[0])}")
+        print(f"iv: {ivs[0]}")
 
-        cur_key_dict = make_key_dict(psk=PSK, pub_client=public_key, pub_serv=public_key_server, shared=shared_key, SKEYID=SKEYID, SKEYID_d=SKEYID_d, SKEYID_a=SKEYID_a, SKEYID_e=SKEYID_e, iv=iv, key=aes_key)
+        cur_key_dict = make_key_dict(psk=PSK, pub_client=public_key, pub_serv=public_key_server, shared=shared_key, SKEYID=SKEYID, SKEYID_d=SKEYID_d, SKEYID_a=SKEYID_a, SKEYID_e=SKEYID_e, iv=ivs, key=aes_key)
         keys.new_key(cur_key_dict)
         # return 'CONNECTING_KEYED'
     elif parse_notification(resp):
@@ -224,7 +224,7 @@ def key_ex_main():
 
 def authenticate():
     global resp
-    global iv
+    global ivs
 
     # keys
     cur_key_dict = keys.get_latest_key()
@@ -252,14 +252,14 @@ def authenticate():
 
     show(payload_plain)
 
-    cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+    cipher = AES.new(aes_key, AES.MODE_CBC, ivs[0])
     payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
     print(f"payload len: {len(payload_enc)}")
     print(f"payload: {hexify(payload_enc)}")
 
-    iv = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
-    print(f"iv_new len: {len(iv)}")
-    print(f"iv_new: {hexify(iv)}")
+    ivs[0] = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+    print(f"iv_new len: {len(ivs[0])}")
+    print(f"iv_new: {hexify(ivs[0])}")
 
     auth_mes = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=5, exch_type=2, flags=["encryption"])/Raw(load=payload_enc)
     show(auth_mes)
@@ -268,9 +268,9 @@ def authenticate():
     print("Encrypted resp:")
     show(resp)
     print("Decrypted resp:")
-    cipher = AES.new(aes_key, AES.MODE_CBC, iv)
-    iv = (raw(resp[Raw])[-AES.block_size:])
-    print(f"iv new: {iv}")
+    cipher = AES.new(aes_key, AES.MODE_CBC, ivs[0])
+    ivs[0] = (raw(resp[Raw])[-AES.block_size:])
+    print(f"iv new: {ivs[0]}")
     decrypted = cipher.decrypt(raw(resp[Raw]))
 
     print(f"data: {hexify(decrypted)}")
@@ -291,7 +291,7 @@ def authenticate():
 
 # TODO: check for INVALID-ID-INFORMATION notifications on invalid IDs
 def sa_quick():
-    global iv
+    global ivs
     global m_id
     global nonce_i
     global nonce_r
@@ -329,9 +329,9 @@ def sa_quick():
     show(policy_neg_quick_raw)
 
     # calc IV (hash of last block and id)
-    print(f"last block {iv}")
+    print(f"last block {hexify(ivs[0])}")
     print(f"m_id: {m_id}")
-    h = SHA1.new(iv + m_id)
+    h = SHA1.new(ivs[0] + m_id)
     iv_new = h.digest()[:16]
     print(f"iv quick: {hexify(iv_new)}")
 
@@ -342,9 +342,9 @@ def sa_quick():
     print(f"payload: {hexify(payload_quick_enc)}")
     print(f"payload plain: {hexify(raw(policy_neg_quick_raw))}")
 
-    iv = payload_quick_enc[-AES.block_size:] # new iv is last block of last encrypted payload
-    print(f"iv_new len: {len(iv)}")
-    print(f"iv_new: {hexify(iv)}")
+    ivs[int.from_bytes(m_id, 'big')] = payload_quick_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+    print(f"iv_new len: {len(ivs[int.from_bytes(m_id, 'big')])}")
+    print(f"iv_new: {hexify(ivs[int.from_bytes(m_id, 'big')])}")
 
     msg = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=32, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=188)/Raw(load=payload_quick_enc)
 
@@ -355,9 +355,9 @@ def sa_quick():
     # TODO: error handling
 
     print("Decrypted resp:")
-    cipher = AES.new(aes_key, AES.MODE_CBC, iv)
-    iv = (raw(resp[Raw])[-AES.block_size:])
-    print(f"iv new: {hexify(iv)}")
+    cipher = AES.new(aes_key, AES.MODE_CBC, ivs[int.from_bytes(m_id, 'big')])
+    ivs[int.from_bytes(m_id, 'big')] = (raw(resp[Raw])[-AES.block_size:])
+    print(f"iv new: {hexify(ivs[int.from_bytes(m_id, 'big')])}")
     decrypted = cipher.decrypt(raw(resp[Raw]))
     print(f"data: {hexify(decrypted)}")
     SA_recv = ISAKMP_payload_SA(bytes(decrypted[24:76]))
@@ -384,7 +384,7 @@ def sa_quick():
         print(f"hash calculated: {hexify(hash_data)}")
 
 def ack_quick():
-    global iv
+    global ivs
     cur_key_dict = keys.get_latest_key()
 
     # HASH(3) = prf(SKEYID_a, 0 | M-ID | Ni_b | Nr_b)
@@ -394,15 +394,15 @@ def ack_quick():
     ack_hash_quick = ISAKMP_payload_Hash(length=24, load=hash_data)
 
     # encrypt and send packet
-    cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+    cipher = AES.new(aes_key, AES.MODE_CBC, ivs[int.from_bytes(m_id, 'big')])
     payload_hash_quick_enc = cipher.encrypt(pad(raw(ack_hash_quick), AES.block_size))
     print(f"payload len: {len(payload_hash_quick_enc)}")
     print(f"payload: {hexify(payload_hash_quick_enc)}")
     print(f"payload plain: {hexify(raw(payload_hash_quick_enc))}")
 
-    iv = payload_hash_quick_enc[-AES.block_size:] # new iv is last block of last encrypted payload
-    print(f"iv_new len: {len(iv)}")
-    print(f"iv_new: {hexify(iv)}")
+    ivs[int.from_bytes(m_id, 'big')] = payload_hash_quick_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+    print(f"iv_new len: {len(ivs[int.from_bytes(m_id, 'big')])}")
+    print(f"iv_new: {hexify(ivs[int.from_bytes(m_id, 'big')])}")
 
     msg = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=32, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=60)/Raw(load=payload_hash_quick_enc)
 
@@ -412,8 +412,12 @@ def ack_quick():
 def informational():
     pass
 
+# TODO: fix this --> parse m_id, look up that field in iv struct, if empty initialize new IV, otherwise take IV
 def decrypt_info():
     global resp
+    global ivs
+
+    iv = b"" # TODO remove this
 
     print(f"aes_key: {hexify(aes_key)}")
     print(f"iv: {hexify(iv)}")
@@ -428,7 +432,7 @@ def decrypt_info():
     # iv for encryption: HASH(last recved encrypted block | m_id)
     m_id = (info_mesg[ISAKMP].id).to_bytes(4, 'big')
 
-    print(f"last block {iv}")
+    print(f"last block {hexify(iv)}")
     print(f"m_id: {m_id}")
 
     h = SHA1.new(iv + m_id)
@@ -457,11 +461,11 @@ def decrypt_info():
 # TODO: if no SA has been established yet, send in plain without hash
 def delete():
     global resp
-    global iv
+    global iv_info
     # p = ISAKMP()/ISAKMP_payload_Hash/ISAKMP_payload_Delete
     # keys
     cur_key_dict = keys.get_latest_key()
-    m_id = (7777).to_bytes(4, 'big') # random id
+    m_id = (7777).to_bytes(4, 'big') # random  --> local!!!
     print(f"id: {int.from_bytes(m_id, 'big')}")
 
     # create unencrypted delete message
@@ -481,7 +485,12 @@ def delete():
     payload_plain.show()
 
     # iv for encryption: HASH(last recved encrypted block | m_id)
-    print(f"last block {iv}")
+    iv = b""
+    if int.from_bytes(m_id, 'big') in ivs:
+        iv = ivs[int.from_bytes(m_id, 'big')]
+    else:
+        iv = ivs[0]
+    print(f"last block {hexify(iv)}")
     print(f"m_id: {m_id}")
 
     h = SHA1.new(iv + m_id)
@@ -495,15 +504,17 @@ def delete():
     print(f"payload len: {len(payload_enc)}")
     print(f"payload: {hexify(payload_enc)}")
 
-    iv = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
-    print(f"iv_new len: {len(iv)}")
-    print(f"{hexify(iv_new)}")
+    ivs[int.from_bytes(m_id, 'big')] = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+    print(f"iv_new len: {len(ivs[int.from_bytes(m_id, 'big')])}")
+    print(f"{hexify(ivs[int.from_bytes(m_id, 'big')])}")
 
     p = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=92)/Raw(load=payload_enc)
     resp = conn.send_data(p)
 
+# TODO: fix this!
 def recv_delete():
     global resp
+    iv = b"" # TODO remove
 
     print(f"aes_key: {hexify(aes_key)}")
     print(f"iv: {hexify(iv)}")
@@ -522,11 +533,14 @@ tc3 = [sa_main, key_ex_main, sa_main, decrypt_info] # shows that the packets mus
 tc4 = [sa_main, key_ex_main, authenticate, sa_main] # sa_main is ignored if connection is already established 
 tc4 = [sa_main, key_ex_main, authenticate, key_ex_main] # once connection is established, no phase 1 messages seem to have an effect
 tc5 = [sa_main, key_ex_main, authenticate, authenticate] # once connection is established, no phase 1 messages seem to have an effect
-tc6 = [sa_main, key_ex_main, authenticate, delete]
-tc7 = [sa_main, key_ex_main, authenticate, delete, sa_main]
-tc8 = [sa_main, key_ex_main, authenticate, sa_quick]
+tc6 = [sa_main, key_ex_main, authenticate, delete] # works
+tc7 = [sa_main, key_ex_main, authenticate, delete, sa_main] # works
+tc8 = [sa_main, key_ex_main, authenticate, sa_quick] # works
+tc9 = [sa_main, key_ex_main, authenticate, delete, sa_main, delete] # fails
+tc10 = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, delete] # works
+tc11 = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, delete] # works
 full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, informational]
-test = tc6
+test = tc11
 
 for t in test:
     if type(t) is str:
