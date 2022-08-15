@@ -26,6 +26,9 @@ sa_body_init = b""
 aes_key = b""
 resp = None
 iv = b""
+m_id = b""
+nonce_i = b"" # without payload header
+nonce_r = b""
 
 # function to parse packet for the server state
 # returns True if notification parsing was successful
@@ -289,6 +292,9 @@ def authenticate():
 # TODO: check for INVALID-ID-INFORMATION notifications on invalid IDs
 def sa_quick():
     global iv
+    global m_id
+    global nonce_i
+    global nonce_r
     # keys
     cur_key_dict = keys.get_latest_key()
 
@@ -351,21 +357,57 @@ def sa_quick():
     print("Decrypted resp:")
     cipher = AES.new(aes_key, AES.MODE_CBC, iv)
     iv = (raw(resp[Raw])[-AES.block_size:])
-    print(f"iv new: {iv}")
+    print(f"iv new: {hexify(iv)}")
     decrypted = cipher.decrypt(raw(resp[Raw]))
     print(f"data: {hexify(decrypted)}")
-    p = ISAKMP_payload_Hash(bytes(decrypted[:24]))/ISAKMP_payload_SA(bytes(decrypted[24:76]))/ISAKMP_payload_Nonce(bytes(decrypted[76:112]))/ISAKMP_payload_ID(bytes(decrypted[112:128]))/ISAKMP_payload_ID(bytes(decrypted[128:144]))
+    SA_recv = ISAKMP_payload_SA(bytes(decrypted[24:76]))
+    hash_recv = ISAKMP_payload_Hash(bytes(decrypted[:24]))
+    nonce_recv = ISAKMP_payload_Nonce(bytes(decrypted[76:112]))
+    id_recv_1 = ISAKMP_payload_ID(bytes(decrypted[112:128]))
+    id_recv_2 = ISAKMP_payload_ID(bytes(decrypted[128:144]))
+
+    p = hash_recv/SA_recv/nonce_recv/id_recv_1/id_recv_2
     show(p)
 
     # parse response
-    print(f"Verifiying resceived hash of len: {len(p[ISAKMP_payload_Hash].load)}...")
+    print(f"Verifiying resceived hash: {hexify(p[ISAKMP_payload_Hash].load)}...")
     # HASH(2) = prf(SKEYID_a, M-ID | Ni_b | SA | Nr [ | KE ] [ | IDci | IDcr )
-    # TODO: this :prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id + raw(sa_body_quick) + raw(nonce_quick) + raw(id_src_quick) + raw(id_dst_quick), SHA1)
+    
+    print(f"Nonce recv: {hexify(raw(nonce_recv))}")
+    prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id + raw(nonce_quick)[4:36] + raw(SA_recv) + raw(nonce_recv) + raw(id_recv_1) + raw(id_recv_2), SHA1)
     hash_data = prf_HASH.digest()
-
+    if hash_data == hash_recv.load:
+        print("SA_quick server hash verified - sending ACK")
+        nonce_i = raw(nonce_quick)[4:36]
+        nonce_r = raw(nonce_recv)[4:36]
+    else:
+        print(f"hash calculated: {hexify(hash_data)}")
 
 def ack_quick():
-    pass
+    global iv
+    cur_key_dict = keys.get_latest_key()
+
+    # HASH(3) = prf(SKEYID_a, 0 | M-ID | Ni_b | Nr_b)
+    prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], b"\x00" + m_id + nonce_i + nonce_r , SHA1)
+    hash_data = prf_HASH.digest()
+    print(f"ACK hash quick: {hexify(hash_data)}")
+    ack_hash_quick = ISAKMP_payload_Hash(length=24, load=hash_data)
+
+    # encrypt and send packet
+    cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+    payload_hash_quick_enc = cipher.encrypt(pad(raw(ack_hash_quick), AES.block_size))
+    print(f"payload len: {len(payload_hash_quick_enc)}")
+    print(f"payload: {hexify(payload_hash_quick_enc)}")
+    print(f"payload plain: {hexify(raw(payload_hash_quick_enc))}")
+
+    iv = payload_hash_quick_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+    print(f"iv_new len: {len(iv)}")
+    print(f"iv_new: {hexify(iv)}")
+
+    msg = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=32, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=60)/Raw(load=payload_hash_quick_enc)
+
+    conn.send_data(msg)
+    print("ACK sent, tunnel up")
 
 def informational():
     pass
@@ -455,7 +497,7 @@ def delete():
 
     iv = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
     print(f"iv_new len: {len(iv)}")
-    print(f"iv_new: {hexify(iv)}")
+    print(f"{hexify(iv_new)}")
 
     p = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=92)/Raw(load=payload_enc)
     resp = conn.send_data(p)
@@ -480,10 +522,11 @@ tc3 = [sa_main, key_ex_main, sa_main, decrypt_info] # shows that the packets mus
 tc4 = [sa_main, key_ex_main, authenticate, sa_main] # sa_main is ignored if connection is already established 
 tc4 = [sa_main, key_ex_main, authenticate, key_ex_main] # once connection is established, no phase 1 messages seem to have an effect
 tc5 = [sa_main, key_ex_main, authenticate, authenticate] # once connection is established, no phase 1 messages seem to have an effect
-tc6 = [sa_main, key_ex_main, authenticate, delete, sa_main]
-tc7 = [sa_main, key_ex_main, authenticate, sa_quick]
+tc6 = [sa_main, key_ex_main, authenticate, delete]
+tc7 = [sa_main, key_ex_main, authenticate, delete, sa_main]
+tc8 = [sa_main, key_ex_main, authenticate, sa_quick]
 full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, informational]
-test = tc7
+test = tc6
 
 for t in test:
     if type(t) is str:
