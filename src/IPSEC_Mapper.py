@@ -53,9 +53,6 @@ class IPSEC_Mapper:
         scapy_packet = Ether()/IP()/UDP()/ISAKMP(bytes(dec_packet_bytes))
         return scapy_packet
 
-    # TODO: create a crypto class that handles the IV updates for me
-
-
     # function to parse packet for the server state
     # returns True if notification parsing was successful
     def parse_notification(self, resp):
@@ -79,8 +76,7 @@ class IPSEC_Mapper:
                     print(f"Info resp: Hash")
                 elif current.next_payload == ISAKMP_payload_type.index("Delete"): # Delete payload
                     current = resp[ISAKMP_payload_Delete]
-                    print(f"Info resp: Delete SPI: {hexify(current.SPI)}")
-                    print(f"In delete: next payload: {current.next_payload}")
+                    print(f"Info resp: Delete SPI: {current.SPI}")
                 else:
                     print(f"Error: encountered unexpected Payload type: {resp[ISAKMP].next_payload}")
                     return False
@@ -276,10 +272,6 @@ class IPSEC_Mapper:
     def ack_quick(self):
         self.state = 'CONNECTED'
         return self.state
-
-    def informational(self):
-        self.state = 'CONNECTED'
-        return self.state
     
     # sanity check, runs all in sequence, should work with no problems
     def run_all(self):
@@ -296,8 +288,6 @@ class IPSEC_Mapper:
         self.sa_quick()
         print("ack_quick")
         self.ack_quick()
-        print("informational")
-        self.informational()
 
 
 map = IPSEC_Mapper()

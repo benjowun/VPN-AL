@@ -48,14 +48,14 @@ def parse_notification(resp):
                 print(f"Info resp: Hash")
             elif current.next_payload == ISAKMP_payload_type.index("Delete"): # Delete payload
                 current = resp[ISAKMP_payload_Delete]
-                print(f"Info resp: Delete SPI: {hexify(current.SPI)}")
-                print(f"In delete: next payload: {current.next_payload}")
+                print(f"Info resp: Delete SPI: {current.SPI}")
             else:
                 print(f"Error: encountered unexpected Payload type: {resp[ISAKMP].next_payload}")
                 return False
         return True # Packet fully parsed
-    except:
+    except BaseException as e:
         print("Error, package type not implemented yet / Error parsing - maybe encryption faulty?")
+        print(e)
         return False
 
 # return True if payload is encrypted
@@ -412,121 +412,131 @@ def ack_quick():
 def informational():
     pass
 
-# TODO: fix this --> parse m_id, look up that field in iv struct, if empty initialize new IV, otherwise take IV
+
 def decrypt_info():
     global resp
     global ivs
 
-    iv = b"" # TODO remove this
-
-    print(f"aes_key: {hexify(aes_key)}")
-    print(f"iv: {hexify(iv)}")
-    print(f"sa block: {hexify(sa_body_init)}")
-
-    assert(is_encypted(resp))
-
     # should already be in resp from previous
     info_mesg = resp 
     show(info_mesg)
+    
+    assert(is_encypted(resp))
 
     # iv for encryption: HASH(last recved encrypted block | m_id)
     m_id = (info_mesg[ISAKMP].id).to_bytes(4, 'big')
 
-    print(f"last block {hexify(iv)}")
-    print(f"m_id: {m_id}")
-
-    h = SHA1.new(iv + m_id)
-    iv_new = h.digest()[:16]
-
-    print(f"new iv len: {len(iv_new)}")
-    print(f"new iv: {hexify(iv_new)}") # correct (if first message)
-
-    # decrypt using iv
-    cipher = AES.new(aes_key, AES.MODE_CBC, iv_new)
-    resp = cipher.decrypt(raw(info_mesg[Raw]))
-    print(f"Decrypted: {resp}")
-
-    show(info_mesg)
-    new_pack = ISAKMP(next_payload=ISAKMP_payload_type.index("Hash"), exch_type=ISAKMP_exchange_type.index("info"))
-    
-
-    dec_packet_bytes = raw(new_pack) + resp
-    scapy_packet = Ether()/IP()/UDP()/ISAKMP(bytes(dec_packet_bytes))
-    show(scapy_packet)
-    parse_notification(scapy_packet)
-    
-    # TODO: create a crypto class that handles the IV updates for me
-
-# TODO: this will need better IV / crypto handeling
-# TODO: if no SA has been established yet, send in plain without hash
-def delete():
-    global resp
-    global iv_info
-    # p = ISAKMP()/ISAKMP_payload_Hash/ISAKMP_payload_Delete
-    # keys
-    cur_key_dict = keys.get_latest_key()
-    m_id = (7777).to_bytes(4, 'big') # random  --> local!!!
-    print(f"id: {int.from_bytes(m_id, 'big')}")
-
-    # create unencrypted delete message
-    p_delete = ISAKMP_payload_Delete(SPIsize=16, SPI=[(cookie_i+cookie_r), (cookie_i+cookie_r)])
-
-    print(f"delete: {hexify(raw(p_delete))}")
-
-    # create unencrypted hash packet
-    # HASH(1) = prf(SKEYID_a, M-ID | N/D)
-    prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id + raw(p_delete), SHA1)
-    hash_data = prf_HASH.digest()
-    print(f"hash: {hexify(hash_data)}")
-
-    payload_plain = ISAKMP_payload_Hash(length=24, load=hash_data)/p_delete
-
-    print(f"payload plain: {hexify(raw(payload_plain))}")
-    payload_plain.show()
-
-    # iv for encryption: HASH(last recved encrypted block | m_id)
     iv = b""
     if int.from_bytes(m_id, 'big') in ivs:
         iv = ivs[int.from_bytes(m_id, 'big')]
     else:
         iv = ivs[0]
-    print(f"last block {hexify(iv)}")
+
     print(f"m_id: {m_id}")
+    print(f"last iv: {hexify(iv)}")
+    print(f"aes_key: {hexify(aes_key)}")
+    print(f"sa block: {hexify(sa_body_init)}")
 
     h = SHA1.new(iv + m_id)
     iv_new = h.digest()[:16]
 
     print(f"new iv len: {len(iv_new)}")
-    print(f"new iv: {hexify(iv_new)}") # correct (if first message)
+    print(f"new iv: {hexify(iv_new)}")
+    ivs[int.from_bytes(m_id, 'big')] = iv_new #update ivs
 
+    # decrypt using iv
     cipher = AES.new(aes_key, AES.MODE_CBC, iv_new)
-    payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
-    print(f"payload len: {len(payload_enc)}")
-    print(f"payload: {hexify(payload_enc)}")
+    resp = cipher.decrypt(raw(info_mesg[Raw]))
+    print(f"Decrypted: {hexify(resp)}")
 
-    ivs[int.from_bytes(m_id, 'big')] = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
-    print(f"iv_new len: {len(ivs[int.from_bytes(m_id, 'big')])}")
-    print(f"{hexify(ivs[int.from_bytes(m_id, 'big')])}")
+    show(info_mesg)
+    new_pack = ISAKMP(next_payload=ISAKMP_payload_type.index("Hash"), exch_type=ISAKMP_exchange_type.index("info"))
+    
+    dec_packet_bytes = raw(new_pack) + resp
+    scapy_packet = Ether()/IP()/UDP()/ISAKMP(bytes(dec_packet_bytes))
+    show(scapy_packet)
+    parse_notification(scapy_packet)
 
-    p = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=92)/Raw(load=payload_enc)
+# TODO: if no SA has been established yet, send in plain without hash
+def delete():
+    global resp
+    global ivs
+    global keys
+    global aes_key
+
+    # create unencrypted delete message --> this will fail on default strongswan apparently
+    p_delete = ISAKMP_payload_Delete(SPIsize=16, SPI=[(cookie_i+cookie_r), (cookie_i+cookie_r)])
+    print(f"delete: {hexify(raw(p_delete))}")
+
+    p = None
+
+    # check if SA has been established yet:
+    if aes_key == b"": # no - send in plain
+        p = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=12, exch_type=5, id=0)/p_delete
+    else: # yes encrypt
+
+        # p = ISAKMP()/ISAKMP_payload_Hash/ISAKMP_payload_Delete
+        # keys
+        cur_key_dict = keys.get_latest_key()
+        m_id = (7777).to_bytes(4, 'big') # random  --> local!!!
+        print(f"id: {int.from_bytes(m_id, 'big')}")
+
+        # create unencrypted hash packet
+        # HASH(1) = prf(SKEYID_a, M-ID | N/D)
+        prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id + raw(p_delete), SHA1)
+        hash_data = prf_HASH.digest()
+        print(f"hash: {hexify(hash_data)}")
+
+        payload_plain = ISAKMP_payload_Hash(length=24, load=hash_data)/p_delete
+
+        print(f"payload plain: {hexify(raw(payload_plain))}")
+        payload_plain.show()
+
+        # iv for encryption: HASH(last recved encrypted block | m_id)
+        iv = b""
+        if int.from_bytes(m_id, 'big') in ivs:
+            iv = ivs[int.from_bytes(m_id, 'big')]
+        else:
+            iv = ivs[0]
+        print(f"last block {hexify(iv)}")
+        print(f"m_id: {m_id}")
+        print(f"iv old: {hexify(iv)}")
+
+        h = SHA1.new(iv + m_id)
+        iv_new = h.digest()[:16]
+
+        print(f"new iv len: {len(iv_new)}")
+        print(f"new iv: {hexify(iv_new)}") # correct (if first message)
+
+        cipher = AES.new(aes_key, AES.MODE_CBC, iv_new)
+        payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
+        print(f"payload len: {len(payload_enc)}")
+        print(f"payload: {hexify(payload_enc)}")
+
+        ivs[int.from_bytes(m_id, 'big')] = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+        print(f"iv_new len: {len(ivs[int.from_bytes(m_id, 'big')])}")
+        print(f"{hexify(ivs[int.from_bytes(m_id, 'big')])}")
+        p = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=92)/Raw(load=payload_enc)
+
+    # Since we requested delete --> delete our local ivs. Note: this is an advisary to the server that SAs were deleted, 
+    # client does not care if server ignores it, communication will simply fail in that case
+    # TODO: a seperate reset function
+    ivs = {}
+    keys = Keys()
+    aes_key = b""
+    
     resp = conn.send_data(p)
 
-# TODO: fix this!
+# stub to test for received asynchronous serverside delete
 def recv_delete():
     global resp
-    iv = b"" # TODO remove
-
-    print(f"aes_key: {hexify(aes_key)}")
-    print(f"iv: {hexify(iv)}")
-    print(f"sa block: {hexify(sa_body_init)}")
-
 
     # test for informational -> manually close connection
-    resp = conn.send_recv_data(b"test")
+    resp = conn.recv_data()
     decrypt_info()
     
 # Testcases
-all = [sa_main, sa_main_fail, key_ex_main, authenticate, recv_delete, sa_quick, ack_quick, informational]
+all = [sa_main, sa_main_fail, key_ex_main, authenticate, recv_delete, sa_quick, ack_quick, delete]
 tc1 = [sa_main, sa_main, sa_main, sa_main, sa_main] # each considered a retransmission as the id and cookies are the same (id must be 0)
 tc2 = [sa_main, sa_main_fail, sa_main, key_ex_main, decrypt_info] # key_ex must follow an established transform or it will fail
 tc3 = [sa_main, key_ex_main, sa_main, decrypt_info] # shows that the packets must arrive in the expected order here, or there will be an error and the server resets
@@ -536,11 +546,15 @@ tc5 = [sa_main, key_ex_main, authenticate, authenticate] # once connection is es
 tc6 = [sa_main, key_ex_main, authenticate, delete] # works
 tc7 = [sa_main, key_ex_main, authenticate, delete, sa_main] # works
 tc8 = [sa_main, key_ex_main, authenticate, sa_quick] # works
-tc9 = [sa_main, key_ex_main, authenticate, delete, sa_main, delete] # fails
+tc9 = [sa_main, key_ex_main, authenticate, delete, sa_main, delete] # works
 tc10 = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, delete] # works
 tc11 = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, delete] # works
-full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, informational]
-test = tc11
+tc12 = [sa_main, key_ex_main, authenticate, recv_delete, sa_main] # check if recv delete still works after iv handling changes
+tc13 = [sa_main, key_ex_main, authenticate, delete, sa_main, key_ex_main, authenticate, delete, sa_main, delete] # multiple deletes
+tc14 = [sa_main, key_ex_main, authenticate] # works]
+
+full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, delete]
+test = full
 
 for t in test:
     if type(t) is str:
