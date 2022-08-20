@@ -10,6 +10,7 @@ from Connector import Connector
 from Keys import *
 from scapy.all import raw
 from scapy.packet import Raw
+import random
 
 state = 'DISCONNECTED'
 src_ip = "10.0.2.2"  # initiator
@@ -29,14 +30,20 @@ ivs = {} # keep ivs (and technically also enc key, but for now only iv) per m_id
 m_id = b""
 nonce_i = b"" # without payload header
 nonce_r = b""
+id_list = [] # to keep track of all active ids
+# TODO: make some nice structure / class to hold all the needed infos
 
 # function to parse packet for the server state
 # returns True if notification parsing was successful
+# TODO: decrypt encrypted phase 1 messages (rekey in key exchange f.e. --> tc15)
 def parse_notification(resp):
     try:
         if resp[ISAKMP].exch_type != ISAKMP_exchange_type.index("info"): #not an info message
             print(f"Error, package type {ISAKMP_exchange_type[resp[ISAKMP].exch_type]} not implemented yet.")
             return False
+        if is_encypted(resp): # TODO: restructure this to not need this case
+            resp = decrypt_info()
+            return True
         current = resp[ISAKMP]
         while current.next_payload != ISAKMP_payload_type.index("None"):
             if current.next_payload == ISAKMP_payload_type.index("Notification"): # Notification payload
@@ -295,11 +302,17 @@ def sa_quick():
     global m_id
     global nonce_i
     global nonce_r
+
     # keys
     cur_key_dict = keys.get_latest_key()
 
-    # TODO: generate message ID randomly:
-    m_id = (3244232844).to_bytes(4, 'big')
+    # generate unique message ID randomly:
+    while True:
+        r = random.randint(0, 4294967295)
+        if r not in id_list:
+            m_id = (r).to_bytes(4, 'big')
+            id_list.append(r)
+            break
 
     # esp attributes --> works now, spi must be fully filled. length 40 is needed, so that padding is correct
     # TODO: check that spi is correct and can really be chosen freely
@@ -421,7 +434,7 @@ def decrypt_info():
     info_mesg = resp 
     show(info_mesg)
     
-    assert(is_encypted(resp))
+    assert(is_encypted(resp))        
 
     # iv for encryption: HASH(last recved encrypted block | m_id)
     m_id = (info_mesg[ISAKMP].id).to_bytes(4, 'big')
@@ -478,7 +491,7 @@ def delete():
         # p = ISAKMP()/ISAKMP_payload_Hash/ISAKMP_payload_Delete
         # keys
         cur_key_dict = keys.get_latest_key()
-        m_id = (7777).to_bytes(4, 'big') # random  --> local!!!
+        m_id = (7777).to_bytes(4, 'big') # random  --> does not really matter that it is reused here, since we clear everything on delete anyways
         print(f"id: {int.from_bytes(m_id, 'big')}")
 
         # create unencrypted hash packet
@@ -534,6 +547,13 @@ def recv_delete():
     # test for informational -> manually close connection
     resp = conn.recv_data()
     decrypt_info()
+
+# qick mode rekey
+def rekey():
+    if aes_key == b"":
+        pass # we do not rekey in main mode (TODO: maybe try this later, but definetly does not work on strongswan)
+    else:
+        sa_quick()
     
 # Testcases
 all = [sa_main, sa_main_fail, key_ex_main, authenticate, recv_delete, sa_quick, ack_quick, delete]
@@ -551,10 +571,11 @@ tc10 = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, delete] # w
 tc11 = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, delete] # works
 tc12 = [sa_main, key_ex_main, authenticate, recv_delete, sa_main] # check if recv delete still works after iv handling changes
 tc13 = [sa_main, key_ex_main, authenticate, delete, sa_main, key_ex_main, authenticate, delete, sa_main, delete] # multiple deletes
-tc14 = [sa_main, key_ex_main, authenticate] # works]
+tc14 = [sa_main, key_ex_main, authenticate, sa_quick, ack_quick, rekey, delete] # resending sa_quick triggers a rekeying
+tc15 = [sa_main, key_ex_main, key_ex_main] # does not accept second key_ex as it is waiting for an encrypted auth message
 
 full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, delete]
-test = full
+test = tc14
 
 for t in test:
     if type(t) is str:
