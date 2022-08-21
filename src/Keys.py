@@ -1,5 +1,6 @@
 from collections import deque
 
+# For testing backwards compatibility
 class Keys:
     def __init__(self, max_size=3):
         self._keys = deque(maxlen=max_size)
@@ -17,7 +18,8 @@ class Keys:
             return self._keys[index] # TODO check
         return None
 
-def make_key_dict(psk, pub_serv, pub_client, shared, SKEYID, SKEYID_d, SKEYID_a, SKEYID_e, iv, key):
+# for storing in SA
+def make_key_dict(psk, pub_serv, pub_client, shared, SKEYID, SKEYID_d, SKEYID_a, SKEYID_e, key):
     key_dict = {
         "psk" : psk,
         "pub_serv" : pub_serv,
@@ -27,7 +29,6 @@ def make_key_dict(psk, pub_serv, pub_client, shared, SKEYID, SKEYID_d, SKEYID_a,
         "SKEYID_d" : SKEYID_d,
         "SKEYID_a" : SKEYID_a,
         "SKEYID_e" : SKEYID_e,
-        "iv" : iv,
         "key" : key
     }
 

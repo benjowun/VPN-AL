@@ -28,14 +28,16 @@ class IPSEC_IKEv1_SUL(SUL):
             return self.ipsec.sa_quick()
         elif letter == 'ack_quick':
             return self.ipsec.ack_quick()
-        elif letter == 'informational':
-            return self.ipsec.informational()
+        elif letter == 'delete':
+            return self.ipsec.delete()
+        elif letter == 'rekey_quick':
+            return self.ipsec.rekey_quick()
         else:
             pass
         
 
 sul = IPSEC_IKEv1_SUL()
-input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'delete']
+input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'delete', 'rekey_quick']
 
 eq_oracle = RandomWalkEqOracle(input_al, sul, num_steps=2000, reset_after_cex=True, reset_prob=0.15)
 

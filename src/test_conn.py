@@ -35,7 +35,6 @@ id_list = [] # to keep track of all active ids
 
 # function to parse packet for the server state
 # returns True if notification parsing was successful
-# TODO: decrypt encrypted phase 1 messages (rekey in key exchange f.e. --> tc15)
 def parse_notification(resp):
     try:
         if resp[ISAKMP].exch_type != ISAKMP_exchange_type.index("info"): #not an info message
@@ -218,7 +217,7 @@ def key_ex_main():
         print(f"iv len: {len(ivs[0])}")
         print(f"iv: {ivs[0]}")
 
-        cur_key_dict = make_key_dict(psk=PSK, pub_client=public_key, pub_serv=public_key_server, shared=shared_key, SKEYID=SKEYID, SKEYID_d=SKEYID_d, SKEYID_a=SKEYID_a, SKEYID_e=SKEYID_e, iv=ivs, key=aes_key)
+        cur_key_dict = make_key_dict(psk=PSK, pub_client=public_key, pub_serv=public_key_server, shared=shared_key, SKEYID=SKEYID, SKEYID_d=SKEYID_d, SKEYID_a=SKEYID_a, SKEYID_e=SKEYID_e, key=aes_key)
         keys.new_key(cur_key_dict)
         # return 'CONNECTING_KEYED'
     elif parse_notification(resp):
@@ -314,9 +313,11 @@ def sa_quick():
             id_list.append(r)
             break
 
+    spi = (random.randint(0, 4294967295)).to_bytes(4, 'big')
+
     # esp attributes --> works now, spi must be fully filled. length 40 is needed, so that padding is correct
-    # TODO: check that spi is correct and can really be chosen freely
-    sa_body_quick = ISAKMP_payload_SA(next_payload=10, length=52, prop=ISAKMP_payload_Proposal(length=40, proto=3, SPIsize=4, trans_nb=1, SPI=b"\xcf\x64\x5a\x13", trans=ISAKMP_payload_Transform(length=28, num=1, id=12, transforms=[('KeyLengthESP', 256), ('AuthenticationESP', 'HMAC-SHA'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)])))
+    # TODO: check that spi is correct and can really be chosen freely --> try out creating multiple SAs using different SPI!!!!
+    sa_body_quick = ISAKMP_payload_SA(next_payload=10, length=52, prop=ISAKMP_payload_Proposal(length=40, proto=3, SPIsize=4, trans_nb=1, SPI=spi, trans=ISAKMP_payload_Transform(length=28, num=1, id=12, transforms=[('KeyLengthESP', 256), ('AuthenticationESP', 'HMAC-SHA'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)])))
 
     # Nonce (TODO: generate one / fuzz one?):
     nonce = b"\x55\x0d\xff\x82\xf4\xa7\x7c\x27\x2a\x94\x96\x2d\x1a\x5b\xff\x35\xe4\x4a\x6c\xfd\xc2\x57\xf8\xcb\xe4\x0b\xd8\xb2\x14\xba\xbb\xe0"
@@ -349,7 +350,7 @@ def sa_quick():
     print(f"iv quick: {hexify(iv_new)}")
 
     # encrypt
-    cipher = AES.new(aes_key, AES.MODE_CBC, iv_new) # TODO: check?
+    cipher = AES.new(aes_key, AES.MODE_CBC, iv_new)
     payload_quick_enc = cipher.encrypt(pad(raw(policy_neg_quick_raw), AES.block_size))
     print(f"payload len: {len(payload_quick_enc)}")
     print(f"payload: {hexify(payload_quick_enc)}")
@@ -554,6 +555,7 @@ def rekey():
         pass # we do not rekey in main mode (TODO: maybe try this later, but definetly does not work on strongswan)
     else:
         sa_quick()
+        ack_quick()
     
 # Testcases
 all = [sa_main, sa_main_fail, key_ex_main, authenticate, recv_delete, sa_quick, ack_quick, delete]
@@ -573,9 +575,11 @@ tc12 = [sa_main, key_ex_main, authenticate, recv_delete, sa_main] # check if rec
 tc13 = [sa_main, key_ex_main, authenticate, delete, sa_main, key_ex_main, authenticate, delete, sa_main, delete] # multiple deletes
 tc14 = [sa_main, key_ex_main, authenticate, sa_quick, ack_quick, rekey, delete] # resending sa_quick triggers a rekeying
 tc15 = [sa_main, key_ex_main, key_ex_main] # does not accept second key_ex as it is waiting for an encrypted auth message
+tc16 = [sa_main, key_ex_main, authenticate, sa_quick, sa_quick, sa_quick, sa_quick, ack_quick, delete] # one open and one established
+tc17 = [sa_main, key_ex_main, authenticate, sa_quick, ack_quick, sa_quick, ack_quick, sa_quick, sa_quick, ack_quick, delete] # rekeyed
 
-full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, delete]
-test = tc14
+full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, rekey, delete]
+test = full
 
 for t in test:
     if type(t) is str:
