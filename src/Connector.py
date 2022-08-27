@@ -8,6 +8,7 @@ class Connector:
         self._dest = (dest_ip, 500)
 
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._sock.settimeout(0.5)
         server_address = ("10.0.2.2", 500)
         self._sock.bind(server_address)
 
@@ -17,15 +18,20 @@ class Connector:
     # takes a Scapy packet as data
     # TODO: error handling
     def send_recv_data(self, data):
-        self._sock.sendto(self.scapy_isakmp_to_bytes(data), self._dest)
-        data, address = self._sock.recvfrom(1200)
-        print(f"Received {len(data)} bytes from {address}")
-        return self.bytes_to_scapy_isakmp(data)
+        try:
+            self._sock.sendto(self.scapy_isakmp_to_bytes(data), self._dest)
+            data, address = self._sock.recvfrom(1200)
+            #print(f"Received {len(data)} bytes from {address}")
+            return self.bytes_to_scapy_isakmp(data)
+        except:
+            return None
+
+
 
     def send_recv_raw_data(self, data):
         self._sock.sendto(self.scapy_isakmp_to_bytes(data), self._dest)
         data, address = self._sock.recvfrom(1200)
-        print(f"Received {len(data)} bytes from {address}")
+        #print(f"Received {len(data)} bytes from {address}")
         return data
 
     def scapy_isakmp_to_bytes(self, p : Packet):  
@@ -36,7 +42,7 @@ class Connector:
 
     def recv_data(self):
         data, address = self._sock.recvfrom(1200)
-        print(f"Received {len(data)} bytes from {address}")
+        #print(f"Received {len(data)} bytes from {address}")
         return self.bytes_to_scapy_isakmp(data)
 
     def send_data(self, data):

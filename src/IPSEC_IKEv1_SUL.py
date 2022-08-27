@@ -8,16 +8,20 @@ from IPSEC_Mapper import IPSEC_Mapper
 class IPSEC_IKEv1_SUL(SUL):
     def __init__(self):
         super().__init__()
-        self.ipsec = IPSEC_Mapper() # TODO
+        self.ipsec = IPSEC_Mapper()
 
     def pre(self):
-        self.ipsec.state = 'DISCONNECTED'
+        #self.ipsec.delete()
+        pass
 
     def post(self):
         pass
+        #self.ipsec.delete()
     
     # map to concrete implementation
     def step(self, letter):
+        print(letter)
+        #print(self.ipsec.print_info())
         if letter == 'sa_main':
             return self.ipsec.sa_main()
         elif letter == 'key_ex_main':

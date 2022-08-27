@@ -31,6 +31,8 @@ m_id = b""
 nonce_i = b"" # without payload header
 nonce_r = b""
 id_list = [] # to keep track of all active ids
+active_spi_quick = b""
+authenticated = False
 # TODO: make some nice structure / class to hold all the needed infos
 
 # function to parse packet for the server state
@@ -231,6 +233,7 @@ def key_ex_main():
 def authenticate():
     global resp
     global ivs
+    global authenticated
 
     # keys
     cur_key_dict = keys.get_latest_key()
@@ -292,6 +295,7 @@ def authenticate():
     hash_data = prf_HASH_r.digest()
     if hash_data == p[ISAKMP_payload_Hash].load:
         print("OK")
+        authenticated = True
     else:
         print(f"recved: {p[ISAKMP_payload_Hash].load}\nshould be: {hash_data}")
 
@@ -301,6 +305,7 @@ def sa_quick():
     global m_id
     global nonce_i
     global nonce_r
+    global active_spi_quick
 
     # keys
     cur_key_dict = keys.get_latest_key()
@@ -314,6 +319,7 @@ def sa_quick():
             break
 
     spi = (random.randint(0, 4294967295)).to_bytes(4, 'big')
+    active_spi_quick = spi
 
     # esp attributes --> works now, spi must be fully filled. length 40 is needed, so that padding is correct
     # TODO: check that spi is correct and can really be chosen freely --> try out creating multiple SAs using different SPI!!!!
@@ -479,44 +485,92 @@ def delete():
     global aes_key
 
     # create unencrypted delete message --> this will fail on default strongswan apparently
-    p_delete = ISAKMP_payload_Delete(SPIsize=16, SPI=[(cookie_i+cookie_r), (cookie_i+cookie_r)])
-    print(f"delete: {hexify(raw(p_delete))}")
-
-    p = None
-
     # check if SA has been established yet:
-    if aes_key == b"": # no - send in plain
-        p = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=12, exch_type=5, id=0)/p_delete
+    if aes_key == b"": # no - send in plain # TODO: does not really seem to work yet
+        exit(-1)
+        # p = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=12, exch_type=5, id=0)/p_delete1
+        # p = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=12, exch_type=5, id=0)/p_delete2
     else: # yes encrypt
-
-        # p = ISAKMP()/ISAKMP_payload_Hash/ISAKMP_payload_Delete
-        # keys
         cur_key_dict = keys.get_latest_key()
-        m_id = (7777).to_bytes(4, 'big') # random  --> does not really matter that it is reused here, since we clear everything on delete anyways
-        print(f"id: {int.from_bytes(m_id, 'big')}")
+
+        if active_spi_quick != b"": # if ipsec conn is up, cleanly delete it as well
+            ## first packet: ipsec
+            # p = ISAKMP()/ISAKMP_payload_Hash/ISAKMP_payload_Delete
+            # keys
+            p_delete1 = ISAKMP_payload_Delete(ProtoID=3, SPIsize=4, SPI=[active_spi_quick])
+            print(f"delete1 (ipsec): {hexify(raw(p_delete1))}")
+
+            m_id1 = (7777).to_bytes(4, 'big') # random  --> does not really matter that it is reused here, since we clear everything on delete anyways
+            print(f"id: {int.from_bytes(m_id1, 'big')}")
+
+            # create unencrypted hash packet
+            # HASH(1) = prf(SKEYID_a, M-ID | N/D)
+            prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id1 + raw(p_delete1), SHA1)
+            hash_data = prf_HASH.digest()
+            print(f"hash: {hexify(hash_data)}")
+
+            payload_plain = ISAKMP_payload_Hash(length=24, load=hash_data)/p_delete1
+
+            print(f"payload plain: {hexify(raw(payload_plain))}")
+            payload_plain.show()
+
+            # iv for encryption: HASH(last recved encrypted block | m_id)
+            iv = b""
+            if int.from_bytes(m_id1, 'big') in ivs:
+                iv = ivs[int.from_bytes(m_id1, 'big')]
+            else:
+                iv = ivs[0]
+            print(f"last block {hexify(iv)}")
+            print(f"m_id1: {m_id1}")
+            print(f"iv old: {hexify(iv)}")
+
+            h = SHA1.new(iv + m_id1)
+            iv_new = h.digest()[:16]
+
+            print(f"new iv len: {len(iv_new)}")
+            print(f"new iv: {hexify(iv_new)}") # correct (if first message)
+
+            cipher = AES.new(aes_key, AES.MODE_CBC, iv_new)
+            payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
+            print(f"payload len: {len(payload_enc)}")
+            print(f"payload: {hexify(payload_enc)}")
+
+            ivs[int.from_bytes(m_id1, 'big')] = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+            print(f"iv_new len: {len(ivs[int.from_bytes(m_id1, 'big')])}")
+            print(f"{hexify(ivs[int.from_bytes(m_id1, 'big')])}")
+            p1 = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id1, 'big'), length=76)/Raw(load=payload_enc)
+            resp = conn.send_data(p1)
+
+
+        ## Second packet: isakmp
+        p_delete2 = ISAKMP_payload_Delete(SPIsize=16, SPI=[(cookie_i+cookie_r), (cookie_i+cookie_r)])
+        print(f"delete2 (isakmp): {hexify(raw(p_delete2))}")
+
+        m_id2 = (8888).to_bytes(4, 'big') # random  --> does not really matter that it is reused here, since we clear everything on delete anyways
+        print(f"id2: {int.from_bytes(m_id2, 'big')}")
 
         # create unencrypted hash packet
         # HASH(1) = prf(SKEYID_a, M-ID | N/D)
-        prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id + raw(p_delete), SHA1)
+        prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id2 + raw(p_delete2), SHA1)
         hash_data = prf_HASH.digest()
         print(f"hash: {hexify(hash_data)}")
 
-        payload_plain = ISAKMP_payload_Hash(length=24, load=hash_data)/p_delete
+        payload_plain = ISAKMP_payload_Hash(length=24, load=hash_data)/p_delete2
 
         print(f"payload plain: {hexify(raw(payload_plain))}")
         payload_plain.show()
 
         # iv for encryption: HASH(last recved encrypted block | m_id)
         iv = b""
-        if int.from_bytes(m_id, 'big') in ivs:
-            iv = ivs[int.from_bytes(m_id, 'big')]
+        if int.from_bytes(m_id2, 'big') in ivs:
+            iv = ivs[int.from_bytes(m_id2, 'big')]
         else:
             iv = ivs[0]
         print(f"last block {hexify(iv)}")
-        print(f"m_id: {m_id}")
+        print(f"m_id2: {m_id2}")
         print(f"iv old: {hexify(iv)}")
 
-        h = SHA1.new(iv + m_id)
+        h = SHA1.new(iv + m_id2)
         iv_new = h.digest()[:16]
 
         print(f"new iv len: {len(iv_new)}")
@@ -527,10 +581,11 @@ def delete():
         print(f"payload len: {len(payload_enc)}")
         print(f"payload: {hexify(payload_enc)}")
 
-        ivs[int.from_bytes(m_id, 'big')] = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
-        print(f"iv_new len: {len(ivs[int.from_bytes(m_id, 'big')])}")
-        print(f"{hexify(ivs[int.from_bytes(m_id, 'big')])}")
-        p = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=92)/Raw(load=payload_enc)
+        ivs[int.from_bytes(m_id2, 'big')] = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+        print(f"iv_new len: {len(ivs[int.from_bytes(m_id2, 'big')])}")
+        print(f"{hexify(ivs[int.from_bytes(m_id2, 'big')])}")
+        p2 = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id2, 'big'), length=92)/Raw(load=payload_enc)
+
 
     # Since we requested delete --> delete our local ivs. Note: this is an advisary to the server that SAs were deleted, 
     # client does not care if server ignores it, communication will simply fail in that case
@@ -539,7 +594,8 @@ def delete():
     keys = Keys()
     aes_key = b""
     
-    resp = conn.send_data(p)
+    
+    resp = conn.send_data(p2)
 
 # stub to test for received asynchronous serverside delete
 def recv_delete():
@@ -551,10 +607,12 @@ def recv_delete():
 
 # qick mode rekey
 def rekey():
-    if aes_key == b"":
+    if aes_key == b"" or not authenticated: # TODO: should only work on established sa
         pass # we do not rekey in main mode (TODO: maybe try this later, but definetly does not work on strongswan)
     else:
+        print("REKEY - sa")
         sa_quick()
+        print("REKEY - ack")
         ack_quick()
     
 # Testcases
@@ -577,9 +635,11 @@ tc14 = [sa_main, key_ex_main, authenticate, sa_quick, ack_quick, rekey, delete] 
 tc15 = [sa_main, key_ex_main, key_ex_main] # does not accept second key_ex as it is waiting for an encrypted auth message
 tc16 = [sa_main, key_ex_main, authenticate, sa_quick, sa_quick, sa_quick, sa_quick, ack_quick, delete] # one open and one established
 tc17 = [sa_main, key_ex_main, authenticate, sa_quick, ack_quick, sa_quick, ack_quick, sa_quick, sa_quick, ack_quick, delete] # rekeyed
+tc18 = [sa_main, key_ex_main, rekey, sa_quick, rekey, ack_quick, rekey]
+tc19 = [sa_main, key_ex_main, authenticate, rekey, sa_quick, rekey, ack_quick, rekey, delete]
 
 full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, rekey, delete]
-test = full
+test = tc19
 
 for t in test:
     if type(t) is str:

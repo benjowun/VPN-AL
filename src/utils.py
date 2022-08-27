@@ -18,7 +18,7 @@ def show(packet):
 
 # shows if a returned packet is encrypted
 def is_encypted(packet):
-    print(f"Flags: {packet[ISAKMP].flags}")
+    #print(f"Flags: {packet[ISAKMP].flags}")
     return packet[ISAKMP].flags == 1 # TODO: ensure it also works for other combinations (bit set)
 
 # returns a printable representation of a bytearray
