@@ -111,13 +111,8 @@ def sa_main():
         print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
         # return 'DISCONNECTED' # ? Probably?
 
-
-def sa_main_fail():
-    global resp
-    global cookie_i
-    global cookie_r
-    global sa_body_init
-    
+# does not affect state
+def sa_main_fail(): 
     # Policy negotiation, ID must be 0 here
     cookie_i = b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37"
     sa_body_init = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(trans_nb=1, trans=ISAKMP_payload_Transform(num=1, transforms=[('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)])))
@@ -126,28 +121,7 @@ def sa_main_fail():
     policy_neg_vendors = ISAKMP(init_cookie=b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37", next_payload=1, exch_type=2)/ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(trans_nb=1, trans=ISAKMP_payload_Transform(num=1, transforms=[('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)])))/ISAKMP_payload_VendorID(next_payload=13, load=b"\x09\x00\x26\x89\xdf\xd6\xb7\x12")/ISAKMP_payload_VendorID(next_payload=13, load=b"\xaf\xca\xd7\x13\x68\xa1\xf1\xc9\x6b\x86\x96\xfc\x77\x57\x01\x00")/ISAKMP_payload_VendorID(next_payload=13, load=b"\x40\x48\xb7\xd5\x6e\xbc\xe8\x85\x25\xe7\xde\x7f\x00\xd6\xc2\xd3\x80\x00\x00\x00")/ISAKMP_payload_VendorID(next_payload=13, load=b"\x4a\x13\x1c\x81\x07\x03\x58\x45\x5c\x57\x28\xf2\x0e\x95\x45\x2f")/ISAKMP_payload_VendorID(load=b"\x90\xcb\x80\x91\x3e\xbb\x69\x6e\x08\x63\x81\xb5\xec\x42\x7b\x1f")
 
     msg = policy_neg_no_match
-    resp = conn.send_recv_data(msg)
-
-    show(resp)
-    print(f"exch type: {resp[ISAKMP].exch_type}")
-
-    # save SA_body for later use (the important fields)
-    sa_body_init = raw(sa_body_init)[4:]
-
-    # example parse resp
-    cookie_r = resp[ISAKMP].resp_cookie
-    if resp[ISAKMP].next_payload == ISAKMP_payload_type.index("SA") and ISAKMP_payload_Proposal in resp and ISAKMP_payload_Transform in resp:
-        agreed_transform = resp[ISAKMP_payload_Transform].transforms
-        print(f"Agreed upon transforms: {agreed_transform}")
-        print(f"Auth: {get_transform_value(agreed_transform, 'Authentication')}")
-        # TODO: store agreed transforms somewhere?
-        # return 'CONNECTING'
-    elif parse_notification(resp):
-        # return 'DISCONNECTED' # TODO: is this an ok return type?
-        pass
-    else:
-        print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
-        # return 'DISCONNECTED' # ? Probably?
+    temp = conn.send_recv_data(msg)
 
 def key_ex_main():
     global resp
@@ -341,6 +315,109 @@ def sa_quick():
     # HASH(1) = prf(SKEYID_a, M-ID | SA | Ni [ | KE ] [ | IDci | IDcr )
     prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id + raw(sa_body_quick) + raw(nonce_quick) + raw(id_src_quick) + raw(id_dst_quick), SHA1)
     hash_data = prf_HASH.digest()
+    print(f"hash quick: {hexify(hash_data)}")
+    hash_quick = ISAKMP_payload_Hash(length=24, load=hash_data)
+
+    # unencrypted but authenticated packet
+    policy_neg_quick_raw = hash_quick/sa_body_quick/nonce_quick/id_src_quick/id_dst_quick
+    show(policy_neg_quick_raw)
+
+    # calc IV (hash of last block and id)
+    print(f"last block {hexify(ivs[0])}")
+    print(f"m_id: {m_id}")
+    h = SHA1.new(ivs[0] + m_id)
+    iv_new = h.digest()[:16]
+    print(f"iv quick: {hexify(iv_new)}")
+
+    # encrypt
+    cipher = AES.new(aes_key, AES.MODE_CBC, iv_new)
+    payload_quick_enc = cipher.encrypt(pad(raw(policy_neg_quick_raw), AES.block_size))
+    print(f"payload len: {len(payload_quick_enc)}")
+    print(f"payload: {hexify(payload_quick_enc)}")
+    print(f"payload plain: {hexify(raw(policy_neg_quick_raw))}")
+
+    ivs[int.from_bytes(m_id, 'big')] = payload_quick_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+    print(f"iv_new len: {len(ivs[int.from_bytes(m_id, 'big')])}")
+    print(f"iv_new: {hexify(ivs[int.from_bytes(m_id, 'big')])}")
+
+    msg = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=8, exch_type=32, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=188)/Raw(load=payload_quick_enc)
+
+    resp = conn.send_recv_data(msg)
+    print("Encrypted resp:")
+    show(resp)
+
+    # TODO: error handling
+
+    print("Decrypted resp:")
+    cipher = AES.new(aes_key, AES.MODE_CBC, ivs[int.from_bytes(m_id, 'big')])
+    ivs[int.from_bytes(m_id, 'big')] = (raw(resp[Raw])[-AES.block_size:])
+    print(f"iv new: {hexify(ivs[int.from_bytes(m_id, 'big')])}")
+    decrypted = cipher.decrypt(raw(resp[Raw]))
+    print(f"data: {hexify(decrypted)}")
+    SA_recv = ISAKMP_payload_SA(bytes(decrypted[24:76]))
+    hash_recv = ISAKMP_payload_Hash(bytes(decrypted[:24]))
+    nonce_recv = ISAKMP_payload_Nonce(bytes(decrypted[76:112]))
+    id_recv_1 = ISAKMP_payload_ID(bytes(decrypted[112:128]))
+    id_recv_2 = ISAKMP_payload_ID(bytes(decrypted[128:144]))
+
+    p = hash_recv/SA_recv/nonce_recv/id_recv_1/id_recv_2
+    show(p)
+
+    # parse response
+    print(f"Verifiying resceived hash: {hexify(p[ISAKMP_payload_Hash].load)}...")
+    # HASH(2) = prf(SKEYID_a, M-ID | Ni_b | SA | Nr [ | KE ] [ | IDci | IDcr )
+    
+    print(f"Nonce recv: {hexify(raw(nonce_recv))}")
+    prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id + raw(nonce_quick)[4:36] + raw(SA_recv) + raw(nonce_recv) + raw(id_recv_1) + raw(id_recv_2), SHA1)
+    hash_data = prf_HASH.digest()
+    if hash_data == hash_recv.load:
+        print("SA_quick server hash verified - sending ACK")
+        nonce_i = raw(nonce_quick)[4:36]
+        nonce_r = raw(nonce_recv)[4:36]
+    else:
+        print(f"hash calculated: {hexify(hash_data)}")
+
+def sa_quick_fail():
+    global ivs
+    global m_id
+    global nonce_i
+    global nonce_r
+    global active_spi_quick
+
+    # keys
+    cur_key_dict = keys.get_latest_key()
+
+    # generate unique message ID randomly:
+    while True:
+        r = random.randint(0, 4294967295)
+        if r not in id_list:
+            m_id = (r).to_bytes(4, 'big')
+            id_list.append(r)
+            break
+
+    spi = (random.randint(0, 4294967295)).to_bytes(4, 'big')
+    active_spi_quick = spi
+
+    # esp attributes --> works now, spi must be fully filled. length 40 is needed, so that padding is correct
+    # TODO: check that spi is correct and can really be chosen freely --> try out creating multiple SAs using different SPI!!!!
+    sa_body_quick = ISAKMP_payload_SA(next_payload=10, length=52, prop=ISAKMP_payload_Proposal(length=40, proto=3, SPIsize=4, trans_nb=1, SPI=spi, trans=ISAKMP_payload_Transform(length=28, num=1, id=12, transforms=[('KeyLengthESP', 256), ('AuthenticationESP', 'HMAC-SHA'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)])))
+
+    # Nonce (TODO: generate one / fuzz one?):
+    nonce = b"\x55\x0d\xff\x82\xf4\xa7\x7c\x27\x2a\x94\x96\x2d\x1a\x5b\xff\x35\xe4\x4a\x6c\xfd\xc2\x57\xf8\xcb\xe4\x0b\xd8\xb2\x14\xba\xbb\xe0"
+    nonce_quick = ISAKMP_payload_Nonce(next_payload=5, length=36, load=nonce)
+
+    # generate identifications
+    # should both be (10.0.2.0)
+    address = "10.0.2.0"
+    mask = b"\xff\xff\xff\x00" # 255.255.255.0
+    id_src_quick = ISAKMP_payload_ID(next_payload=5, length=16, IDtype="IPv4_ADDR_SUBNET", IdentData=address, load=mask)
+    id_dst_quick = ISAKMP_payload_ID(length=16, IDtype="IPv4_ADDR_SUBNET", IdentData=address, load=mask)
+
+
+    # generate hash (for now without KE):
+    # HASH(1) = prf(SKEYID_a, M-ID | SA | Ni [ | KE ] [ | IDci | IDcr )
+    prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id + raw(sa_body_quick) + b"\xff" + raw(nonce_quick) + raw(id_src_quick) + raw(id_dst_quick), SHA1)
+    hash_data = prf_HASH.digest() # THIS SHOULD BE AN INVLAID HASH NOW CAUSE OF + xff above
     print(f"hash quick: {hexify(hash_data)}")
     hash_quick = ISAKMP_payload_Hash(length=24, load=hash_data)
 
@@ -605,6 +682,10 @@ def recv_delete():
     resp = conn.recv_data()
     decrypt_info()
 
+def test_notify():
+    p_delete = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, exch_type=5)/ISAKMP_payload_Notification(not_type=11)
+    resp = conn.send_data(p_delete)
+
 # qick mode rekey
 def rekey():
     if aes_key == b"" or not authenticated: # TODO: should only work on established sa
@@ -637,9 +718,10 @@ tc16 = [sa_main, key_ex_main, authenticate, sa_quick, sa_quick, sa_quick, sa_qui
 tc17 = [sa_main, key_ex_main, authenticate, sa_quick, ack_quick, sa_quick, ack_quick, sa_quick, sa_quick, ack_quick, delete] # rekeyed
 tc18 = [sa_main, key_ex_main, rekey, sa_quick, rekey, ack_quick, rekey]
 tc19 = [sa_main, key_ex_main, authenticate, rekey, sa_quick, rekey, ack_quick, rekey, delete]
+tc20 = [sa_main, key_ex_main, authenticate, sa_quick_fail]
 
 full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, rekey, delete]
-test = tc19
+test = [sa_main, test_notify]
 
 for t in test:
     if type(t) is str:
