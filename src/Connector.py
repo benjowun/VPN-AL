@@ -3,12 +3,13 @@ from isakmp import *
 from scapy.layers.l2 import Ether
 import socket
 
+# Too low timeouts might fail, 0.5 is already pushing it, to be certain, increase by a bit
 class Connector:
-    def __init__(self, dest_ip, dest_port, local_port):
+    def __init__(self, dest_ip, dest_port, local_port, timeout=0.5):
         self._dest = (dest_ip, 500)
 
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._sock.settimeout(0.5)
+        self._sock.settimeout(timeout)
         server_address = ("10.0.2.2", 500)
         self._sock.bind(server_address)
 
@@ -21,7 +22,7 @@ class Connector:
         try:
             self._sock.sendto(self.scapy_isakmp_to_bytes(data), self._dest)
             data, address = self._sock.recvfrom(1200)
-            #print(f"Received {len(data)} bytes from {address}")
+            print(f"Received {len(data)} bytes from {address}")
             return self.bytes_to_scapy_isakmp(data)
         except:
             return None

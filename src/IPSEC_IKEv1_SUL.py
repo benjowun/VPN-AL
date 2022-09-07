@@ -1,5 +1,5 @@
 from aalpy.base import SUL
-from aalpy.oracles import RandomWalkEqOracle
+from aalpy.oracles import RandomWalkEqOracle, StatePrefixEqOracle
 from aalpy.learning_algs import run_Lstar
 from aalpy.utils import visualize_automaton
 
@@ -21,9 +21,10 @@ class IPSEC_IKEv1_SUL(SUL):
         self.ipsec.delete()
         self.ipsec.reset()
         for s in self.logs_run:
-            self.file.write(str(s) + ", ")
+            self.file.write("self." + str(s) + ", ")
         self.file.write("\n")
         self.logs_run = []
+        self.ipsec.print_info()
 
     def post(self):
         pass
@@ -62,16 +63,19 @@ class IPSEC_IKEv1_SUL(SUL):
         #     return self.ipsec.rekey_quick()
         else:
             print("Unexpected Input: " + str(letter))
-            exit(-1)
+            self.ipsec.print_info()
+            return None
+            #exit(-1)
         
 
 sul = IPSEC_IKEv1_SUL()
 input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick'] # removed rekey, as it is essentially just another sa and ack
 
-eq_oracle = RandomWalkEqOracle(input_al, sul, num_steps=2000, reset_after_cex=True, reset_prob=0.15)
+#eq_oracle = RandomWalkEqOracle(input_al, sul, num_steps=2000, reset_after_cex=True, reset_prob=0.15)
+eq_oracle = StatePrefixEqOracle(input_al, sul, walks_per_state=10, walk_len=10)
 
 learned_mqtt= run_Lstar(input_al, sul, eq_oracle=eq_oracle, automaton_type='mealy', cache_and_non_det_check=True,
-                  print_level=2)
+                  print_level=3)
 
 # TODO: is none-det check important?
 

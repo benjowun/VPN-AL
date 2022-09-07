@@ -273,6 +273,50 @@ def authenticate():
     else:
         print(f"recved: {p[ISAKMP_payload_Hash].load}\nshould be: {hash_data}")
 
+def auth_wrong():
+    global resp
+    global ivs
+    global authenticated
+
+    # keys
+    cur_key_dict = keys.get_latest_key()
+
+    # create unencrypted id packet
+    id_plain = ISAKMP_payload_ID(IdentData=src_ip)
+
+    # create unencrypted hash packet
+    # HASH_I = prf(SKEYID, g^xi | g^xr | CKY-I | CKY-R | SAi_b | IDii_b )
+    #   SAi_b is the entire body of the SA payload (minus the ISAKMP
+    #   generic header)-- i.e. the DOI, situation, all proposals and all
+    #   transforms offered by the Initiator.
+    # ISii_b is generic ID payload including ID type, port and protocol (only important fields)
+    SAi_b = raw(sa_body_init)
+    IDii_b = raw(id_plain)[4:] # only need fields after length
+    prf_HASH_i = HMAC.new(cur_key_dict["SKEYID"], cur_key_dict["pub_client"] + cur_key_dict["pub_serv"] + b"\x11" + cookie_i + cookie_r + SAi_b + IDii_b, SHA1)
+    hash_data = prf_HASH_i.digest() 
+    hash_data = hash_data + b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+    print(f"HASH_i len: {len(hash_data)}")
+    print(f"HASH_i: {hexify(hash_data)}")
+
+    payload_plain = id_plain/ISAKMP_payload_Hash(length=24, load=hash_data) # /ISAKMP_payload_Notification(initial contact)
+
+    show(payload_plain)
+
+    cipher = AES.new(aes_key, AES.MODE_CBC, ivs[0])
+    payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
+    print(f"payload len: {len(payload_enc)}")
+    print(f"payload: {hexify(payload_enc)}")
+
+    ivs[0] = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+    print(f"iv_new len: {len(ivs[0])}")
+    print(f"iv_new: {hexify(ivs[0])}")
+
+    auth_mes = ISAKMP(init_cookie=cookie_i, resp_cookie=cookie_r, next_payload=5, exch_type=2, flags=["encryption"])/Raw(load=payload_enc)
+    show(auth_mes)
+    msg = auth_mes
+    resp = conn.send_data(msg)
+
 # TODO: check for INVALID-ID-INFORMATION notifications on invalid IDs
 def sa_quick():
     global ivs
@@ -721,7 +765,7 @@ tc19 = [sa_main, key_ex_main, authenticate, rekey, sa_quick, rekey, ack_quick, r
 tc20 = [sa_main, key_ex_main, authenticate, sa_quick_fail]
 
 full = [sa_main, key_ex_main, authenticate, "recv_delete", sa_quick, ack_quick, rekey, delete]
-test = [sa_main, test_notify]
+test = [sa_main, key_ex_main, authenticate, sa_quick, sa_quick_fail]
 
 for t in test:
     if type(t) is str:
