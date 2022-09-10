@@ -20,31 +20,26 @@
 %
 \begin{document}
 %
-\title{Contribution Title\thanks{Supported by organization x.}}
+\title{Active Automata Learning of an IPsec IKEv1 Server using AALpy}
 %
 %\titlerunning{Abbreviated paper title}
 % If the paper title is too long for the running head, you can set
 % an abbreviated paper title here
 %
-\author{First Author\inst{1}\orcidID{0000-1111-2222-3333} \and
-Second Author\inst{2,3}\orcidID{1111-2222-3333-4444} \and
-Third Author\inst{3}\orcidID{2222--3333-4444-5555}}
+\author{Benjamin Wunderling\inst{1}\orcidID{0000-1111-2222-3333}}
+
 %
-\authorrunning{F. Author et al.}
+\authorrunning{Benjamin Wunderling}
 % First names are abbreviated in the running head.
 % If there are more than two authors, 'et al.' is used.
 %
-\institute{Princeton University, Princeton NJ 08544, USA \and
-Springer Heidelberg, Tiergartenstr. 17, 69121 Heidelberg, Germany
-\email{lncs@springer.com}\\
-\url{http://www.springer.com/gp/computer-science/lncs} \and
-ABC Institute, Rupert-Karls-University Heidelberg, Heidelberg, Germany\\
-\email{\{abc,lncs\}@uni-heidelberg.de}}
+\institute{TU Graz IST, Graz 8010, Austria \\
+\email{benjamin.wunderling@student.tugraz.at}}
 %
 \maketitle              % typeset the header of the contribution
 %
 \begin{abstract}
-Virtual Private Network (VPN) protocols are widely used to create a secure mode of communication between several parties over an insecure channel. A common use-case for VPNs is to secure access to company networks. Therefore errors in VPN software are often severe. IPsec is a VPN protocol that uses the Internet Key Exchange protocol (IKE). IKE has two versions, IKEv1 and the newer IKEv2. While several papers have investigated IPsec-IKEv2 in the context of Automata learning, no such work has been performed for IPsec-IKEv1. In this short paper we describe the IPsec-IKEv1 protocol and show the steps taken to learn the state-machine of an IPsec server. Finally we present our learned model and discuss its potential applications.
+Virtual Private Network (VPN) protocols are widely used to create a secure mode of communication between several parties over an insecure channel. A common use-case for VPNs is to secure access to company networks. Therefore errors in VPN software are often severe. IPsec is a VPN protocol that uses the Internet Key Exchange protocol (IKE). IKE has two versions, IKEv1 and the newer IKEv2. While several papers have investigated IPsec-IKEv2 in the context of Automata learning, no such work has been performed for IPsec-IKEv1. This short paper describes the IPsec-IKEv1 protocol and show the steps taken to learn the state-machine of an IPsec server. We present a learned model and discuss its potential applications for model-based fuzzing and fingerprinting of IPsec implementations.
 
 \keywords{IPsec  \and Automata Learning \and AALpy.}
 \end{abstract}
@@ -56,22 +51,39 @@ Virtual Private Network (VPN) protocols are widely used to create a secure mode 
 VPNs are used to allow secure communication over an insecure channel. The importance of VPN software has increased dramatically since the beginning of the COVID-19 pandemic due to the influx of people working from home \cite{abhijith2020impact}. This makes finding vulnerabilities in VPN software more critical than ever. IPsec is a VPN protocol and most commonly uses the IKE protocol to share authenticated keying material between involved parties. Therefore, IKE and IPsec are sometimes used interchangeably. We will stick to the official nomenclature of using IPsec for the full protocol and IKE for the key exchange only. IKE has two versions, IKEv1 IKEv2, with IKEv2 being the newer and recommended version \cite{nist791491}. However, despite IKEv2 supposedly replacing its predecessor, IKEv1 is still in widespread use today. This is reflected by the company AVM to this day only offering IKEv1 support for their popular Fritzbox routers \cite{avm2022}.
 
 %Problem
-State models of protocol implementations are useful tools in testing. They can for example be used to compare versions and to generate test cases automatically TODO: REFERENCES!. One method of generating these models is to use Automata Learning. TODO: MORE ON AUTOMATA LEARNING 1-2 SENTENCES! Several papers have investigated IPsec-IKEv2 using Automata Learning, however so far none have looked at IKEv1. 
+State models of protocol implementations are useful tools in testing. They can for example be used to detect software versions \cite{pferscher2021fingerprinting}, or generate test cases automatically \cite{pferscher2022fuzzing}. One method of generating such models is to use Active Automata Learning. A notable example of an Active Automata Learning algorithm is the L* algorithm by Angluin \cite{angluin1987learning}. In L*, a teacher queries the System under Learning (SUL) and through its responses can construct an automaton describing the behavior of the SUL. This automaton can then be compared with the SUL, adapting it if they show different behaviors. Several papers have investigated IPsec-IKEv2 using Automata Learning, however so far none have looked at IKEv1. 
 
 % My solution
-We show the process of learning a state model from an example IPsec-IKEv1 server. We use the Active Automata Learning framework AALpy for model learning with a custom python interface between AALpy and the IPsec server.
+We show the process of learning a state model from an example IPsec-IKEv1 server. We use the Active Automata Learning framework AALpy \cite{muvskardin2022aalpy} for L* Automata Learning, with a custom python interface between AALpy and the IPsec server.
 
 % Structure of Thesis
-In this short paper we first go over preliminary information on VPNs and Automata Learning. Then we present the used Active Automata Learning framework TODO: MAYBE ADD THIS TO PRELIMINARIES AS WELL! and discuss related works. In chapter 4 we present our custom interface between AALpy and the IPsec server and discuss design choices as well as implementation difficulties. Finally we present the learned model and discuss its potential applications and further work.
+In this short paper we first go over preliminary information on VPNs and Automata Learning in chapter \ref{chap:2}. In \ref{chap:3} we discuss other related work. In chapter \ref{chap:4} we briefly introduce AALpy and our learning setup. Then we will present our custom interface between AALpy an the IPsec server, discussing design choices and implementation difficulties. Finally we present the learned model and discuss its potential applications and further work in chapters \ref{chap:5} and \ref{chap:6}.
 
 
 
-\section{Preliminaries}
-\section{Related Work} %maybe combine
-\section{IPsec Interface} %or other title, eihter way, decribe design decisions here
-\section{Evaluation}
-\section{Conclusion}
+\section{Preliminaries} \label{chap:2}
+\subsection{Automata Learning}
+% More on Automata Learning, in particular L*
+\subsection{IPsec}
+% More on VPNs, in particular about IPsec
 
+\section{Related Work} \label{chap:3}%maybe combine
+% Discuss related papers (chinese, other similar protocols?)
+
+\section{Learning IPsec} \label{chap:4} %or other title, eihter way, decribe design decisions here
+\subsection{Setup}
+% describe VMs, IPsec server software, configuration etc
+\subsection{AALpy}
+% describe aalpy, its functionality we used and limitations
+\subsection{Our Interface}
+% describe the motivation --> a fuzzable mapper
+% describe key code sections and design choices (key management, etc)
+% describe problems and solutions --> scapy having very limited packets, network packet level debugging, bad ()low-level) documentation (for strongswan), unclear RFC specs (with regards to actual implementations --> the whole encryption stuff). Retransmits.
+
+\section{Evaluation} \label{chap:5}
+% show the learned model, discuss number of states and check if it matches expected behavior
+\section{Conclusion} \label{chap:6}
+% recap and further planned work
 
 \subsection{A Subsection Sample}
 Please note that the first paragraph of a section or subsection is
