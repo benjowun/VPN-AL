@@ -18,6 +18,8 @@
 %\usepackage{color}
 %\renewcommand\UrlFont{\color{blue}\rmfamily}
 %
+\usepackage{tikz, wrapfig}
+
 \begin{document}
 %
 \title{Active Automata Learning of an IPsec IKEv1 Server using AALpy}
@@ -61,28 +63,67 @@ In this short paper we first go over preliminary information on VPNs and Automat
 
 
 
-\section{Preliminaries} \label{chap:2}
+\section{Preliminaries} \label{chap:2} % 1 page
 \subsection{Automata Learning}
 % More on Automata Learning, in particular L*
+Automata Learning refers to methods of learning a state model, or automata, of a system through an algorithm or process. We differentiate between Active and Passive Automata Learning. In Passive Automata Learning (PAL), models are learned based on collected logs or other information describing the behavior of the system under learning (SUL). In contrast, in Active Automata Learning (AAL) the SUL is queried directly. In this short paper, we will focus on AAL and will moving on refer to it as Automata Learning or AAL interchangeably. 
+
+AAL began in 1987 with a paper by Dana Angluin, titled "Learning regular sets from queries and counterexamples"\cite{ANGLUIN198787}. In this seminal paper, Dana introduced the L* algorithm which is still used for learning deterministic automata. L* works using a Minimally Adequate Teacher (MAT) model in which a learner queries a teacher about a SUL. The teacher must be able to answer equivalence and membership queries posed by the learner regarding the SUL. Equivalence queries are used to check if a learned model accurately matches the SUL and membership queries are used to check how the SUL reacts to a particular input. The learner, using the responses to its queries, then updates its model of the SUL. Learned models are commonly represented as Mealy machines, finite-state machines with outputs depending on the current state as well as external inputs. % in actual paper, a full definition will be given of both L* and Mealy machines.
+
 \subsection{IPsec}
 % More on VPNs, in particular about IPsec
+IPsec or IP Security, is a VPN layer 3 protocol used to securely communicate over an insecure channel. It is based on three sub-protocols, IKE, the Authentication Header protocol (AH) and the Encapsulating Security Payload protocol (ESP). IKE is mainly used to handle authentication and to securely exchange and manage keys. Following a successful IKE round, either AH or ESP is used to send packets securely between parties. The main difference between AH and ESP is that AH only ensures the integrity and authenticity of messages while ESP also ensures the confidentiality through encryption.
+Compared to other protocols, IPsec offers a high degree of customizability, allowing it to be fitted for many use-cases. However, in a cryptographic evaluation of the protocol, Niels Ferguson and Bruce Schneier criticized that customizability stating that the biggest weakness of IPsec is its complexity \cite{ferguson1999cryptographic}. To address its main criticism IPsec-IKEv2 was introduced in RFC 7296 to replace IKEv1 \cite{kaufman2014internet}. Regardless, IPsec-IKEv1 is still in wide-spread use to this day, with the largest router producer in Germany AVM still only supporting IKEv1 in their routers \cite{avm2022}. We use IPsec-IKEv1 with ESP and main mode in this short paper and focus on the IKE protocol as it is the most interesting from an AAL and security standpoint. % this part could maybe be moved to the introduction, not sure
 
-\section{Related Work} \label{chap:3}%maybe combine
+\begin{wrapfigure}{1}{0pt}
+	\begin{tikzpicture}[scale=0.7]
+	\draw (-3,0) -- (-3,-9.2) (3,0) -- (3,-9.2);
+	\node at (-3,.3) {Initiator};
+	\node at (3,.3) {Responder};
+	\draw[->] (-3,-1) -- node[midway,above] {ISAKMP SA \{proposals\}} (3,-1);
+	\draw[<-] (-3,-2) -- node[midway,above] {ISAKMP SA \{proposal\}} (3,-2);
+	\draw[->] (-3,-3) -- node[midway,above] {KE $\{pkey_i, nonce_i\}$} (3,-3);
+	\draw[<-] (-3,-4) -- node[midway,above] {KE $\{pkey_r, nonce_r\}$} (3,-4);
+	\draw[->] (-3,-5) -- node[midway,above] {AUTH $\{hash_i\}$} (3,-5);
+	\draw[<-] (-3,-6) -- node[midway,above] {AUTH $\{hash_r\}$} (3,-6);
+	\draw[->] (-3,-7) -- node[midway,above] {IPSEC SA \{proposals\}} (3,-7);
+	\draw[<-] (-3,-8) -- node[midway,above] {IPSEC SA \{proposal\}} (3,-8);
+	\draw[->] (-3,-9) -- node[midway,above] {ACK} (3,-9);
+	\end{tikzpicture}
+	\caption{IKEv1 between two parties}
+	\label{fig:IKEv1}
+\end{wrapfigure}
+
+The IKEv1 protocol works in two main phases, both relying on the Internet Security Association and Key Management Protocol (ISAKMP) protocol. A typical exchange between two parties can be seen in figure \ref{fig:IKEv1}. Assuming two participants, an initiator and a responder, in phase one (Main Mode) the initiator sends a Security Association (SA) to the responder. A SA essentially details important security attributes for a connection like the encryption algorithm and key-size to use, as well as the authentication method and the used hash algorithm. These options are bundled in containers called proposals, with each proposal describing a possible security configuration. While the initiator can send multiple proposals to give the responder more options to choose from, the responder must answer with only one, provided it supports one of the suggested proposals. Next, the two parties perform a Diffie-Hellman key exchange and exchange nonces to generate a shared secret key. This secret key is used as a seed key for all further session keys. Following a successful key exchange, all further messages are encrypted. Finally, both parties exchange hashed authentication material (usually pre-shared keys or certificates) and verify the received hash. If successful, a secure channel is created and is used for phase two communication.
+The shorter phase two (Quick Mode) begins with another SA exchange, this time however the SA describes the security parameters of the ensuing ESP/AH communication. This is followed by a single acknowledge message from the initiator to confirming the agreed upon proposal. After the acknowledgment, all further communication is done via ESP/AH packets. 
+
+
+\section{Related Work} \label{chap:3} % 1/2 page
 % Discuss related papers (chinese, other similar protocols?)
+Model learning other network protocols SSH \cite{fiteruau2017model} (checking), TCP \cite{fiteruau2016combining} (checking) but no fuzzing and wrong protocol
 
-\section{Learning IPsec} \label{chap:4} %or other title, eihter way, decribe design decisions here
-\subsection{Setup}
+OpenVPN \cite{novickis2016protocol} (fuzzing), and \cite{daniel2018inferring} (fuzzing) more similar, but wrong protocol
+
+Chinese paper \cite{guo2019model} (model checking), right protocol, wrong IKE version and no fuzzing.
+
+Our goal: IKEv1 and fuzzing
+
+
+
+
+\section{Learning IPsec} \label{chap:4} %or other title --> method, eihter way, decribe design decisions here ~1.5 pages
+\subsection{Setup} % 1/2 page
 % describe VMs, IPsec server software, configuration etc
-\subsection{AALpy}
+\subsection{AALpy} % half - quarter page
 % describe aalpy, its functionality we used and limitations
-\subsection{Our Interface}
+\subsection{Our Interface} % bit more than a full page
 % describe the motivation --> a fuzzable mapper
 % describe key code sections and design choices (key management, etc)
 % describe problems and solutions --> scapy having very limited packets, network packet level debugging, bad ()low-level) documentation (for strongswan), unclear RFC specs (with regards to actual implementations --> the whole encryption stuff). Retransmits.
 
-\section{Evaluation} \label{chap:5}
+\section{Evaluation} \label{chap:5} % 1.5 pages
 % show the learned model, discuss number of states and check if it matches expected behavior
-\section{Conclusion} \label{chap:6}
+\section{Conclusion} \label{chap:6} % half page
 % recap and further planned work
 
 \subsection{A Subsection Sample}
