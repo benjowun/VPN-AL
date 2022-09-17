@@ -69,14 +69,14 @@ class IPSEC_IKEv1_SUL(SUL):
         
 
 sul = IPSEC_IKEv1_SUL()
-input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick'] # removed rekey, as it is essentially just another sa and ack
+input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
 
 #eq_oracle = RandomWalkEqOracle(input_al, sul, num_steps=2000, reset_after_cex=True, reset_prob=0.15)
 eq_oracle = StatePrefixEqOracle(input_al, sul, walks_per_state=10, walk_len=10)
 
-learned_mqtt= run_Lstar(input_al, sul, eq_oracle=eq_oracle, automaton_type='mealy', cache_and_non_det_check=True,
+learned_ipsec= run_Lstar(input_al, sul, eq_oracle=eq_oracle, automaton_type='mealy', cache_and_non_det_check=True,
                   print_level=3)
 
 # TODO: is none-det check important?
 
-visualize_automaton(learned_mqtt)
+visualize_automaton(learned_ipsec)

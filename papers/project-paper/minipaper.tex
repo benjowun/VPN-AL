@@ -56,7 +56,7 @@ VPNs are used to allow secure communication over an insecure channel. The import
 State models of protocol implementations are useful tools in testing. They can for example be used to detect software versions \cite{pferscher2021fingerprinting}, or generate test cases automatically \cite{pferscher2022fuzzing}. One method of generating such models is to use Active Automata Learning. A notable example of an Active Automata Learning algorithm is the L* algorithm by Angluin \cite{angluin1987learning}. In L*, a teacher queries the System under Learning (SUL) and through its responses can construct an automaton describing the behavior of the SUL. This automaton can then be compared with the SUL, adapting it if they show different behaviors. Several papers have investigated IPsec-IKEv2 using Automata Learning, however so far none have looked at IKEv1. 
 
 % My solution
-We show the process of learning a state model from an example IPsec-IKEv1 server. We use the Active Automata Learning framework AALpy \cite{muvskardin2022aalpy} for L* Automata Learning, with a custom python interface between AALpy and the IPsec server.
+We show the process of learning a state model from an example IPsec-IKEv1 server. We use the Active Automata Learning framework AALpy \cite{muvskardin2022aalpy} for L* Automata Learning, with a custom Python interface between AALpy and the IPsec server.
 
 % Structure of Thesis
 In this short paper we first go over preliminary information on VPNs and Automata Learning in chapter \ref{chap:2}. In \ref{chap:3} we discuss other related work. In chapter \ref{chap:4} we briefly introduce AALpy and our learning setup. Then we will present our custom interface between AALpy an the IPsec server, discussing design choices and implementation difficulties. Finally we present the learned model and discuss its potential applications and further work in chapters \ref{chap:5} and \ref{chap:6}.
@@ -100,24 +100,27 @@ The shorter phase two (Quick Mode) begins with another SA exchange, this time ho
 
 \section{Related Work} \label{chap:3} % 1/2 page
 % Discuss related papers (chinese, other similar protocols?)
-Model learning other network protocols SSH \cite{fiteruau2017model} (checking), TCP \cite{fiteruau2016combining} (checking) but no fuzzing and wrong protocol
-
-OpenVPN \cite{novickis2016protocol} (fuzzing), and \cite{daniel2018inferring} (fuzzing) more similar, but wrong protocol
-
-Chinese paper \cite{guo2019model} (model checking), right protocol, wrong IKE version and no fuzzing.
-
-Our goal: IKEv1 and fuzzing
-
-
+Model learning of other network protocols like SSH \cite{fiteruau2017model}, or TCP \cite{fiteruau2016combining} has been performed in the past, with learned model being used for model checking the learned protocols. Both \cite{novickis2016protocol} and \cite{daniel2018inferring} learned models of the more related OpenVPN protocol \cite{novickis2016protocol} and used the learned models for fuzzing. In \cite{pferscher2021fingerprinting}, learned models were used to fingerprint Bluetooth Low Energy Devices. Guo et al. used Automata Learning to learn and test the IPsec-IKEv2 protocol \cite{guo2019model}. However, they used the LearnLib library to learn their automata and used the learned model for model checking. No fuzzing or fingerprinting was performed. Our goal is to in future work use the learned model for either fuzzing or to fingerprint different IPsec implementations.
 
 
 \section{Learning IPsec} \label{chap:4} %or other title --> method, eihter way, decribe design decisions here ~1.5 pages
 \subsection{Setup} % 1/2 page
 % describe VMs, IPsec server software, configuration etc
+We developed and tested our interface using two Virtual Box virtual machines (VMs) running standard Ubuntu distributions. All communication took place in an isolated virtual network to eliminate possible external influences. We designated one VM as the initiator and one as the responder to model a typical client server setup. The open source IPsec implementation Strongswan was installed on the responder VM and set to listen for incoming connections from the initiator VM. The Strongswan server was configured to used pre-shared keys for authentication, default recommended security settings and to allow unencrypted notify messages, which we used in our interface to reset the connection. To learn the model of the Strongswan server, simply run the \emph{IPSEC\_IKEv1\_SUL} Python script which uses AALpy learning libraries with our custom Python IPsec client implementation to communicate with and learn the model of the server.
+
 \subsection{AALpy} % half - quarter page
+AALpy is an Active Automata Learning library written in Python. It boasts support for deterministic, non-deterministic and stochastic automata, with support for various formalisms for each automata type. We use Deterministic Mealy machines to describe the IPsec server. However, learning automata with AALpy follows the same pattern, regarldess of the type of automata. To begin learning an automaton, we implement the AALpy SUL interface. This interface requires defining a \emph{step} and \emph{reset} method. We use \emph{step} to model one step in the automata learning algorithm and \emph{reset} to revert the SUL to an initial clean state. Before we can begin learning, we must also decide upon a suitable input alphabet encompassing the language known by the server. The chosen input alphabet is essentially made up of the initiator-to-responder messages shown in figure \ref{fig:IKEv1}. AALpy then passes on words from the input alphabet to the \emph{step} method and sends corresponding queries to the SUL. Finally, we decide on the type of equivalence oracle to use and can enable a few more options like caching and non-determinism checks. The chosen equivalence oracle is used in L* to test for conformance between the current hypothesis and the SUL, giving either a counterexample on failure or confirmation that we have learned the SUL. 
+To separate our SUL interface class from the actual communication code, we designed a separate mapper class, implementing the necessary communication code for each message used in the IPsec-IKEv1 protocol. AALpy calls these mapper class methods in the \emph{step} method of the SUL interface. This separation allows for easy future modifications to the message implementations as well as increasing the readability of the SUL interface class.
+
+
 % describe aalpy, its functionality we used and limitations
-\subsection{Our Interface} % bit more than a full page
-% describe the motivation --> a fuzzable mapper
+\subsection{Mapper Class} % bit more than a full page
+The mapper class implements methods for each communication step in a typical IPsec-IKEv1 exchange, as described in chapter \ref{chap:2}. We use the Python library Scapy\footnote{https://scapy.readthedocs.io/en/latest} to construct ISAKMP packets as required by the IKEv1 protocol. This approach allows us to change fields and values of generated packets at will, opening the possibility of fuzzing for future work. This approach was made more difficult by the fact that Scapy does not support all the packets required by IPsec-IKEv1. To solve this problem, we implemented the missing packets in the Scapy ISAKMP class and used this modified version. We use another custom class to handle the sending and receiving of messages via UDP sockets, as well as parsing responses into valid Scapy objects.
+
+TODO: key management
+TODO: random execution
+TODO: describe debugging, lacking documentation and unclear RFC specs (can cite the review)
+TODO: retransmissions and reset
 % describe key code sections and design choices (key management, etc)
 % describe problems and solutions --> scapy having very limited packets, network packet level debugging, bad ()low-level) documentation (for strongswan), unclear RFC specs (with regards to actual implementations --> the whole encryption stuff). Retransmits.
 
