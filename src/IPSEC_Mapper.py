@@ -131,8 +131,9 @@ class IPSEC_Mapper:
         # TODO: handle wait on get_resp due to server ignoring message
         resp = self._conn.send_recv_data(policy_neg)
         if resp == None: # should never happen
-            print("Should not get None resp")
-            exit(-1)
+            # print("Should not get None resp")
+            # exit(-1)
+            return None
         self._resp = resp # gets updated in any case
 
         if (ret := self.get_retransmission(resp)): # retransmission handling
@@ -156,18 +157,18 @@ class IPSEC_Mapper:
             if notification == "DELETE":
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = "ISAKMP_DELETE"
-                self.reset() # TODO: do we want these resets?
+                #self.reset() # TODO: do we want these resets?
                 return 'ISAKMP_DELETE'
             elif notification:
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = notification
-                self.reset() # in this state, any error, returns us to start
+                #self.reset() # in this state, any error, returns us to start
                 return notification
             else:
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
-                self.reset()
+                #self.reset()
                 return None # ? Probably?
 
     def key_ex_main(self):
@@ -248,18 +249,18 @@ class IPSEC_Mapper:
             if notification == "DELETE":
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = "ISAKMP_DELETE"
-                self.reset()
+                #self.reset()
                 return 'ISAKMP_DELETE'
             elif notification:
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = notification
-                self.reset() # TODO: is this reset needed?? --> yes!, but maybe parse better
+                #self.reset() # TODO: is this reset needed?? --> yes!, but maybe parse better
                 return notification # TODO: return this, or return CONNECTING?
             else:
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
-                self.reset()
+                #self.reset()
                 return None # ? Probably?
 
     # everything is fine up till here
@@ -329,25 +330,25 @@ class IPSEC_Mapper:
                 self._keyed = True # mark SA established
                 return "ISAKMP_AUTH"
             else: # We probably messed up somewhere / packets got mixed up, hash could not be verified --> this is a strange case as it shouldnt happen. Either a server bug or in our implementation. Either way, have to restart the connection.
-                self.reset() # TODO: is this reset needed??
+                #self.reset() # TODO: is this reset needed??
                 return "ISAKMP_DELETE"
         else:
             notification = self.parse_notification(resp)
             if notification == "DELETE":
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = "ISAKMP_DELETE"
-                self.reset()
+                #self.reset()
                 return 'ISAKMP_DELETE'
             elif notification:
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = notification
-                self.reset() # TODO: is this reset needed?? --> yes, but unlikely to happen with valid values, but needed e.g. once we start fuzzing as on error, the SA is killed
+                #self.reset() # TODO: is this reset needed?? --> yes, but unlikely to happen with valid values, but needed e.g. once we start fuzzing as on error, the SA is killed
                 return notification
             else:
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
-                self.reset()
+                #self.reset()
                 return None # ? Probably?
 
     def sa_quick(self):
@@ -460,25 +461,25 @@ class IPSEC_Mapper:
                 print(f"hash mismatch: {hexify(hash_data)}")
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = "IPSEC_SA_INVALID"
-                self.reset() # TODO: only do partial reset to after p1!!!
+                #self.reset() # TODO: only do partial reset to after p1!!!
                 return "IPSEC_SA_INVALID" # TODO: just return the packet? Prob fall back to phase 1 connected?
         else:
             notification = self.parse_notification(resp)
             if notification == "DELETE":
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = "ISAKMP_DELETE"
-                self.reset()
+                #self.reset()
                 return 'ISAKMP_DELETE'
             elif notification:
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = notification
-                #self.reset() # TODO: is this reset needed??
+                ##self.reset() # TODO: is this reset needed??
                 return notification
             else:
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
-                self.reset()
+                #self.reset()
                 return None # ? Probably?
 
     def ack_quick(self):
@@ -513,18 +514,18 @@ class IPSEC_Mapper:
             if notification == "DELETE":
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = "ISAKMP_DELETE"
-                self.reset()
+                #self.reset()
                 return 'ISAKMP_DELETE'
             elif notification:
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = notification
-                #self.reset() # TODO: is this reset needed??
+                ##self.reset() # TODO: is this reset needed??
                 return notification
             else:
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
-                self.reset()
+                #self.reset()
                 return None # ? Probably?
     
     # send delete message --> resets server

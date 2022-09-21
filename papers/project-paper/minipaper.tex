@@ -117,10 +117,11 @@ To separate our SUL interface class from the actual communication code, we desig
 \subsection{Mapper Class} % bit more than a full page
 The mapper class implements methods for each communication step in a typical IPsec-IKEv1 exchange, as described in chapter \ref{chap:2}. We use the Python library Scapy\footnote{https://scapy.readthedocs.io/en/latest} to construct ISAKMP packets as required by the IKEv1 protocol. This approach allows us to change fields and values of generated packets at will, opening the possibility of fuzzing for future work. This approach was made more difficult by the fact that Scapy does not support all the packets required by IPsec-IKEv1. To solve this problem, we implemented the missing packets in the Scapy ISAKMP class and used this modified version. We use another custom class to handle the sending and receiving of messages via UDP sockets, as well as parsing responses into valid Scapy objects.
 
-TODO: key management
-TODO: random execution
-TODO: describe debugging, lacking documentation and unclear RFC specs (can cite the review)
-TODO: retransmissions and reset
+As messages will be sent in random order during learning, we require a robust framework that correctly handles en/decryption of messages. For key management, we simply store the current base-keys but keep track of Initialization Vectors (IVs) on a per-message id (M-ID) basis. Additionally, we keep track of the M-IDs of server responses to detect and handle retransmissions of old messages. Each request, we store the response for use in the next message and update affected key material as needed. Most notably, the IVs are updated almost every request and differ between M-IDs. Informational requests also handle their IVs separately. For each request that we send, if available, we try to parse the response, decrypting it if necessary and resetting or adjusting our internal variables as required to match the server. This is required to continuously be able to parse server responses and extract meaningful information.
+
+Automata learning requires a SUL reset method to be able to return to an initial starting point after each run. We implement this using a combination of the ISAKMP delete request and general ISAKMP informational error messages. While delete works for established connections currently in phase two of IKE, we require informational error messages to trigger a reset in phase one, as delete does not apply here. Implementation was hindered by at times unclear RFC-specifications, but this was overcome by manually comparing packet dumps and Strongswan logs to fix encryption errors.
+
+
 % describe key code sections and design choices (key management, etc)
 % describe problems and solutions --> scapy having very limited packets, network packet level debugging, bad ()low-level) documentation (for strongswan), unclear RFC specs (with regards to actual implementations --> the whole encryption stuff). Retransmits.
 
