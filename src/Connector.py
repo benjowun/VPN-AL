@@ -42,9 +42,12 @@ class Connector:
         return Ether()/IP()/UDP()/ISAKMP(bytes(b))
 
     def recv_data(self):
-        data, address = self._sock.recvfrom(1200)
-        #print(f"Received {len(data)} bytes from {address}")
-        return self.bytes_to_scapy_isakmp(data)
+        try:
+            data, address = self._sock.recvfrom(1200)
+            #print(f"Received {len(data)} bytes from {address}")
+            return self.bytes_to_scapy_isakmp(data)
+        except:
+            return None
 
     def send_data(self, data):
         self._sock.sendto(self.scapy_isakmp_to_bytes(data), self._dest)

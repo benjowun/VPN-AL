@@ -11,16 +11,17 @@ from scapy.all import raw
 from scapy.packet import Raw
 from scapy.layers.l2 import Ether
 import random
+from time import sleep
 
 # TODO: additional options --> NAT-D if supported: https://datatracker.ietf.org/doc/html/rfc3947
 
 class IPSEC_Mapper:
-    def __init__(self):
+    def __init__(self, timeout):
         self._domain = "10.0.2.0"  # might have to change mask as well if this is edited
         self._src_ip = "10.0.2.2"  # initiator
         self._dst_ip = "10.0.2.1"  # responder
         self._port = 500
-        self._conn = Connector(self._dst_ip, self._port, self._port, 1.5) # Can add timeout param
+        self._conn = Connector(self._dst_ip, self._port, self._port, timeout) # Can add timeout param
         self._resp = ISAKMP()
         self._cookie_i = b""
         self._cookie_r = b""
@@ -30,7 +31,7 @@ class IPSEC_Mapper:
         self._ivs = {0: b""} # dict to handle per m_id SA iv info
         self._keys = {}
         self._curr_m_id = b""
-        self._active_spi_quick = b""
+        self._spi_quick_max = 0
         self._keyed = False # Flag to indicate active connection is keyed
         self._ids = {} # For detecting retransmits, stores the return values per m_id
 
@@ -114,9 +115,11 @@ class IPSEC_Mapper:
     ############################################################################################################################
     # actual methods
     def sa_main(self):
-        if self._keyed:
-            print(" - skipped")
-            return None
+        # if self._keyed:
+        #     print(" - skipped")
+        #     return None
+
+        
         #show(self._resp)
         # attempt to agree on security params.
         # Send suggestion --> parse response: agree -> P1_SA, else -> DISCONNECTED
@@ -172,9 +175,9 @@ class IPSEC_Mapper:
                 return None # ? Probably?
 
     def key_ex_main(self):
-        if self._keyed:
-            print(" - skipped")
-            return None
+        # if self._keyed:
+        #     print(" - skipped")
+        #     return None
         if self._cookie_i == b"" or self._cookie_r == b"":
             print(" - skipped (no cookies known")
             return None
@@ -199,8 +202,6 @@ class IPSEC_Mapper:
         # Nonce: for now hardcoded: # TODO: generate one / fuzz it
         nonce_client = b"\x12\x16\x3c\xdf\x99\x2a\xad\x47\x31\x8c\xbb\x8a\x76\x84\xb4\x44\xee\x47\x48\xa6\x87\xc6\x02\x9a\x99\x5d\x08\xbf\x70\x4e\x56\x2b"
         
-        #TODO: for some reason, we sometimes have a public_key thats 1 byte short??
-
         key_ex = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=4, exch_type=2, length=196)/ISAKMP_payload_KE(length=132, load=public_key)/ISAKMP_payload_Nonce(length=36, load=nonce_client) #/ISAKMP_payload_NAT_D()
         
         resp = self._conn.send_recv_data(key_ex)
@@ -294,6 +295,7 @@ class IPSEC_Mapper:
 
         cipher = AES.new(cur_key_dict["key"], AES.MODE_CBC, self._ivs[0])
         payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
+        assert(len(payload_enc) == 64)
 
         auth_mes = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=5, exch_type=2, flags=["encryption"])/Raw(load=payload_enc)
         resp = self._conn.send_recv_data(auth_mes)
@@ -366,8 +368,9 @@ class IPSEC_Mapper:
                 break
         self._curr_m_id = m_id
 
-        spi = (random.randint(0, 4294967295)).to_bytes(4, 'big') # makes rekeying easier
-        self._active_spi_quick = spi
+        #spi = (random.randint(0, 4294967295)).to_bytes(4, 'big') # makes rekeying easier
+        self._spi_quick_max += 1
+        spi = self._spi_quick_max.to_bytes(4, 'big')
 
         # SPI TODO: check that spi is correct and can really be chosen freely --> try out creating multiple SAs using different SPI!!!!
         sa_body_quick = ISAKMP_payload_SA(next_payload=10, length=52, prop=ISAKMP_payload_Proposal(length=40, proto=3, SPIsize=4, trans_nb=1, SPI=spi, trans=ISAKMP_payload_Transform(length=28, num=1, id=12, transforms=[('KeyLengthESP', 256), ('AuthenticationESP', 'HMAC-SHA'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)])))
@@ -486,6 +489,9 @@ class IPSEC_Mapper:
         if not self._keyed:
             print(" - skipped")
             return None
+        if self._curr_m_id == b"":
+            print(" - skipped")
+            return None
         cur_key_dict = self._keys # TODO: rethink/work this keys thing
         m_id = self._curr_m_id
 
@@ -502,14 +508,12 @@ class IPSEC_Mapper:
         #print(f"payload: {hexify(payload_hash_quick_enc)}")
         #print(f"payload plain: {hexify(raw(payload_hash_quick_enc))}")
 
-        self._ivs[int.from_bytes(m_id, 'big')] = payload_hash_quick_enc[-AES.block_size:] # new iv is last block of last encrypted payload
-        #print(f"iv_new len: {len(self._ivs[int.from_bytes(m_id, 'big')])}")
-        #print(f"iv_new: {hexify(self._ivs[int.from_bytes(m_id, 'big')])}")
-
         msg = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=8, exch_type=32, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=60)/Raw(load=payload_hash_quick_enc)
 
         resp = self._conn.send_recv_data(msg)
         if resp != None:
+            if (ret := self.get_retransmission(resp)): # retransmission handling
+                return ret
             notification = self.parse_notification(resp)
             if notification == "DELETE":
                 if resp[ISAKMP].id != 0:
@@ -527,19 +531,30 @@ class IPSEC_Mapper:
                     self._ids[resp[ISAKMP].id] = None
                 #self.reset()
                 return None # ? Probably?
+        
+        # update iv if everything is ok / no resp TODO: check for retransmissions
+        self._ivs[int.from_bytes(m_id, 'big')] = payload_hash_quick_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+        #print(f"iv_new len: {len(self._ivs[int.from_bytes(m_id, 'big')])}")
+        #print(f"iv_new: {hexify(self._ivs[int.from_bytes(m_id, 'big')])}")
     
     # send delete message --> resets server
     # workarounds with notify for p1 - SA pre keying
     def delete(self):
         if not self._keys:
             # cool workaround to delete SAs
+            print("Delete workaround")
             p_delete = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, exch_type=5)/ISAKMP_payload_Notification(not_type=11)
             self._conn.send_data(p_delete)
             return None
         # create unencrypted delete message --> this will fail on default strongswan apparently
         # check if SA has been established yet:
         cur_key_dict = self._keys
-        if self._active_spi_quick != b"": # if a ipsec conn is up, cleanly delete it as well
+        if self._spi_quick_max != 0: # if a ipsec conn is up, cleanly delete it as well
+            # create list of all possibly active spis
+            spis_quick_possible = []
+            for spi in range(1, self._spi_quick_max+1):
+                spis_quick_possible.append(spi.to_bytes(4, 'big'))
+
             ## first packet: ipsec
             # p = ISAKMP()/ISAKMP_payload_Hash/ISAKMP_payload_Delete
             # keys
@@ -550,8 +565,10 @@ class IPSEC_Mapper:
             else:
                 iv = self._ivs[0]
 
-            p_delete1 = ISAKMP_payload_Delete(ProtoID=3, SPIsize=4, SPI=[self._active_spi_quick])
-            #print(f"delete1 (ipsec): {hexify(raw(p_delete1))}")
+            p_delete1 = ISAKMP_payload_Delete(ProtoID=3, SPIsize=4, SPI=spis_quick_possible)
+            # p_delete1.show()
+            print(f"delete1 (ipsec): {hexify(raw(p_delete1))}")
+            print(f"delete1 (ipsec): {len(raw(p_delete1))}")
 
             m_id1 = (7777).to_bytes(4, 'big') # random  --> does not really matter that it is reused here, since we clear everything on delete anyways
             #print(f"id: {int.from_bytes(m_id1, 'big')}")
@@ -576,7 +593,7 @@ class IPSEC_Mapper:
             iv_new = h.digest()[:16]
 
             #print(f"new iv len: {len(iv_new)}")
-            #print(f"new iv: {hexify(iv_new)}") # correct (if first message)
+            print(f"current iv 7777: {hexify(iv_new)}") # correct (if first message)
 
             cipher = AES.new(cur_key_dict["key"], AES.MODE_CBC, iv_new)
             payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
@@ -584,10 +601,16 @@ class IPSEC_Mapper:
             #print(f"payload: {hexify(payload_enc)}")
 
             self._ivs[7777] = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+
             #print(f"iv_new len: {len(self._ivs[7777])}")
-            #print(f"{hexify(self._ivs[7777])}")
+            print(f"new iv 7777 {hexify(self._ivs[7777])}")
             p1 = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id1, 'big'), length=76)/Raw(load=payload_enc)
-            resp = self._conn.send_data(p1)
+            resp = self._conn.send_recv_data(p1)
+            if resp:
+                notification = self.parse_notification(resp)
+                notification.show()
+                print("Error, delete got resp")
+                exit(-1)
 
         ## Second packet: isakmp
         p_delete2 = ISAKMP_payload_Delete(SPIsize=16, SPI=[(self._cookie_i+self._cookie_r), (self._cookie_i+self._cookie_r)])
@@ -623,7 +646,7 @@ class IPSEC_Mapper:
         iv_new = h.digest()[:16]
 
         #print(f"new iv len: {len(iv_new)}")
-        #print(f"new iv: {hexify(iv_new)}") # correct (if first message)
+        print(f"current iv 8888: {hexify(iv_new)}") # correct (if first message)
 
         cipher = AES.new(cur_key_dict["key"], AES.MODE_CBC, iv_new)
         payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
@@ -632,7 +655,7 @@ class IPSEC_Mapper:
 
         self._ivs[8888] = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
         #print(f"iv_new len: {len(self._ivs[8888])}")
-        #print(f"{hexify(self._ivs[8888])}")
+        print(f"new iv 8888 {hexify(self._ivs[8888])}")
         p2 = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id2, 'big'), length=92)/Raw(load=payload_enc)
 
         resp = self._conn.send_recv_data(p2)
@@ -640,6 +663,9 @@ class IPSEC_Mapper:
             return None
         else: # TODO: parse delete response and return it
             notification = self.parse_notification(resp)
+            print("DELETE returned value")
+            notification.show()
+            exit(-1) #TODO remove if used in code
         if notification == "DELETE":
             self.reset()
             return 'ISAKMP_DELETE'
@@ -672,10 +698,14 @@ class IPSEC_Mapper:
         self._ivs = {0: b""}
         self._keys = {}
         self._curr_m_id = b""
-        self._active_spi_quick = b""
+        self._spi_quick_max = 0
         self._keyed = False
         self._ids = {}
-        print(" RESET")
+        leftover = self._conn.recv_data() # catch any leftover messages
+        if leftover:
+            print(f" - LEFTOVER! {leftover}")
+            exit(-1)
+        print(" - RESET!")
 
     # sanity check, runs all in sequence, should work with no problems
     def run_all(self):
@@ -694,9 +724,38 @@ class IPSEC_Mapper:
         print("delete")
         self.delete()
 
+    def run_tests(self):
+        with open("logs.txt", "r") as f:
+            for line in f:
+                self.reset()
+                cases = line.split(',')
+                for case in cases:
+                    name = case.strip()
+                    if name == "\n" or name == "":
+                        continue
+                    print(name)
+                    if name == "self.sa_main":
+                        ret = self.sa_main()
+                    elif name == "self.key_ex_main":
+                        ret = self.key_ex_main()
+                    elif name == "self.authenticate":
+                        ret = self.authenticate()
+                    elif name == "self.sa_quick":
+                        ret = self.sa_quick()
+                    elif name == "self.ack_quick":
+                        ret = self.ack_quick()
+                    else: 
+                        exit(-1)
+
+                    print("  --> " + str(ret))
+                sleep(2)
+                self.delete()
+                
+                #input("check conn\n")
+
     # test failing runs from SUL
     def test(self):
-        testcase = [self.sa_main, self.key_ex_main, self.authenticate, self.sa_quick, self.authenticate, self.authenticate, self.print_info, self.delete, self.reset]
+        testcase = [self.sa_main, self.key_ex_main, self.authenticate, self.ack_quick, self.ack_quick, self.ack_quick, self.delete, self.reset, self.sa_main, self.key_ex_main, self.authenticate, self.sa_quick, self.key_ex_main, self.key_ex_main, self.ack_quick, self.ack_quick, self.delete, self.reset, self.sa_main, self.key_ex_main, self.authenticate, self.delete, self.reset]
         for i in range(1):
             for t in testcase:
                 print(f"\n\nL{i} - Testcase: {t.__name__}\n")
@@ -704,7 +763,8 @@ class IPSEC_Mapper:
                 print(str(ret))
 
 
-# map = IPSEC_Mapper()
+# map = IPSEC_Mapper(2)
+# map.run_tests()
 # map.test()
 # map = IPSEC_Mapper()
 # map.run_all()
