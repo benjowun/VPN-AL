@@ -22,7 +22,6 @@ class IPSEC_Mapper:
         self._dst_ip = "10.0.2.1"  # responder
         self._port = 500
         self._conn = Connector(self._dst_ip, self._port, self._port, timeout) # Can add timeout param
-        self._resp = ISAKMP()
         self._cookie_i = b""
         self._cookie_r = b""
         self._nonce_i = b""
@@ -30,8 +29,8 @@ class IPSEC_Mapper:
         self._sa_body_init = b""
         self._ivs = {0: b""} # dict to handle per m_id SA iv info
         self._keys = {}
-        self._curr_m_id = b""
-        self._spi_quick_max = 0
+        self._latest_mids = []
+        self._spis = []
         self._keyed = False # Flag to indicate active connection is keyed
         self._ids = {} # For detecting retransmits, stores the return values per m_id
 
@@ -46,6 +45,7 @@ class IPSEC_Mapper:
         if id == 0:
             return None
         elif id in self._ids:
+            print("retransmission")
             return self._ids[id]
         else:
             return None
@@ -120,7 +120,6 @@ class IPSEC_Mapper:
         #     return None
 
         
-        #show(self._resp)
         # attempt to agree on security params.
         # Send suggestion --> parse response: agree -> P1_SA, else -> DISCONNECTED
         # create an ISAKMP packet with scapy:
@@ -131,14 +130,12 @@ class IPSEC_Mapper:
         sa_body_init = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(trans_nb=1, trans=ISAKMP_payload_Transform(num=1, transforms=[('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)])))
         policy_neg = ISAKMP(init_cookie=cookie_i, next_payload=1, exch_type=2)/sa_body_init
 
-        # TODO: handle wait on get_resp due to server ignoring message
         resp = self._conn.send_recv_data(policy_neg)
         if resp == None: # should never happen
             # print("Should not get None resp")
             # exit(-1)
             return None
-        self._resp = resp # gets updated in any case
-
+        
         if (ret := self.get_retransmission(resp)): # retransmission handling
             return ret
 
@@ -174,6 +171,46 @@ class IPSEC_Mapper:
                 #self.reset()
                 return None # ? Probably?
 
+    def sa_main_error(self):
+        cookie_i = b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37"
+        # use an invalid key size for example
+        policy_neg = ISAKMP(init_cookie=cookie_i, next_payload=1, exch_type=2)/ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(trans_nb=1, trans=ISAKMP_payload_Transform(num=1, transforms=[('Encryption', 'AES-CBC'), ('KeyLength', 300), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)])))
+
+        resp = self._conn.send_recv_data(policy_neg)
+        if resp == None: # should never happen
+            # print("Should not get None resp")
+            # exit(-1)
+            return None
+
+        if (ret := self.get_retransmission(resp)): # retransmission handling
+            return ret
+
+        # response contains transform --> strange, we expect an error here
+        if resp[ISAKMP].next_payload == ISAKMP_payload_type.index("SA") and ISAKMP_payload_Proposal in resp and ISAKMP_payload_Transform in resp:
+            print("Error, unexpected server return value")
+            exit(-1)
+            return 'ISAKMP_SA'
+
+        # is a valid notify or delete --> means something went wrong --> server probably closed connection, as expected
+        else:
+            notification = self.parse_notification(resp)
+            if notification == "DELETE":
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = "ISAKMP_DELETE"
+                #self.reset() # TODO: do we want these resets?
+                return 'ISAKMP_DELETE'
+            elif notification:
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = notification
+                #self.reset() # in this state, any error, returns us to start
+                return notification
+            else:
+                print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = None
+                #self.reset()
+                return None
+
     def key_ex_main(self):
         # if self._keyed:
         #     print(" - skipped")
@@ -181,9 +218,8 @@ class IPSEC_Mapper:
         if self._cookie_i == b"" or self._cookie_r == b"":
             print(" - skipped (no cookies known")
             return None
-        #show(self._resp)
+        
         # DH-Key exchange
-
         # pre-shared-key is known
         PSK = b"AahBd2cTvEyGevxO08J7w2SqRGbnIeBc" 
 
@@ -207,11 +243,10 @@ class IPSEC_Mapper:
         resp = self._conn.send_recv_data(key_ex)
         if resp == None:
             return None
-        self._resp = resp # save for other messages
 
         if (ret := self.get_retransmission(resp)): # retransmission handling
             return ret
-        
+
         # got a good valid response
         if resp[ISAKMP].next_payload == ISAKMP_payload_type.index("KE") and ISAKMP_payload_Nonce in resp:
             public_key_server = resp[ISAKMP_payload_KE].load
@@ -256,7 +291,46 @@ class IPSEC_Mapper:
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = notification
                 #self.reset() # TODO: is this reset needed?? --> yes!, but maybe parse better
-                return notification # TODO: return this, or return CONNECTING?
+                return notification
+            else:
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = None
+                print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
+                #self.reset()
+                return None # ? Probably?
+
+    def key_ex_main_error(self):
+        # invalid public key length
+        public_key = 120*b"\xFF"
+        assert(len(public_key) == 120)
+
+        if self._cookie_i == b"" or self._cookie_r == b"":
+            print(" - skipped (no cookies known")
+            return None
+
+        # Nonce: for now hardcoded: # TODO: generate one / fuzz it
+        nonce_client = b"\x12\x16\x3c\xdf\x99\x2a\xad\x47\x31\x8c\xbb\x8a\x76\x84\xb4\x44\xee\x47\x48\xa6\x87\xc6\x02\x9a\x99\x5d\x08\xbf\x70\x4e\x56\x2b"
+        
+        key_ex = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=4, exch_type=2, length=188)/ISAKMP_payload_KE(length=124, load=public_key)/ISAKMP_payload_Nonce(length=36, load=nonce_client) #/ISAKMP_payload_NAT_D()
+        
+        resp = self._conn.send_recv_data(key_ex)
+
+        if resp[ISAKMP].next_payload == ISAKMP_payload_type.index("KE") and ISAKMP_payload_Nonce in resp: # should not be correct
+            print("Error, unexpected server return value")
+            exit(-1)
+            return 'ISAKMP_KEY_EX'
+        else:
+            notification = self.parse_notification(resp)
+            if notification == "DELETE":
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = "ISAKMP_DELETE"
+                #self.reset()
+                return 'ISAKMP_DELETE'
+            elif notification:
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = notification
+                #self.reset() # TODO: is this reset needed?? --> yes!, but maybe parse better
+                return notification 
             else:
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
@@ -266,7 +340,6 @@ class IPSEC_Mapper:
 
     # everything is fine up till here
     def authenticate(self):
-        #show(self._resp)
         # keys
         cur_key_dict = self._keys
         if not cur_key_dict:
@@ -301,7 +374,6 @@ class IPSEC_Mapper:
         resp = self._conn.send_recv_data(auth_mes)
         if resp == None: # Probably already in an established state, could catch this at start of method, but better to actually send stuff where possible
             return None
-        self._resp = resp
 
         if (ret := self.get_retransmission(resp)): # retransmission handling
             return ret
@@ -353,6 +425,82 @@ class IPSEC_Mapper:
                 #self.reset()
                 return None # ? Probably?
 
+    def authenticate_error(self):
+        # error is using public key client twice instead of server once, resulting in invalid authentication hopefully
+        cur_key_dict = self._keys
+        if not cur_key_dict:
+            print(" - skipped (no keys available)")
+            return None
+
+        # create unencrypted id packet
+        id_plain = ISAKMP_payload_ID(IdentData=self._src_ip)
+
+        SAi_b = raw(self._sa_body_init)
+        IDii_b = raw(id_plain)[4:] # only need fields after length
+        prf_HASH_i = HMAC.new(cur_key_dict["SKEYID"], cur_key_dict["pub_client"] + cur_key_dict["pub_client"] + self._cookie_i + self._cookie_r + SAi_b + IDii_b, SHA1)
+        hash_data = prf_HASH_i.digest() 
+        hash_data = hash_data + b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" # padding up to 32b
+
+        payload_plain = id_plain/ISAKMP_payload_Hash(length=24, load=hash_data)
+
+        cipher = AES.new(cur_key_dict["key"], AES.MODE_CBC, self._ivs[0])
+        payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
+        assert(len(payload_enc) == 64)
+
+        auth_mes = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=5, exch_type=2, flags=["encryption"])/Raw(load=payload_enc)
+        resp = self._conn.send_recv_data(auth_mes)
+        if resp == None: # Probably already in an established state, could catch this at start of method, but better to actually send stuff where possible
+            return None
+        
+        if (ret := self.get_retransmission(resp)): # retransmission handling
+            return ret
+
+        iv = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload, update only if payload is accepted
+        self._ivs[0] = iv # updates class iv because dict is mutable
+
+        # print(f"next iv: {hexify(raw(iv))}")
+
+        # check that the next payload is correct and that it is encrypted
+        if resp[ISAKMP].next_payload == ISAKMP_payload_type.index("ID") and Raw in resp: # Raw means that its encrypted (or extra data was sent)
+            # decrypt resp body
+            cipher = AES.new(cur_key_dict["key"], AES.MODE_CBC, iv)
+            iv = (raw(resp[Raw])[-AES.block_size:])
+            self._ivs[0] = iv
+
+            decrypted = cipher.decrypt(raw(resp[Raw]))
+
+            p = ISAKMP_payload_ID(bytes(decrypted[:12]))/ISAKMP_payload_Hash(bytes(decrypted[12:]))
+
+            # HASH_R = prf(SKEYID, g^xr | g^xi | CKY-R | CKY-I | SAi_b | IDir_b )
+            id_plain = ISAKMP_payload_ID(IdentData=self._dst_ip)
+            SAr_b = SAi_b
+            IDir_b = raw(id_plain)[4:] # only need fields after length
+            prf_HASH_r = HMAC.new(cur_key_dict["SKEYID"], cur_key_dict["pub_serv"] + cur_key_dict["pub_client"] + self._cookie_r + self._cookie_i + SAr_b + IDir_b, SHA1)
+            hash_data = prf_HASH_r.digest()
+            if hash_data == p[ISAKMP_payload_Hash].load: # Server response hash could be verified, everything ok
+                print("Error, unexpected server return value")
+                exit(-1)
+                self._keyed = True # mark SA established
+                return "ISAKMP_AUTH"
+            else: # We probably messed up somewhere / packets got mixed up, hash could not be verified --> this is a strange case as it shouldnt happen. Either a server bug or in our implementation. Either way, have to restart the connection.
+                #self.reset() 
+                return "ISAKMP_DELETE"
+        else:
+            notification = self.parse_notification(resp)
+            if notification == "DELETE":
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = "ISAKMP_DELETE"
+                return 'ISAKMP_DELETE'
+            elif notification:
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = notification
+                return notification
+            else:
+                print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = None
+                return None
+
     def sa_quick(self):
         if not self._keyed:
             print(" - skipped")
@@ -362,15 +510,18 @@ class IPSEC_Mapper:
         # generate unique message ID randomly:
         m_id = b""
         while True:
-            r = random.randint(0, 4294967295)
+            r = random.randint(1, 4294967295)
             if r not in self._ivs:
                 m_id = (r).to_bytes(4, 'big')
                 break
-        self._curr_m_id = m_id
+        self._latest_mids.append(m_id)
 
-        #spi = (random.randint(0, 4294967295)).to_bytes(4, 'big') # makes rekeying easier
-        self._spi_quick_max += 1
-        spi = self._spi_quick_max.to_bytes(4, 'big')
+        while True:
+            r = random.randint(1, 4294967295).to_bytes(4, 'big')
+            if r not in self._spis:
+                break
+        spi = r # makes rekeying easier
+        self._spis.append(spi)
 
         # SPI TODO: check that spi is correct and can really be chosen freely --> try out creating multiple SAs using different SPI!!!!
         sa_body_quick = ISAKMP_payload_SA(next_payload=10, length=52, prop=ISAKMP_payload_Proposal(length=40, proto=3, SPIsize=4, trans_nb=1, SPI=spi, trans=ISAKMP_payload_Transform(length=28, num=1, id=12, transforms=[('KeyLengthESP', 256), ('AuthenticationESP', 'HMAC-SHA'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)])))
@@ -411,17 +562,14 @@ class IPSEC_Mapper:
         #print(f"payload: {hexify(payload_quick_enc)}")
         #print(f"payload plain: {hexify(raw(policy_neg_quick_raw))}")
 
-        
-
         msg = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=8, exch_type=32, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=188)/Raw(load=payload_quick_enc)
         resp = self._conn.send_recv_data(msg)
         if resp == None:
             return None
-
+        
         if (ret := self.get_retransmission(resp)): # retransmission handling
             return ret
 
-        self._resp = resp
         self._ivs[int.from_bytes(m_id, 'big')] = payload_quick_enc[-AES.block_size:] # new iv is last block of last encrypted payload, update after successful packet transmission
         #print(f"iv_new len: {len(self._ivs[int.from_bytes(m_id, 'big')])}")
         #print(f"iv_new: {hexify(self._ivs[int.from_bytes(m_id, 'big')])}")
@@ -464,8 +612,8 @@ class IPSEC_Mapper:
                 print(f"hash mismatch: {hexify(hash_data)}")
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = "IPSEC_SA_INVALID"
-                #self.reset() # TODO: only do partial reset to after p1!!!
-                return "IPSEC_SA_INVALID" # TODO: just return the packet? Prob fall back to phase 1 connected?
+                #self.reset()
+                return "IPSEC_SA_INVALID" 
         else:
             notification = self.parse_notification(resp)
             if notification == "DELETE":
@@ -476,7 +624,139 @@ class IPSEC_Mapper:
             elif notification:
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = notification
-                ##self.reset() # TODO: is this reset needed??
+                ##self.reset()
+                return notification
+            else:
+                print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = None
+                #self.reset()
+                return None # ? Probably?
+
+    def sa_quick_error(self):
+        # TODO fix this
+        return None
+        # error invalid key length in proposal
+        if not self._keyed:
+            print(" - skipped")
+            return None
+        cur_key_dict = self._keys
+
+        # generate unique message ID randomly:
+        m_id = b""
+        while True:
+            r = random.randint(0, 4294967295)
+            if r not in self._ivs:
+                m_id = (r).to_bytes(4, 'big')
+                break
+
+        spi = (random.randint(1, 4294967295)).to_bytes(4, 'big') # makes rekeying easier
+
+        sa_body_quick = ISAKMP_payload_SA(next_payload=10, length=52, prop=ISAKMP_payload_Proposal(length=40, proto=3, SPIsize=4, trans_nb=1, SPI=spi, trans=ISAKMP_payload_Transform(length=28, num=1, id=12, transforms=[('KeyLengthESP', 300), ('AuthenticationESP', 'HMAC-SHA'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)])))
+
+        # Nonce (TODO: generate one / fuzz one?):
+        nonce = b"\x55\x0d\xff\x82\xf4\xa7\x7c\x27\x2a\x94\x96\x2d\x1a\x5b\xff\x35\xe4\x4a\x6c\xfd\xc2\x57\xf8\xcb\xe4\x0b\xd8\xb2\x14\xba\xbb\xe0"
+        nonce_quick = ISAKMP_payload_Nonce(next_payload=5, length=36, load=nonce)
+
+        # generate identifications
+        # should both be (10.0.2.0) --> see ipsec configuration
+        address = self._domain
+        mask = b"\xff\xff\xff\x00" # 255.255.255.0
+        id_src_quick = ISAKMP_payload_ID(next_payload=5, length=16, IDtype="IPv4_ADDR_SUBNET", IdentData=address, load=mask)
+        id_dst_quick = ISAKMP_payload_ID(length=16, IDtype="IPv4_ADDR_SUBNET", IdentData=address, load=mask)
+
+        # generate hash (for now without KE):
+        # HASH(1) = prf(SKEYID_a, M-ID | SA | Ni [ | KE ] [ | IDci | IDcr )
+        prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id + raw(sa_body_quick) + raw(nonce_quick) + raw(id_src_quick) + raw(id_dst_quick), SHA1)
+        hash_data = prf_HASH.digest()
+        #print(f"hash quick: {hexify(hash_data)}")
+        hash_quick = ISAKMP_payload_Hash(length=24, load=hash_data)
+
+        # unencrypted but authenticated packet
+        policy_neg_quick_raw = hash_quick/sa_body_quick/nonce_quick/id_src_quick/id_dst_quick
+        #show(policy_neg_quick_raw)
+
+        # calc IV (hash of last block and id)
+        #print(f"last block {hexify(self._ivs[0])}")
+        #print(f"m_id: {m_id}")
+        h = SHA1.new(self._ivs[0] + m_id)
+        iv_new = h.digest()[:16]
+        #print(f"iv quick: {hexify(iv_new)}")
+
+        # encrypt
+        cipher = AES.new(cur_key_dict["key"], AES.MODE_CBC, iv_new)
+        payload_quick_enc = cipher.encrypt(pad(raw(policy_neg_quick_raw), AES.block_size))
+        #print(f"payload len: {len(payload_quick_enc)}")
+        #print(f"payload: {hexify(payload_quick_enc)}")
+        #print(f"payload plain: {hexify(raw(policy_neg_quick_raw))}")
+
+        msg = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=8, exch_type=32, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=188)/Raw(load=payload_quick_enc)
+        resp = self._conn.send_recv_data(msg)
+        if resp == None:
+            return None
+        
+        if (ret := self.get_retransmission(resp)): # retransmission handling
+            return ret
+
+        self._ivs[int.from_bytes(m_id, 'big')] = payload_quick_enc[-AES.block_size:] # new iv is last block of last encrypted payload, update after successful packet transmission
+        #print(f"iv_new len: {len(self._ivs[int.from_bytes(m_id, 'big')])}")
+        #print(f"iv_new: {hexify(self._ivs[int.from_bytes(m_id, 'big')])}")
+
+        # check that the next payload is correct and that it is encrypted
+        if resp[ISAKMP].exch_type == 32 and Raw in resp: # Raw means that its encrypted (or extra data was sent)
+            # decrypt resp body
+            cipher = AES.new(cur_key_dict["key"], AES.MODE_CBC, self._ivs[int.from_bytes(m_id, 'big')])
+            self._ivs[int.from_bytes(m_id, 'big')] = (raw(resp[Raw])[-AES.block_size:]) # keep iv updated
+            #print(f"iv new: {hexify(self._ivs[int.from_bytes(m_id, 'big')])}")
+            
+            decrypted = cipher.decrypt(raw(resp[Raw]))
+            #print(f"data: {hexify(decrypted)}")
+
+            SA_recv = ISAKMP_payload_SA(bytes(decrypted[24:76]))
+            hash_recv = ISAKMP_payload_Hash(bytes(decrypted[:24]))
+            nonce_recv = ISAKMP_payload_Nonce(bytes(decrypted[76:112]))
+            id_recv_1 = ISAKMP_payload_ID(bytes(decrypted[112:128]))
+            id_recv_2 = ISAKMP_payload_ID(bytes(decrypted[128:144]))
+
+            p = hash_recv/SA_recv/nonce_recv/id_recv_1/id_recv_2
+            #show(p)
+
+            # parse response
+            #print(f"Verifiying resceived hash: {hexify(p[ISAKMP_payload_Hash].load)}...")
+            # HASH(2) = prf(SKEYID_a, M-ID | Ni_b | SA | Nr [ | KE ] [ | IDci | IDcr )
+            
+            #print(f"Nonce recv: {hexify(raw(nonce_recv))}")
+            prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id + raw(nonce_quick)[4:36] + raw(SA_recv) + raw(nonce_recv) + raw(id_recv_1) + raw(id_recv_2), SHA1)
+            hash_data = prf_HASH.digest()
+            if hash_data == hash_recv.load: # should not happen
+                print("Error, unexpected server return value")
+                exit(-1)
+                self._latest_mids.append(m_id) # only set on success
+                self._spis = spi
+
+                #print("SA_quick server hash verified - sending ACK")
+                self._nonce_i = raw(nonce_quick)[4:36]
+                self._nonce_r = raw(nonce_recv)[4:36]
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = "IPSEC_SA"
+                return "IPSEC_SA"
+            else:
+                print(f"hash mismatch: {hexify(hash_data)}")
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = "IPSEC_SA_INVALID"
+                #self.reset()
+                return "IPSEC_SA_INVALID" 
+        else:
+            notification = self.parse_notification(resp)
+            if notification == "DELETE":
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = "ISAKMP_DELETE"
+                #self.reset()
+                return 'ISAKMP_DELETE'
+            elif notification:
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = notification
+                ##self.reset()
                 return notification
             else:
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
@@ -487,13 +767,13 @@ class IPSEC_Mapper:
 
     def ack_quick(self):
         if not self._keyed:
-            print(" - skipped")
+            print(" - skipped, not keyed")
             return None
-        if self._curr_m_id == b"":
-            print(" - skipped")
+        if not self._latest_mids:
+            print(" - skipped, nothing to ack")
             return None
-        cur_key_dict = self._keys # TODO: rethink/work this keys thing
-        m_id = self._curr_m_id
+        cur_key_dict = self._keys
+        m_id = self._latest_mids[-1]
 
         # HASH(3) = prf(SKEYID_a, 0 | M-ID | Ni_b | Nr_b)
         prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], b"\x00" + m_id + self._nonce_i + self._nonce_r , SHA1)
@@ -532,10 +812,58 @@ class IPSEC_Mapper:
                 #self.reset()
                 return None # ? Probably?
         
-        # update iv if everything is ok / no resp TODO: check for retransmissions
+        # update iv if everything is ok / no resp
         self._ivs[int.from_bytes(m_id, 'big')] = payload_hash_quick_enc[-AES.block_size:] # new iv is last block of last encrypted payload
         #print(f"iv_new len: {len(self._ivs[int.from_bytes(m_id, 'big')])}")
         #print(f"iv_new: {hexify(self._ivs[int.from_bytes(m_id, 'big')])}")
+
+    def ack_quick_error(self):
+        # error used initiator nonce twice
+        if not self._keyed:
+            print(" - skipped, not keyed")
+            return None
+        if not self._latest_mids:
+            print(" - skipped, nothing to ack")
+            return None
+        cur_key_dict = self._keys
+        m_id = self._latest_mids[-1]
+
+        # HASH(3) = prf(SKEYID_a, 0 | M-ID | Ni_b | Nr_b)
+        prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], b"\x00" + m_id + self._nonce_i + self._nonce_i , SHA1)
+        hash_data = prf_HASH.digest()
+        #print(f"ACK hash quick: {hexify(hash_data)}")
+        ack_hash_quick = ISAKMP_payload_Hash(length=24, load=hash_data)
+
+        # encrypt and send packet
+        cipher = AES.new(cur_key_dict["key"], AES.MODE_CBC, self._ivs[int.from_bytes(m_id, 'big')])
+        payload_hash_quick_enc = cipher.encrypt(pad(raw(ack_hash_quick), AES.block_size))
+
+        msg = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=8, exch_type=32, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=60)/Raw(load=payload_hash_quick_enc)
+
+        resp = self._conn.send_recv_data(msg)
+        if resp != None:
+            if (ret := self.get_retransmission(resp)): # retransmission handling
+                return ret
+            notification = self.parse_notification(resp)
+            if notification == "DELETE":
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = "ISAKMP_DELETE"
+                #self.reset()
+                return 'ISAKMP_DELETE'
+            elif notification:
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = notification
+                ##self.reset() # TODO: is this reset needed??
+                return notification
+            else:
+                print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
+                if resp[ISAKMP].id != 0:
+                    self._ids[resp[ISAKMP].id] = None
+                #self.reset()
+                return None # ? Probably?
+        else:
+            print("Error, unexpected server return value - nothing")
+            exit(-1)
     
     # send delete message --> resets server
     # workarounds with notify for p1 - SA pre keying
@@ -549,11 +877,12 @@ class IPSEC_Mapper:
         # create unencrypted delete message --> this will fail on default strongswan apparently
         # check if SA has been established yet:
         cur_key_dict = self._keys
-        if self._spi_quick_max != 0: # if a ipsec conn is up, cleanly delete it as well
-            # create list of all possibly active spis
+        if self._spis: # if a ipsec conn is up, cleanly delete it as well
+            # create list of all possibly active spis --> including old ones, since we use a rolling counter!
             spis_quick_possible = []
-            for spi in range(1, self._spi_quick_max+1):
-                spis_quick_possible.append(spi.to_bytes(4, 'big'))
+            for spi in self._spis:
+                print(f"Trying to delete spi: {hexify(spi)}")
+                spis_quick_possible.append(spi)
 
             ## first packet: ipsec
             # p = ISAKMP()/ISAKMP_payload_Hash/ISAKMP_payload_Delete
@@ -566,7 +895,7 @@ class IPSEC_Mapper:
                 iv = self._ivs[0]
 
             p_delete1 = ISAKMP_payload_Delete(ProtoID=3, SPIsize=4, SPI=spis_quick_possible)
-            # p_delete1.show()
+            #p_delete1.show()
             print(f"delete1 (ipsec): {hexify(raw(p_delete1))}")
             print(f"delete1 (ipsec): {len(raw(p_delete1))}")
 
@@ -607,10 +936,15 @@ class IPSEC_Mapper:
             p1 = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id1, 'big'), length=76)/Raw(load=payload_enc)
             resp = self._conn.send_recv_data(p1)
             if resp:
+                if (ret := self.get_retransmission(resp)): # retransmission handling
+                    # return ret
+                    pass
                 notification = self.parse_notification(resp)
-                notification.show()
-                print("Error, delete got resp")
-                exit(-1)
+                if notification:
+                    notification.show()
+                else:
+                    print(f"Error: encountered unimplemented Payload type in DELETE")
+                    # return None # ? Probably?
 
         ## Second packet: isakmp
         p_delete2 = ISAKMP_payload_Delete(SPIsize=16, SPI=[(self._cookie_i+self._cookie_r), (self._cookie_i+self._cookie_r)])
@@ -659,23 +993,16 @@ class IPSEC_Mapper:
         p2 = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id2, 'big'), length=92)/Raw(load=payload_enc)
 
         resp = self._conn.send_recv_data(p2)
-        if resp == None:
-            return None
-        else: # TODO: parse delete response and return it
+        if resp:
+            if (ret := self.get_retransmission(resp)): # retransmission handling
+                # return ret
+                pass
             notification = self.parse_notification(resp)
-            print("DELETE returned value")
-            notification.show()
-            exit(-1) #TODO remove if used in code
-        if notification == "DELETE":
-            self.reset()
-            return 'ISAKMP_DELETE'
-        elif notification:
-            #self.reset() # TODO: is this reset needed??
-            return notification
-        else:
-            print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
-            self.reset()
-            return None # ? Probably?
+            if notification:
+                notification.show()
+            else:
+                print(f"Error: encountered unimplemented Payload type in DELETE")
+                # return None # ? Probably?
         
     def rekey_quick(self):
         if not self._keyed: # if no SA_quick SPI has been established this simply does that, no rekey
@@ -687,9 +1014,8 @@ class IPSEC_Mapper:
             self.ack_quick()
 
     # utility function called by delete to reset Mapper to base state (server is reset with delete)
-    # important -  ivs, self._keyed, self._curr_m_id etc.
+    # important -  ivs, self._keyed, self._latest_mids etc.
     def reset(self):
-        self._resp = ISAKMP()
         self._cookie_i = b""
         self._cookie_r = b""
         self._nonce_i = b""
@@ -697,8 +1023,8 @@ class IPSEC_Mapper:
         self._sa_body_init = b""
         self._ivs = {0: b""}
         self._keys = {}
-        self._curr_m_id = b""
-        self._spi_quick_max = 0
+        self._latest_mids = []
+        self._spis = []
         self._keyed = False
         self._ids = {}
         leftover = self._conn.recv_data() # catch any leftover messages
@@ -755,7 +1081,7 @@ class IPSEC_Mapper:
 
     # test failing runs from SUL
     def test(self):
-        testcase = [self.sa_main, self.key_ex_main, self.authenticate, self.ack_quick, self.ack_quick, self.ack_quick, self.delete, self.reset, self.sa_main, self.key_ex_main, self.authenticate, self.sa_quick, self.key_ex_main, self.key_ex_main, self.ack_quick, self.ack_quick, self.delete, self.reset, self.sa_main, self.key_ex_main, self.authenticate, self.delete, self.reset]
+        testcase = [self.sa_main, self.key_ex_main, self.authenticate, self.sa_quick, self.sa_quick, self.sa_quick, self.ack_quick, self.delete, self.reset, self.sa_main, self.key_ex_main, self.authenticate, self.sa_quick, self.sa_quick, self.sa_quick, self.ack_quick, self.sa_main, self.sa_quick, self.ack_quick, self.delete, self.reset]
         for i in range(1):
             for t in testcase:
                 print(f"\n\nL{i} - Testcase: {t.__name__}\n")

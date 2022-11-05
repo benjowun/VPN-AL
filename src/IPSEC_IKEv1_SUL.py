@@ -7,8 +7,8 @@ from IPSEC_Mapper import IPSEC_Mapper
 from time import sleep
 
 # timing params in seconds
-WAIT_TIME = 0
-CONNECTION_TIMEOUT = 2
+WAIT_TIME = 1
+CONNECTION_TIMEOUT = 3
 
 class IPSEC_IKEv1_SUL(SUL):
     def __init__(self):
@@ -35,6 +35,7 @@ class IPSEC_IKEv1_SUL(SUL):
         sleep(WAIT_TIME)
         self.ipsec.delete()
         #self.ipsec.delete()
+        #self.ipsec.print_info()
     
     # map to concrete implementation
     def step(self, letter):
