@@ -59,6 +59,7 @@ class CacheTree:
                         f'Received output: {self.outputs}'
                     file = open("non_det.txt", "a+")
                     print(f"Info: {msg}", file=file)
+                    print(f"Info: {msg}")
                     file.close()
                     raise SystemExit(msg)
         self.curr_node = node
