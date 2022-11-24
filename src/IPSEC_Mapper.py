@@ -557,13 +557,8 @@ class IPSEC_Mapper:
         #print(f"iv_new: {hexify(self._ivs[int.from_bytes(m_id, 'big')])}")
 
 
-    # send delete packet and parses response
-    # encrypted if keyed, else not
-    # 3 different types:
-    # - before keying: send unencrypted delete IKE SA
-    # - after keying before IPSEC SA: send encrypted delete IKE SA
-    # - after IPSEC SA: send encrypted delete latest IPSEC SA (and pop from queue)
-    def delete_packet(self):
+    # sends a delete ISAKMP packet (encrypted if already keyed, else plain)
+    def ISAKMP_delete_packet(self):
         if not self._keys:
             # send unencrypted (note: strongswan ignores this)
             p_delete2 = ISAKMP_payload_Delete(SPIsize=16, SPI=[(self._cookie_i+self._cookie_r), (self._cookie_i+self._cookie_r)])
@@ -584,82 +579,9 @@ class IPSEC_Mapper:
                         self._ids[resp[ISAKMP].id] = None
                     exit(-1)
             return None
-
-        # create unencrypted delete message --> this will fail on default strongswan apparently
-        # check if SA has been established yet:
-        cur_key_dict = self._keys
-        if self.get_up_spis(): # try to delete latest spi
-            spis_quick_possible = [self.get_up_spis()[-1]]
-
-            ## first packet: ipsec
-            # p = ISAKMP()/ISAKMP_payload_Hash/ISAKMP_payload_Delete
-            # keys
-            # We always delete SA after this, so we can simply make new iv from p1 result
-            # Still for completeness' sake, we test for other ivs
-            if  5555 in self._ivs:
-                iv = self._ivs[ 5555]
-            else:
-                iv = self._ivs[0]
-
-            p_delete1 = ISAKMP_payload_Delete(ProtoID=3, SPIsize=4, SPI=spis_quick_possible)
-            #p_delete1.show()
-            print(f"   ...delete1 (ipsec): {hexify(spis_quick_possible[0])}")
-            dprint(f"   ...delete1 (ipsec): {len(raw(p_delete1))}")
-
-            m_id1 = ( 5555).to_bytes(4, 'big') # random  --> does not really matter that it is reused here, since we clear everything on delete anyways
-            #print(f"id: {int.from_bytes(m_id1, 'big')}")
-
-            # create unencrypted hash packet
-            # HASH(1) = prf(SKEYID_a, M-ID | N/D)
-            prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id1 + raw(p_delete1), SHA1)
-            hash_data = prf_HASH.digest()
-            #print(f"hash: {hexify(hash_data)}")
-
-            payload_plain = ISAKMP_payload_Hash(length=24, load=hash_data)/p_delete1
-
-            #print(f"payload plain: {hexify(raw(payload_plain))}")
-            #payload_plain.show()
-
-            # iv for encryption: HASH(last recved encrypted block | m_id)
-            #print(f"last block {hexify(iv)}")
-            #print(f"m_id1: {m_id1}")
-            #print(f"iv old: {hexify(iv)}")
-
-            h = SHA1.new(iv + m_id1)
-            iv_new = h.digest()[:16]
-
-            #print(f"new iv len: {len(iv_new)}")
-            dprint(f"current iv  5555: {hexify(iv_new)}") # correct (if first message)
-
-            cipher = AES.new(cur_key_dict["key"], AES.MODE_CBC, iv_new)
-            payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
-            #print(f"payload len: {len(payload_enc)}")
-            #print(f"payload: {hexify(payload_enc)}")
-
-            self._ivs[ 5555] = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
-
-            #print(f"iv_new len: {len(self._ivs[ 5555])}")
-            dprint(f"new iv  5555 {hexify(self._ivs[ 5555])}")
-            p1 = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id1, 'big'), length=76)/Raw(load=payload_enc)
-            resp = self._conn.send_recv_data(p1)
-            if resp != None:
-                if (ret := self.get_retransmission(resp)): # retransmission handling
-                    if ret == "RET":
-                        return None
-                    return ret
-                notification = self.parse_notification(resp)
-                if notification:
-                    if resp[ISAKMP].id != 0:
-                        self._ids[resp[ISAKMP].id] = notification
-                    return notification
-                else:
-                    print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
-                    if resp[ISAKMP].id != 0:
-                        self._ids[resp[ISAKMP].id] = None
-                    exit(-1)
-            return None
-        else: # --> only if not already IPSEC SA exists
-            ## packet: isakmp 
+        else:
+            cur_key_dict = self._keys
+             ## packet: isakmp 
             p_delete2 = ISAKMP_payload_Delete(SPIsize=16, SPI=[(self._cookie_i+self._cookie_r), (self._cookie_i+self._cookie_r)])
             #print(f"delete2 (isakmp): {hexify(raw(p_delete2))}")
 
@@ -723,9 +645,83 @@ class IPSEC_Mapper:
                     exit(-1)
             return None
 
+    # send delete packet to delete up SPIs (IPSEC SAs)
+    def IPSEC_delete_packet(self):
+        if not self._keys:
+            return None
 
+        # check if SA has been established yet:
+        cur_key_dict = self._keys
+        if self.get_up_spis(): # try to delete latest spi
+            spis_quick_possible = self.get_up_spis()
 
-    # send delete message --> resets server
+            ## first packet: ipsec
+            # p = ISAKMP()/ISAKMP_payload_Hash/ISAKMP_payload_Delete
+            # keys
+            # We always delete SA after this, so we can simply make new iv from p1 result
+            # Still for completeness' sake, we test for other ivs
+            if  5555 in self._ivs:
+                iv = self._ivs[5555]
+            else:
+                iv = self._ivs[0]
+
+            p_delete1 = ISAKMP_payload_Delete(ProtoID=3, SPIsize=4, SPI=spis_quick_possible)
+            #p_delete1.show()
+
+            m_id1 = ( 5555).to_bytes(4, 'big') # random
+            #print(f"id: {int.from_bytes(m_id1, 'big')}")
+
+            # create unencrypted hash packet
+            # HASH(1) = prf(SKEYID_a, M-ID | N/D)
+            prf_HASH = HMAC.new(cur_key_dict["SKEYID_a"], m_id1 + raw(p_delete1), SHA1)
+            hash_data = prf_HASH.digest()
+            #print(f"hash: {hexify(hash_data)}")
+
+            payload_plain = ISAKMP_payload_Hash(length=24, load=hash_data)/p_delete1
+
+            #print(f"payload plain: {hexify(raw(payload_plain))}")
+            #payload_plain.show()
+
+            # iv for encryption: HASH(last recved encrypted block | m_id)
+            #print(f"last block {hexify(iv)}")
+            #print(f"m_id1: {m_id1}")
+            #print(f"iv old: {hexify(iv)}")
+
+            h = SHA1.new(iv + m_id1)
+            iv_new = h.digest()[:16]
+
+            #print(f"new iv len: {len(iv_new)}")
+            dprint(f"current iv  5555: {hexify(iv_new)}") # correct (if first message)
+
+            cipher = AES.new(cur_key_dict["key"], AES.MODE_CBC, iv_new)
+            payload_enc = cipher.encrypt(pad(raw(payload_plain), AES.block_size))
+            #print(f"payload len: {len(payload_enc)}")
+            #print(f"payload: {hexify(payload_enc)}")
+
+            self._ivs[5555] = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload
+
+            #print(f"iv_new len: {len(self._ivs[ 5555])}")
+            dprint(f"new iv  5555 {hexify(self._ivs[ 5555])}")
+            p1 = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id1, 'big'), length=76)/Raw(load=payload_enc)
+            resp = self._conn.send_recv_data(p1)
+            if resp != None:
+                if (ret := self.get_retransmission(resp)): # retransmission handling
+                    if ret == "RET":
+                        return None
+                    return ret
+                notification = self.parse_notification(resp)
+                if notification:
+                    if resp[ISAKMP].id != 0:
+                        self._ids[resp[ISAKMP].id] = notification
+                    return notification
+                else:
+                    print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
+                    if resp[ISAKMP].id != 0:
+                        self._ids[resp[ISAKMP].id] = None
+                    exit(-1)
+            return None
+
+    # send delete messages --> resets server
     # workarounds with notify for p1 - SA pre keying
     def delete(self):
         if not self._keys:

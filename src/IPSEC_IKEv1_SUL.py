@@ -62,8 +62,12 @@ class IPSEC_IKEv1_SUL(SUL):
             ret = self.ipsec.ack_quick()
             print(" --> " + str(ret))
             return ret
-        elif letter == 'delete':
-            ret = self.ipsec.delete_packet()
+        elif letter == 'delete_main':
+            ret = self.ipsec.ISAKMP_delete_packet()
+            print(" --> " + str(ret))
+            return ret
+        elif letter == 'delete_quick':
+            ret = self.ipsec.IPSEC_delete_packet()
             print(" --> " + str(ret))
             return ret 
         # elif letter == 'rekey_quick':
@@ -75,7 +79,7 @@ class IPSEC_IKEv1_SUL(SUL):
         
 
 sul = IPSEC_IKEv1_SUL()
-input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'delete'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
+input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'delete_main', 'delete_quick'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
 
 #eq_oracle = RandomWalkEqOracle(input_al, sul, num_steps=2000, reset_after_cex=True, reset_prob=0.15)
 eq_oracle = StatePrefixEqOracle(input_al, sul, walks_per_state=10, walk_len=10)
