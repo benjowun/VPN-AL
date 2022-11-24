@@ -44,10 +44,10 @@
   <internal package="biblatex" priority="9" active="0">
     <generic>latex</generic>
     <provides type="dynamic">
-      <file>thesis.bcf</file>
+      <file>vpn_thesis.bcf</file>
     </provides>
     <requires type="dynamic">
-      <file>thesis.bbl</file>
+      <file>vpn_thesis.bbl</file>
     </requires>
     <requires type="static">
       <file>blx-dm.def</file>
@@ -73,26 +73,22 @@
     <generic>biber</generic>
     <cmdline>
       <binary>biber</binary>
-      <infile>thesis</infile>
+      <infile>vpn_thesis</infile>
     </cmdline>
     <input>
-      <file>thesis.bcf</file>
+      <file>vpn_thesis.bcf</file>
     </input>
     <output>
-      <file>thesis.bbl</file>
+      <file>vpn_thesis.bbl</file>
     </output>
     <provides type="dynamic">
-      <file>thesis.bbl</file>
+      <file>vpn_thesis.bbl</file>
     </provides>
     <requires type="dynamic">
-      <file>thesis.bcf</file>
+      <file>vpn_thesis.bcf</file>
     </requires>
     <requires type="editable">
-      <file>ivis.bib</file>
-      <file>kandrews.bib</file>
-      <file>latex.bib</file>
-      <file>presentations.bib</file>
-      <file>tools.bib</file>
+      <file>bibliography.bib</file>
       <file>writing.bib</file>
     </requires>
   </external>
