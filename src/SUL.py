@@ -101,9 +101,10 @@ class CacheSUL(SUL):
         cached_query = self.cache.in_cache(word)
         if cached_query:
             self.num_cached_queries += 1
+            print("Returning cached query")
             return cached_query
 
-        # get outputs using default query method
+        # get outputs using default query method, also wrapped to be able to catch errors from main program
         out = self.sul.query(word)
 
         try:
@@ -113,10 +114,12 @@ class CacheSUL(SUL):
             for i, o in zip(word, out):
                 self.cache.step_in_cache(i,o, overwrite)
             self.repetitions = 0
-        except:                
+        except Exception as e:   
+            print(f"Exception {e}")             
             self.repetitions += 1
             file = open("non_det.txt", "a+")
             print(f"Caught non-determinism! {word}", file=file)
+            print(f"Caught non-determinism! {word}")
             file.close()
             self.post()
             if self.repetitions > 3:

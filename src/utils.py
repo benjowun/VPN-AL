@@ -16,6 +16,10 @@ def show(packet):
     else:
         print("Debug prints disabled.")
 
+def dprint(data):
+    if debug:
+        print(data)
+
 # shows if a returned packet is encrypted
 def is_encypted(packet):
     #print(f"Flags: {packet[ISAKMP].flags}")

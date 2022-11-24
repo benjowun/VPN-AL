@@ -220,8 +220,10 @@ ISAKMP_notification_types = {1: "INVALID-PAYLOAD-TYPE",
                              27: "NOTIFY-SA-LIFETIME",              
                              28: "CERTIFICATE-UNAVAILABLE",         
                              29: "UNSUPPORTED-EXCHANGE-TYPE",       
-                             30: "UNEQUAL-PAYLOAD-LENGTHS",         
-                             16384: "CONNECTED"                   
+                             30: "UNEQUAL-PAYLOAD-LENGTHS",
+                             16384: "CONNECTED",                   
+                             36136: "R-U-THERE",        
+                             36137: "R-U-THERE-ACK"      
                              }
 
 

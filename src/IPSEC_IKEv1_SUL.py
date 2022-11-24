@@ -11,7 +11,7 @@ WAIT_TIME = 1
 CONNECTION_TIMEOUT = 3
 
 class IPSEC_IKEv1_SUL(SUL):
-    def __init__(self):
+    def __init__(self): 
         super().__init__()
         self.ipsec = IPSEC_Mapper(CONNECTION_TIMEOUT)
         self.logs_run = []
@@ -32,15 +32,14 @@ class IPSEC_IKEv1_SUL(SUL):
 
     def post(self):
         print("***Ran post***\n")
-        sleep(WAIT_TIME)
         self.ipsec.delete()
+        #sleep(WAIT_TIME) # --> there is a read that times out here anyways
         #self.ipsec.delete()
         #self.ipsec.print_info()
     
     # map to concrete implementation
     def step(self, letter):
         #print(self.ipsec.print_info())
-        #sleep(WAIT_TIME) #this should not be necessary
         print("$" + letter)
         self.logs_run.append(letter)
         if letter == 'sa_main':
@@ -63,8 +62,12 @@ class IPSEC_IKEv1_SUL(SUL):
             ret = self.ipsec.ack_quick()
             print(" --> " + str(ret))
             return ret
-        elif letter == 'delete':
-            ret = self.ipsec.delete()
+        elif letter == 'delete_main':
+            ret = self.ipsec.ISAKMP_delete_packet()
+            print(" --> " + str(ret))
+            return ret
+        elif letter == 'delete_quick':
+            ret = self.ipsec.IPSEC_delete_packet()
             print(" --> " + str(ret))
             return ret 
         # elif letter == 'rekey_quick':
@@ -72,12 +75,11 @@ class IPSEC_IKEv1_SUL(SUL):
         else:
             print("Unexpected Input: " + str(letter))
             self.ipsec.print_info()
-            return None
-            #exit(-1)
+            exit(-1)
         
 
 sul = IPSEC_IKEv1_SUL()
-input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
+input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'delete_main', 'delete_quick'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
 
 #eq_oracle = RandomWalkEqOracle(input_al, sul, num_steps=2000, reset_after_cex=True, reset_prob=0.15)
 eq_oracle = StatePrefixEqOracle(input_al, sul, walks_per_state=10, walk_len=10)
