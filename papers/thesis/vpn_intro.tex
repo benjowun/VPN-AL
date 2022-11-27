@@ -1,0 +1,36 @@
+%----------------------------------------------------------------
+%
+%  File    :  thesis-embed.tex
+%
+%  Author  :  Keith Andrews, IICM, TU Graz, Austria
+% 
+%  Created :  22 Feb 96
+% 
+%  Changed :  19 Feb 2004
+% 
+%----------------------------------------------------------------
+
+\chapter{Introduction}
+
+\label{chap:Introduction}
+
+%TODO: expand on
+% Background
+\section{Motivation}
+Virtual Private Networks (VPNs) are used to allow secure communication over an insecure channel. They function by creating a secure encrypted tunnel through which users can send their data. Example use cases include additional privacy from prying eyes such as Internet Server Providers, access to region-locked online content and secure remote access to company networks. The importance of VPN software has increased dramatically since the beginning of the COVID-19 pandemic due to the influx of people working from home \parencite{abhijith2020impact}. This makes finding vulnerabilities in VPN software more critical than ever. % state reports on damages by vpn errors? 
+% IPSEC
+IPsec is a popular VPN protocol and most commonly uses the Internet Key Exchange (IKE) protocol to share authenticated keying material between involved parties. Therefore, IKE and IPsec are sometimes used interchangeably. We will stick to the official nomenclature of using IPsec for the full protocol and IKE for the key exchange only. IKE has two versions, IKEv1 and IKEv2, with IKEv2 being the newer and recommended version \parencite{nist791491}. However, despite IKEv2 supposedly replacing its predecessor, IKEv1, sometimes also called Cisco IPsec, is still in widespread use today. This is reflected by the company AVM to this day only offering IKEv1 support for their popular FRITZ!Box routers \parencite{avm2022}. Additionally, IKEv1 is also used for the L2TP/IPsec, one of the most popular VPN protocols according to NordVPN \parencite{nordvpn2021}. The widespread usage of IPsec-IKEv1, combined with its relative age and many options makes it an interesting target for security testing.
+
+
+\section{Research Problems and Goals}
+% Automata Learning
+State machines of protocol implementations are useful tools in state-of-the-art software testing. They have, e.g., been used to detect specific software implementations, or to generate test cases automatically \parencites{pferscher2021fingerprinting, pferscher2022fuzzing}. Mealy machines are a type of state machine that can be used to describe the behavior a system when faced with external input. Often we are interested in testing software without knowing its exact inner workings. We call these systems black-box systems. However, despite lacking information on the inner structure of a black-box system, the state machine of the system can still be extracted. One method of generating the state machine of such a system is to use active automata learning. A notable example of an active automata learning algorithm is the $L^*$ algorithm by Angluin \parencite{angluin1987learning}. In $L^*$, a learner queries the System under Learning (SUL) and constructs an automaton describing the behavior of the SUL through its responses. This automaton is then compared with the SUL, adapting it if they show different behaviors. The resulting automaton then fully describes the behavior of the SUL.
+
+% Problem / motivation
+By combining automata learning with fuzzing or similar software testing techniques, network protocols can be extensively and automatically tested without requiring access to their source code. Guo et al.~\textcite{guo2019model} tested IPsec-IKEv2 using automata learning and model checking, however so far, no studies have focused on IKEv1 in the context of automata learning. Therefore our goal was to black-box test the IPsec-IKEv1 protocol using automata learning in combination with automata-based fuzzing. We used the active automata learning framework \textsc{AALpy} \textcite{muvskardin2022aalpy} with a custom mapper to learn the state machines of various IPsec-IKEv1 server implementations. We then further utilized the learned models for fuzzing and fingerprinting. % TODO: add any findings here
+
+% TODO maybe do a section on Fingerprinting in the preliminaries as well as in the chapter summaries
+% Expand this section more
+\section{Structure}
+This thesis is structured as follows. Chapter~\ref{chap:Related} gives an overview of related and relevant literature. Chapter~\ref{chap:Preliminaries} introduces necessary background knowledge, covering the IPsec-IKEv1 protocol, Mealy machines, automata learning and fuzzing. Our learning setup, custom mapper and fuzzing methodology are presented in chapter~\ref{chap:Learning}. In chapter~\ref{chap:Evaluation} we present and analyze the learned models and the results of the fuzzing tests.
+Finally we summarize the thesis in chapter~\ref{chap:Conclusion} and discuss future work.

@@ -13,18 +13,18 @@
 \documentclass[11pt]{book}
 
 \usepackage[
-  a4paper,
-  twoside,
-  top=5mm,                % top margin
-  bottom=7mm,             % bottom margin
-  inner=20mm,             % inner margin (next to binding)
-  outer=20mm,             % outer margin (opposite binding)
-  bindingoffset=10mm,     % on binding side
-  includeheadfoot,        % include head(er) and foot(er)
-  headheight=10mm,        % height of header
-  headsep=15mm,           % sep between header and text body
-  footskip=15mm,          % sep between body and baseline of footer
-  footnotesep = 10mm plus 2mm minus 0mm  % bottom of body to top of footnote
+a4paper,
+twoside,
+top=5mm,                % top margin
+bottom=7mm,             % bottom margin
+inner=20mm,             % inner margin (next to binding)
+outer=20mm,             % outer margin (opposite binding)
+bindingoffset=10mm,     % on binding side
+includeheadfoot,        % include head(er) and foot(er)
+headheight=10mm,        % height of header
+headsep=15mm,           % sep between header and text body
+footskip=15mm,          % sep between body and baseline of footer
+footnotesep = 10mm plus 2mm minus 0mm  % bottom of body to top of footnote
 ]{geometry}
 % A4 paper is w=210m, h=297mm
 
@@ -59,8 +59,6 @@
 \setcounter{secnumdepth}{3}     % lowest section level still numbered
 \setcounter{tocdepth}{2}        % lowest section level entered in ToC
 
-
-
 \usepackage[T1]{fontenc}        % 8-bit output chars (must be before inputenx)
 \usepackage[utf8]{inputenx}     % input char encoding
 
@@ -79,8 +77,8 @@
 
 \usepackage{siunitx}            % prettier number formatting
 \sisetup{%
-  group-separator={,},
-  group-minimum-digits=4,
+	group-separator={,},
+	group-minimum-digits=4,
 }
 \usepackage[super]{nth}         % 1st, 2nd, 3rd, etc.
 
@@ -103,8 +101,6 @@
 
 \definecolor{tableheadercolour}{gray}{0.8}
 \definecolor{tablerowcolour}{gray}{0.93}
-
-
 
 \usepackage{longtable}
 \usepackage{multirow}
@@ -137,15 +133,15 @@
 \usepackage{enumitem}
 
 \setlist{
-  topsep=0pt,
-  partopsep=0pt,
-  parsep=0.6ex,
-  itemsep=1.2ex,
-  left=\parindent .. 2\parindent,    % bullet .. start ot text
+	topsep=0pt,
+	partopsep=0pt,
+	parsep=0.6ex,
+	itemsep=1.2ex,
+	left=\parindent .. 2\parindent,    % bullet .. start ot text
 }
 
 \setlist[description]{
-  style=sameline,
+	style=sameline,
 }
 
 
@@ -153,22 +149,22 @@
 % use caption and subfig (caption2 and subfigure are now obsolete)
 
 \usepackage[
-  position=bottom,
-  margin=1cm,
-  font=small,
-  labelfont={bf,sf},
-  format=plain,
-  indention=5mm,
-  aboveskip=4mm,
-  belowskip=0mm,
+position=bottom,
+margin=1cm,
+font=small,
+labelfont={bf,sf},
+format=plain,
+indention=5mm,
+aboveskip=4mm,
+belowskip=0mm,
 ]{caption,subfig}
 
 \captionsetup[subfigure]{
-  margin=0pt,
-  parskip=0pt,
-  indention=5mm,
-  farskip=4mm,            % skip above subfig (assuming captions at bottom)
-  captionskip=2mm,        % skip between subfig and subcaption
+	margin=0pt,
+	parskip=0pt,
+	indention=5mm,
+	farskip=4mm,            % skip above subfig (assuming captions at bottom)
+	captionskip=2mm,        % skip between subfig and subcaption
 }
 
 
@@ -179,9 +175,9 @@
 \newlength{\numwidth}%
 \setlength{\numwidth}{\widthof{\normalfont{\lst@numberstyle{99}}}}% Up to 2-digit (99) line numbers
 \def\lst@PlaceNumber{%
-  \makebox[\numwidth+1em][l]{%
-    \makebox[\numwidth][r]{\normalfont\lst@numberstyle{\thelstnumber}}%
-  }%
+	\makebox[\numwidth+1em][l]{%
+		\makebox[\numwidth][r]{\normalfont\lst@numberstyle{\thelstnumber}}%
+	}%
 }
 \makeatother
 
@@ -190,79 +186,80 @@
 % floated listings override these settings later
 
 \lstset{                              % set parameters for listings
-  floatplacement=tp,                  % default float placement
-  numberbychapter,
-  inputencoding=utf8,
-  language=,                          % empty = plain text
-  tabsize=2,
-  xleftmargin=2\parindent,
-  xrightmargin=2\parindent,
-  frame=none,
-  framexleftmargin=0mm,
-  rulesepcolor=\color{verylightgrey},
-  numbers=none,
-  numberstyle=\scriptsize,
-  numbersep=2ex,
-  breaklines,
-  showtabs=false,
-  showspaces=false,
-  showstringspaces=false,
-  %
-  basicstyle=\small\ttfamily,
-  keywordstyle=\color{black},
-  identifierstyle=\color{black},
-  commentstyle=\color{SteelBlue},
-  stringstyle=\color{DarkOrange},
-  %
-  captionpos=b,
-  abovecaptionskip=\abovecaptionskip,
-  belowcaptionskip=\belowcaptionskip,
-  extendedchars=true,           % listings usually only support 7-bit ascii chars
-  literate=%                    % map some one-byte utf8 chars for use in listings
-%    { }{{~}}1                   % non-breaking space
-    {©}{{\textcopyright}}1
-    {€}{{\texteuro}}1
-    {Ö}{{\"O}}1
-    {Ä}{{\"A}}1
-    {Ü}{{\"U}}1
-    {ß}{{\ss}}1
-    {ö}{{\"o}}1
-    {ä}{{\"a}}1
-    {ü}{{\"u}}1,
+	floatplacement=tp,                  % default float placement
+	numberbychapter,
+	inputencoding=utf8,
+	language=,                          % empty = plain text
+	tabsize=2,
+	xleftmargin=2\parindent,
+	xrightmargin=2\parindent,
+	frame=none,
+	framexleftmargin=0mm,
+	rulesepcolor=\color{verylightgrey},
+	numbers=left,
+	stepnumber=1,
+	numberstyle=\scriptsize,
+	numbersep=2ex,
+	breaklines,
+	showtabs=false,
+	showspaces=false,
+	showstringspaces=false,
+	%
+	basicstyle=\small\ttfamily,
+	keywordstyle=\color{black},
+	identifierstyle=\color{black},
+	commentstyle=\color{SteelBlue},
+	stringstyle=\color{DarkOrange},
+	%
+	captionpos=b,
+	abovecaptionskip=\abovecaptionskip,
+	belowcaptionskip=\belowcaptionskip,
+	extendedchars=true,           % listings usually only support 7-bit ascii chars
+	literate=%                    % map some one-byte utf8 chars for use in listings
+	%    { }{{~}}1                   % non-breaking space
+	{©}{{\textcopyright}}1
+	{€}{{\texteuro}}1
+	{Ö}{{\"O}}1
+	{Ä}{{\"A}}1
+	{Ü}{{\"U}}1
+	{ß}{{\ss}}1
+	{ö}{{\"o}}1
+	{ä}{{\"a}}1
+	{ü}{{\"u}}1,
 }
 
 
 \lstdefinelanguage{biblatex}   % based on biblatex v 2.7a from 2013-07-14
 {
-  keywords={%
-    @article,@book,@mvbook,@inbook,@bookinbook,@suppbook,%
-    @booklet,@collection,@mvcollection,@incollection,@suppcollection,%
-    @manual,@misc,@online,@patent,@periodical,@suppperiodical,%
-    @proceedings,@mvproceedings,@inproceedings,@reference,@mvreference,%
-    @inreference,@report,@set,@thesis,@unpublished,@xdata,%
-    @conference,@electronic,@mastersthesis,@phdthesis,@techreport,@www,%
-    @artwork,@audio,@bibnote,@commentary,@image,@jurisdiction,@legislation,%
-    @legal,@letter,@movie,@music,@performance,@review,@software,%
-    @standard,@video%
-  },
-  sensitive=false,
-  comment=[l][\itshape]{@comment},
-  morecomment=[l]{\%},
+	keywords={%
+		@article,@book,@mvbook,@inbook,@bookinbook,@suppbook,%
+		@booklet,@collection,@mvcollection,@incollection,@suppcollection,%
+		@manual,@misc,@online,@patent,@periodical,@suppperiodical,%
+		@proceedings,@mvproceedings,@inproceedings,@reference,@mvreference,%
+		@inreference,@report,@set,@thesis,@unpublished,@xdata,%
+		@conference,@electronic,@mastersthesis,@phdthesis,@techreport,@www,%
+		@artwork,@audio,@bibnote,@commentary,@image,@jurisdiction,@legislation,%
+		@legal,@letter,@movie,@music,@performance,@review,@software,%
+		@standard,@video%
+	},
+	sensitive=false,
+	comment=[l][\itshape]{@comment},
+	morecomment=[l]{\%},
 }
 
 \lstdefinelanguage{CSS}
 {
-  alsoletter={-},
-  morekeywords={%
-  color,background,background-color,margin,padding,font,
-  font-family,weight,%
-  display,position,top,left,right,bottom,list,%
-  style,border,size,white,space,min,width%
-  },
-  sensitive=false,
-  morecomment=[l]{//},
-  morecomment=[s]{/*}{*/},
-  morestring=[b]",
+	alsoletter={-},
+	morekeywords={%
+		color,background,background-color,margin,padding,font,
+		font-family,weight,%
+		display,position,top,left,right,bottom,list,%
+		style,border,size,white,space,min,width%
+	},
+	sensitive=false,
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]",
 }
 
 % very simple highlighting for listings
@@ -270,33 +267,33 @@
 
 \lstdefinelanguage{SVG}
 {
-  morestring=[b]",
-  morecomment=[s]{<!--}{-->},
-  commentstyle=\color{DarkOliveGreen},
-  stringstyle=\color{Navy},
-  identifierstyle=\color{black},
-  keywordstyle=\color{black},
+	morestring=[b]",
+	morecomment=[s]{<!--}{-->},
+	commentstyle=\color{DarkOliveGreen},
+	stringstyle=\color{Navy},
+	identifierstyle=\color{black},
+	keywordstyle=\color{black},
 }
 
 
 \lstdefinelanguage{TypeScript}
 {
-  keywords= {break, case, catch, continue, debugger, default, delete, do, else,
-    finally, for, function, if, in, instanceof, new, return, switch,
-    this, throw, try, typeof, var, void, while, with, await, async,
-    case, catch, class, const, default, do, enum, export, extends,
-    finally, from, implements, import, instanceof, let, static, super,
-    switch, throw, try},
-  morecomment=[l]{//},
-  morecomment=[s]{/*}{*/},
-  morestring=[b]',
-  morestring=[b]",
-  morestring=[b]`, % Interpolation strings.
-  sensitive=true,
-  commentstyle=\color{DarkOliveGreen},
-  stringstyle=\color{Navy},
-  identifierstyle=\color{black},
-  keywordstyle=\color{black},
+	keywords= {break, case, catch, continue, debugger, default, delete, do, else,
+		finally, for, function, if, in, instanceof, new, return, switch,
+		this, throw, try, typeof, var, void, while, with, await, async,
+		case, catch, class, const, default, do, enum, export, extends,
+		finally, from, implements, import, instanceof, let, static, super,
+		switch, throw, try},
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]',
+	morestring=[b]",
+	morestring=[b]`, % Interpolation strings.
+	sensitive=true,
+	commentstyle=\color{DarkOliveGreen},
+	stringstyle=\color{Navy},
+	identifierstyle=\color{black},
+	keywordstyle=\color{black},
 }
 
 
@@ -366,19 +363,19 @@
 % define page headings how I want them
 
 \newpagestyle{main}[\small]{
-% \addtolength\headheight{6.7pt}
-% \headrule
-\sethead%
-[{\parbox[t]{0.3\textwidth}%                    % even left
-  {\sffamily\thepage}}]
-[]%                                             % even centre
-[{\parbox[t]{0.6\textwidth}%                    % even right
-  {\raggedleft\sffamily\chaptertitle}}]
-{{\parbox[t]{0.6\textwidth}%                    % odd left
-  {\sffamily\sectiontitle}}}%
-{}%                                             % odd centre
-{{\parbox[t]{0.3\textwidth}%                    % odd right
-  {\raggedleft\sffamily\thepage}}}
+	% \addtolength\headheight{6.7pt}
+	% \headrule
+	\sethead%
+	[{\parbox[t]{0.3\textwidth}%                    % even left
+		{\sffamily\thepage}}]
+	[]%                                             % even centre
+	[{\parbox[t]{0.6\textwidth}%                    % even right
+		{\raggedleft\sffamily\chaptertitle}}]
+	{{\parbox[t]{0.6\textwidth}%                    % odd left
+			{\sffamily\sectiontitle}}}%
+	{}%                                             % odd centre
+	{{\parbox[t]{0.3\textwidth}%                    % odd right
+			{\raggedleft\sffamily\thepage}}}
 }
 
 
@@ -432,10 +429,10 @@
 % (requires package etoolbox)
 \makeatletter
 \patchcmd{\@chapter}% <cmd>
-  {\addtocontents}% <search>
-  {\addtocontents{lol}{\protect\addvspace{10\p@}}% add per-chapter space
-   \addtocontents}% <replace>
-  {}{}% <success><failure>
+{\addtocontents}% <search>
+{\addtocontents{lol}{\protect\addvspace{10\p@}}% add per-chapter space
+	\addtocontents}% <replace>
+{}{}% <success><failure>
 \makeatother
 
 % Configure LoL to mimic LoF and LoT
@@ -494,10 +491,10 @@
 
 \usepackage[short]{datetime}   % load datetime *after* babel, requires fmtcount
 % \newdateformat{britdate}{%
-% \ordinaldate{\THEDAY} \,\monthname[\THEMONTH] \THEYEAR
-% }
+	% \ordinaldate{\THEDAY} \,\monthname[\THEMONTH] \THEYEAR
+	% }
 \newdateformat{unixdate}{%
-\twodigit{\THEDAY}~\shortmonthname[\THEMONTH]~\THEYEAR
+	\twodigit{\THEDAY}~\shortmonthname[\THEMONTH]~\THEYEAR
 }
 
 % TODO: use new datetime2 instead of datetime
@@ -505,15 +502,15 @@
 
 
 \usepackage[
-  autostyle=true,          % adapt quote style to current language
-  english=british,         % british english as default
-  threshold=1,             % set block quotations >1 line in display mode
-  maxlevel=4,              % max nesting level
+autostyle=true,          % adapt quote style to current language
+english=british,         % british english as default
+threshold=1,             % set block quotations >1 line in display mode
+maxlevel=4,              % max nesting level
 ]{csquotes}
 
 \usepackage[
-  indentfirst=false,
-  vskip=0pt,               % by default would be \topsep + \partopsep.
+indentfirst=false,
+vskip=0pt,               % by default would be \topsep + \partopsep.
 ]{quoting}
 
 % tell csquotes to use quoting environment
@@ -525,11 +522,11 @@
 
 % I prefer double quotes as outer
 \DeclareQuoteStyle{keithbritish}%  [variant]{style}
-  {\textquotedblleft}%                      opening outer mark
-  {\textquotedblright}%                     closing outer mark
-  [0.05em]%
-  {\textquoteleft}%                         opening inner mark
-  {\textquoteright}%                        closing inner mark
+{\textquotedblleft}%                      opening outer mark
+{\textquotedblright}%                     closing outer mark
+[0.05em]%
+{\textquoteleft}%                         opening inner mark
+{\textquoteright}%                        closing inner mark
 
 \ExecuteQuoteOptions{style=keithbritish}
 
@@ -538,24 +535,24 @@
 
 
 \usepackage[
-  backend=biber,
+backend=biber,
 %  style=ext-authoryear-comp,   % defined in biblatex-ext package
-  style=ext-authoryear,        % defined in biblatex-ext package
-  sorting=nyt,
-  useprefix,                   % van and von are part of second name
-  mergedate=false,             % only for authoryear style
-  dashed=false,                % only for authoryear style
-  abbreviate=false,
-  maxcitenames=2,              % if > 2 authors,
-  mincitenames=1,              % use first 1 then et al
-  maxbibnames=99,              % if > 99 authors,
-  minbibnames=6,               % use first 6 then et al
-  uniquelist=minyear,
-  uniquename=init,
-  hyperref=true,
-  backref=true,
-  backrefstyle=two,
-  sortlocale=en,
+style=ext-authoryear,        % defined in biblatex-ext package
+sorting=nyt,
+useprefix,                   % van and von are part of second name
+mergedate=false,             % only for authoryear style
+dashed=false,                % only for authoryear style
+abbreviate=false,
+maxcitenames=2,              % if > 2 authors,
+mincitenames=1,              % use first 1 then et al
+maxbibnames=99,              % if > 99 authors,
+minbibnames=6,               % use first 6 then et al
+uniquelist=minyear,
+uniquename=init,
+hyperref=true,
+backref=true,
+backrefstyle=two,
+sortlocale=en,
 ]{biblatex}
 
 
@@ -587,11 +584,11 @@
 % remove In: from aricles and inproceedings entries
 % https://tex.stackexchange.com/questions/10682/suppress-in-biblatex
 \renewbibmacro{in:}{%
-  \ifboolexpr{%
-     test {\ifentrytype{article}}%
-     or
-     test {\ifentrytype{inproceedings}}%
-  }{}{\printtext{\bibstring{in}\intitlepunct}}%
+	\ifboolexpr{%
+		test {\ifentrytype{article}}%
+		or
+		test {\ifentrytype{inproceedings}}%
+	}{}{\printtext{\bibstring{in}\intitlepunct}}%
 }
 
 % make all entry titles italic
@@ -608,15 +605,15 @@
 
 % use nth for edition
 \DeclareFieldFormat{edition}{%
-  \ifinteger{#1}
-    {\nth{#1}~\bibstring{edition}}
-    {#1\isdot}}
+	\ifinteger{#1}
+	{\nth{#1}~\bibstring{edition}}
+	{#1\isdot}}
 
 % overwrite some standard strings in english.lbx
 \DefineBibliographyStrings{english}{%
-  edition          = {Edition},
-  mathesis         = {Master's Thesis},
-  phdthesis        = {PhD\addabbrvspace Thesis},
+	edition          = {Edition},
+	mathesis         = {Master's Thesis},
+	phdthesis        = {PhD\addabbrvspace Thesis},
 }
 
 
@@ -628,54 +625,49 @@
 % due to bug in biblatex 3.11
 
 \DefineBibliographyStrings{english}{%
-  january          = {Jan},
-  february         = {Feb},
-  march            = {Mar},
-  april            = {Apr},
-  may              = {May},
-  june             = {Jun},
-  july             = {Jul},
-  august           = {Aug},
-  september        = {Sep},
-  october          = {Oct},
-  november         = {Nov},
-  december         = {Dec},
+	january          = {Jan},
+	february         = {Feb},
+	march            = {Mar},
+	april            = {Apr},
+	may              = {May},
+	june             = {Jun},
+	july             = {Jul},
+	august           = {Aug},
+	september        = {Sep},
+	october          = {Oct},
+	november         = {Nov},
+	december         = {Dec},
 }
 
 \DefineBibliographyExtras{english}{%
-% #1 = year, #2 = month, #3 = day
-\protected\def\mkbibdatelong#1#2#3{%
-  \iffieldundef{#3}
-    {}
-    {\mkdayzeros{\thefield{#3}}%
-     \iffieldundef{#2}{}{\nobreakspace}}%
-  \iffieldundef{#2}
-    {}
-    {\mkbibmonth{\thefield{#2}}%
-     \iffieldundef{#1}{}{\space}}%
-  \iffieldbibstring{#1}{\bibstring{\thefield{#1}}}{\mkyearzeros{\thefield{#1}}}}%
-%
-\protected\def\mkbibdateshort#1#2#3{%
-  \iffieldundef{#3}
-    {}
-    {\mkdayzeros{\thefield{#3}}%
-     \iffieldundef{#2}{}{\nobreakspace}}%
-  \iffieldundef{#2}
-    {}
-    {\mkbibmonth{\thefield{#2}}%
-     \iffieldundef{#1}{}{\space}}%
-  \iffieldbibstring{#1}{\bibstring{\thefield{#1}}}{\mkyearzeros{\thefield{#1}}}}%
+	% #1 = year, #2 = month, #3 = day
+	\protected\def\mkbibdatelong#1#2#3{%
+		\iffieldundef{#3}
+		{}
+		{\mkdayzeros{\thefield{#3}}%
+			\iffieldundef{#2}{}{\nobreakspace}}%
+		\iffieldundef{#2}
+		{}
+		{\mkbibmonth{\thefield{#2}}%
+			\iffieldundef{#1}{}{\space}}%
+		\iffieldbibstring{#1}{\bibstring{\thefield{#1}}}{\mkyearzeros{\thefield{#1}}}}%
+	%
+	\protected\def\mkbibdateshort#1#2#3{%
+		\iffieldundef{#3}
+		{}
+		{\mkdayzeros{\thefield{#3}}%
+			\iffieldundef{#2}{}{\nobreakspace}}%
+		\iffieldundef{#2}
+		{}
+		{\mkbibmonth{\thefield{#2}}%
+			\iffieldundef{#1}{}{\space}}%
+		\iffieldbibstring{#1}{\bibstring{\thefield{#1}}}{\mkyearzeros{\thefield{#1}}}}%
 }
 
 
 
-\addbibresource{ivis.bib}
-\addbibresource{kandrews.bib}
-\addbibresource{latex.bib}
-\addbibresource{presentations.bib}
-\addbibresource{tools.bib}
+\addbibresource{bibliography.bib}
 \addbibresource{writing.bib}
-
 
 
 
@@ -694,192 +686,169 @@
 \usepackage{ifpdf}
 
 \ifpdf
-  % pdflatex
-  \usepackage[pdftex]{graphicx}
-  \DeclareGraphicsExtensions{.pdf,.jpg,.png}
-  \pdfcompresslevel=9
-  \pdfobjcompresslevel=1  % also compress PDF object streams except embedded PDFs
-  \pdfpageheight=297mm
-  \pdfpagewidth=210mm
-  \usepackage[            % hyperref should be last package loaded
-    unicode,
-    pdftex,
-    pdfversion=1.7,
-    pdftitle={Guidelines for Writing a Master's Thesis},
-    pdfsubject={Master's Thesis Template},
-    pdfauthor={Keith Andrews},
-    pdfkeywords={master's thesis, skeleton, guidelines, template},
-    bookmarks,
-    bookmarksnumbered,
-    linktocpage,
-    colorlinks,
-    linkcolor=darkred,
-    anchorcolor=red,
-    citecolor=darkgreen,
-    urlcolor=darkblue,
-    pdfstartview=Fit,              % initial view
-    pdfview=Fit,                   % view after following a link
-    pdfpagelayout=SinglePage,      % single page, no scrolling
-    pdfpagemode=UseOutlines,       % open bookmarks in Acrobat
-    plainpages=false,              % avoids duplicate page number problem
-    pdfpagelabels,                 % avoids duplicate page number problem
-    breaklinks=true,               % allow links exceeding a single line
-  ]{hyperref}
+% pdflatex
+\usepackage[pdftex]{graphicx}
+\DeclareGraphicsExtensions{.pdf,.jpg,.png}
+\pdfcompresslevel=9
+\pdfobjcompresslevel=1  % also compress PDF object streams except embedded PDFs
+\pdfpageheight=297mm
+\pdfpagewidth=210mm
+\usepackage[            % hyperref should be last package loaded
+unicode,
+pdftex,
+pdfversion=1.7,
+pdftitle={Guidelines for Writing a Master's Thesis},
+pdfsubject={Master's Thesis Template},
+pdfauthor={Keith Andrews},
+pdfkeywords={master's thesis, skeleton, guidelines, template},
+bookmarks,
+bookmarksnumbered,
+linktocpage,
+colorlinks,
+linkcolor=darkred,
+anchorcolor=red,
+citecolor=darkgreen,
+urlcolor=darkblue,
+pdfstartview=Fit,              % initial view
+pdfview=Fit,                   % view after following a link
+pdfpagelayout=SinglePage,      % single page, no scrolling
+pdfpagemode=UseOutlines,       % open bookmarks in Acrobat
+plainpages=false,              % avoids duplicate page number problem
+pdfpagelabels,                 % avoids duplicate page number problem
+breaklinks=true,               % allow links exceeding a single line
+]{hyperref}
 
 \else
-  % latex
-  \usepackage[dvips]{graphicx}
-  \DeclareGraphicsExtensions{.eps}
-  \usepackage[dvips]{hyperref}
+% latex
+\usepackage[dvips]{graphicx}
+\DeclareGraphicsExtensions{.eps}
+\usepackage[dvips]{hyperref}
 \fi
-
 
 % export adjustbox keys to includegraphics
 % must be after \usepackage{graphicx}
 \usepackage[export]{adjustbox}    % valign=t, frame, ...
 
-
-
-
-
-
 \input{thesis-macros}
+
+% tikz stuff
+\usepackage{tikz, wrapfig}
+\usetikzlibrary{positioning}
 
 
 
 
 \begin{document}
+	
+	\unixdate
+	
+	\frontmatter
+	
+	\normalsize
+	\pagestyle{empty}             % for title pages
+	\pagenumbering{Roman}         % for pdf labels
+	
+	\input{vpn_title}          % Title Pages, Abstracts, Pledge
+	
+	
+	\cleardoublepage
+	\pagestyle{plain}             % for preliminary pages
+	\pagenumbering{roman}         % for preliminary pages
+	
+	
+	% TODO ka is this necessary?  see iaweb.tex
+	% \phantomsection    % so hyperref pdf link jumps to correct page??
+	
+	\begin{spacing}{0.8}
+		\tableofcontents
+	\end{spacing}
+	\addcontentsline{toc}{chapter}{Contents}
+	
+	\cleardoublepage
+	\begin{spacing}{0.8}
+		\listoffigures
+	\end{spacing}
+	\addcontentsline{toc}{chapter}{List of Figures}
+	
+	\cleardoublepage
+	\begin{spacing}{0.8}
+		\listoftables
+	\end{spacing}
+	\addcontentsline{toc}{chapter}{List of Tables}
+	
+	\cleardoublepage
+	\begin{spacing}{0.8}
+		\lstlistoflistings
+	\end{spacing}
+	\addcontentsline{toc}{chapter}{List of Listings}
+	
+	
+	
+	\cleardoublepage
+	\input{vpn_acknowl}        	% Acknowledgements
+	
+	\cleardoublepage
+	\input{vpn_credits}        	% Credits
+	
+	
+	
+	\mainmatter
+	
+	\cleardoublepage
+	\pagestyle{main}            % for main pages
+	\pagenumbering{arabic}      % for main pages
+	
+	% Part 1 Embedding
+	
+	\cleardoublepage
+	\input{vpn_intro}          	% Introduction: 1-2p (split into motivation, Research Problem and Goals and Structure)
+	
+	\cleardoublepage
+	\input{vpn_related}			% Related work: 1 page?
+	
+	\cleardoublepage
+	\input{vpn_prelim}			% Preliminary work: 7-10 pages
+	
+	% Part 2 Original Work
+	
+	\cleardoublepage
+	\input{vpn_learning}		% Automata Learning setup and overview described as in shortpaper, then design and implementation, then setup of Fuzzing, then implementation  then Fingerprinting and then implementation
+	
+	\cleardoublepage
+	\input{vpn_evaluation}		% Evaluating the models: Looot of pages showing models of various learned systems etc
+	
+	\cleardoublepage
+	\input{vpn_conclusion}		% Conclusion
+	
+	\appendix
+	
+	\cleardoublepage
 
-\unixdate
-
-\frontmatter
-
-\normalsize
-\pagestyle{empty}             % for title pages
-\pagenumbering{Roman}         % for pdf labels
-
-\input{thesis-title}          % Title Pages, Abstracts, Pledge
-
-
-\cleardoublepage
-\pagestyle{plain}             % for preliminary pages
-\pagenumbering{roman}         % for preliminary pages
-
-
-% TODO ka is this necessary?  see iaweb.tex
-% \phantomsection    % so hyperref pdf link jumps to correct page??
-
-\begin{spacing}{0.8}
-\tableofcontents
-\end{spacing}
-\addcontentsline{toc}{chapter}{Contents}
-
-\cleardoublepage
-\begin{spacing}{0.8}
-\listoffigures
-\end{spacing}
-\addcontentsline{toc}{chapter}{List of Figures}
-
-\cleardoublepage
-\begin{spacing}{0.8}
-\listoftables
-\end{spacing}
-\addcontentsline{toc}{chapter}{List of Tables}
-
-\cleardoublepage
-\begin{spacing}{0.8}
-\lstlistoflistings
-\end{spacing}
-\addcontentsline{toc}{chapter}{List of Listings}
-
-
-
-\cleardoublepage
-\input{thesis-acknowl}        % Acknowledgements
-
-\cleardoublepage
-\input{thesis-credits}        % Credits
-
-
-
-\mainmatter
-
-\cleardoublepage
-\pagestyle{main}              % for main pages
-\pagenumbering{arabic}        % for main pages
-
-\cleardoublepage
-\input{thesis-intro}          % Introduction
-
-
-% Part 1 Embedding
-
-\cleardoublepage
-\input{thesis-embed}          %   Chapter 2
-
-\cleardoublepage
-\input{thesis-struc}          %   Chapter 3
-
-\cleardoublepage
-\input{thesis-academic}       %   Chapter 4
-
-\cleardoublepage
-\input{thesis-style}          %   Chapter 5
-
-\cleardoublepage
-\input{thesis-presentations}  %   Chapter 6
-
-% ....
-
-
-% Part 2 Original Work
-
-\cleardoublepage
-\input{thesis-tech}           %   Chapter N
-
-\cleardoublepage
-\input{thesis-details}        %   Selected Details
-
-\cleardoublepage
-\input{thesis-outlook}        %   Outlook
-
-\cleardoublepage
-\input{thesis-concl}          % Concluding Remarks
-
-
-
-\appendix
-
-\cleardoublepage
-\input{thesis-user}           % Appendix A
-
-\cleardoublepage
-\input{thesis-developer}      % Appendix B
-
-
-
-\backmatter
-
-% Use \nocite to ensure that certain references are listed
-% in the bibliography, even if they are not cited in the text.
-% \nocite{KeithMastersThesis}
-% \nocite{KeithPhdThesis}
-
-
-\cleardoublepage
-% for now, switch to language english
-% hack to force unix date for biblio, biblatex 3.11
-\begin{otherlanguage}{english}
-\printbibliography[heading=bibintoc]
-\end{otherlanguage}
-
-
-
-% \cleardoublepage
-% \input{glossary}      % Glossary
- 
-% \cleardoublepage
-% \input{index}         % Index
-
+	
+	
+	
+	\backmatter
+	
+	% Use \nocite to ensure that certain references are listed
+	% in the bibliography, even if they are not cited in the text.
+	% \nocite{KeithMastersThesis}
+	% \nocite{KeithPhdThesis}
+	
+	
+	\cleardoublepage
+	% for now, switch to language english
+	% hack to force unix date for biblio, biblatex 3.11
+	\begin{otherlanguage}{english}
+		\printbibliography[heading=bibintoc]
+	\end{otherlanguage}
+	
+	
+	
+	% \cleardoublepage
+	% \input{glossary}      % Glossary
+	
+	% \cleardoublepage
+	% \input{index}         % Index
+	
 \end{document}
 
