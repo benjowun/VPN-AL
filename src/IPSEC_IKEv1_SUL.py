@@ -9,11 +9,12 @@ from time import sleep
 # timing params in seconds
 WAIT_TIME = 1
 CONNECTION_TIMEOUT = 3
+IGNORE_RETRANSMISSION = False
 
 class IPSEC_IKEv1_SUL(SUL):
     def __init__(self): 
         super().__init__()
-        self.ipsec = IPSEC_Mapper(CONNECTION_TIMEOUT)
+        self.ipsec = IPSEC_Mapper(CONNECTION_TIMEOUT, IGNORE_RETRANSMISSION)
         self.logs_run = []
         self.file = open("logs.txt", "w+")
         #self.ipsec.reset()
@@ -62,14 +63,14 @@ class IPSEC_IKEv1_SUL(SUL):
             ret = self.ipsec.ack_quick()
             print(" --> " + str(ret))
             return ret
-        elif letter == 'delete_main':
-            ret = self.ipsec.ISAKMP_delete_packet()
-            print(" --> " + str(ret))
-            return ret
-        elif letter == 'delete_quick':
-            ret = self.ipsec.IPSEC_delete_packet()
-            print(" --> " + str(ret))
-            return ret 
+        # elif letter == 'delete_main':
+        #     ret = self.ipsec.ISAKMP_delete_packet()
+        #     print(" --> " + str(ret))
+        #     return ret
+        # elif letter == 'delete_quick':
+        #     ret = self.ipsec.IPSEC_delete_packet()
+        #     print(" --> " + str(ret))
+        #     return ret 
         # elif letter == 'rekey_quick':
         #     return self.ipsec.rekey_quick()
         else:
@@ -78,16 +79,18 @@ class IPSEC_IKEv1_SUL(SUL):
             exit(-1)
         
 
+# alternatively load a previously learned automaton from dot file and use it for learning
+# automation = load_automaton_from_file('path_to_file.dot', automation_type='mealy')
+
 sul = IPSEC_IKEv1_SUL()
-input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'delete_main', 'delete_quick'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
+input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
 
 #eq_oracle = RandomWalkEqOracle(input_al, sul, num_steps=2000, reset_after_cex=True, reset_prob=0.15)
 eq_oracle = StatePrefixEqOracle(input_al, sul, walks_per_state=10, walk_len=10)
 
 learned_ipsec= run_Lstar(input_al, sul, eq_oracle=eq_oracle, automaton_type='mealy', cache_and_non_det_check=True, print_level=3)
 
-# TODO: is none-det check important?
+learned_ipsec.save()
+learned_ipsec.visualize()
 
-visualize_automaton(learned_ipsec)
-
-sul.ipsec.delete() # call at end to clean
+sul.ipsec.delete() # call at end to clean any leftover connections

@@ -22,7 +22,7 @@ class spi_container:
         self._up = False # indicates the conenction has been acknowledged        
 
 class IPSEC_Mapper:
-    def __init__(self, timeout):
+    def __init__(self, timeout, ignore_ret):
         self._domain = "10.0.2.0"  # might have to change mask as well if this is edited
         self._src_ip = "10.0.2.2"  # initiator
         self._dst_ip = "10.0.2.1"  # responder
@@ -38,6 +38,7 @@ class IPSEC_Mapper:
         self._spis = []
         self._keyed = False # Flag to indicate active connection is keyed
         self._ids = {} # For detecting retransmits, stores the return values per m_id
+        self._ignore_ret = ignore_ret
 
     # helper methods
     def print_info(self):
@@ -71,8 +72,10 @@ class IPSEC_Mapper:
             return None
         elif id in self._ids:
             print("retransmission")
-            #return self._ids[id] # TODO: change this back if this breaks something, but should increase determinism of machines
-            return "RET"
+            if self._ignore_ret:
+                return "RET"
+            else:
+                return self._ids[id]
         else:
             return None
 
