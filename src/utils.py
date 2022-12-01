@@ -1,7 +1,7 @@
 from isakmp import *
 
 valid_names = ['Encryption', 'KeyLength', 'Hash', 'GroupDesc', 'Authentication', 'LifeType', 'LifeDuration']
-debug = False
+debug = True
 
 def get_transform_value(list, name):
     assert(name in valid_names)
