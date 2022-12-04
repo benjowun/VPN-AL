@@ -28,20 +28,71 @@ One of the most influential AAL algorithms was introduced in 1987 through a pape
 Another popular algorithm in the field of AAL is the $KV$ algorithm by Kearn's and Vazirani \parencite{KV1994}. Published later than $L^*$, it boasts a more compact method of representing learned data called a classification tree. This, on average, leads to the $KV$ algorithm requiring less membership queries than $L^*$ to learn a system. Especially for learning internet protocols and other systems where communication with the SUL can be very time consuming, this can result in a significant performance increase.
 
 % TODO: expand greatly, go into more detail here
-\subsection{$L^*$}
-$L^*$ uses a Minimally Adequate Teacher (MAT) model in which a learner queries a teacher in order to learn an unknown regular language $L$. Queries are built using a fixed input alphabet $\Sigma$ where $L \subseteq \Sigma^*$ must hold. The teacher must respond to two types of queries posed by the learner, namely membership and equivalence queries. Membership queries consist of a word $s \in \Sigma^*$ and must be answered with either ``yes'' if $s \in L$, or ``no'' if not. In other words, membership queries are used to check if a given word is part of the language being learned. Equivalence queries on the other hand, consist of a regular language $S$, proposed by the learner. The teacher must answer with  ``yes'' if $S \equiv L$, or returns a counterexample $c$ proving the two languages are different, so $c \in L(S) \iff c \notin L$. In other words, equivalence queries are used to verify if the learner has successfully learned the target language $L$ or if not, return a counterexample detailing the differences. The results of the membership queries are stored in an observation table $O = (S,E,T)$, where $S$ is a prefix-closed set of strings, $E$ a suffix-closed set of strings and $T$ a transition function $(S \cup S \cdot \Sigma) \cdot E \rightarrow {0,1}$. Essentially, if visualized as a 2D array where the rows are labeled with elements in $(S \cup S \cdot \Sigma)$ and columns with elements in $E$, the entries in the table are ones, if the word created by appending the row-label to the column-label is accepted by $L$ and zeros if not. The goal of $L^*$ is to learn a DFA acceptor for $L$ using the observation table. S-labeled rows correspond to states in the acceptor under construction. E-labeled columns represent individual membership query results. For the observation table to be transformable into a DFA acceptor, it must first be closed and consistent. 
+\subsection{L\textsuperscript{*}}
+$L^*$ uses a Minimally Adequate Teacher (MAT) model in which a learner queries a teacher in order to learn an unknown regular language $L$. Queries are built using a fixed input alphabet $\Sigma$ where $L \subseteq \Sigma^*$ must hold. The teacher must respond to two types of queries posed by the learner, namely membership and equivalence queries. Membership queries consist of a word $s \in \Sigma^*$ and must be answered with either ``yes'' if $s \in L$, or ``no'' if not. In other words, membership queries are used to check if a given word is part of the language being learned. Equivalence queries on the other hand, consist of a regular language $L_{prop}$, proposed by the learner. The teacher must answer with  ``yes'' if $L_{prop} \equiv L$, or returns a counterexample $c$ proving the two languages are different, so $c \in L(S) \iff c \notin L$. In other words, equivalence queries are used to verify if the learner has successfully learned the target language $L$ or if not, return a counterexample detailing the differences. The results of the membership queries are stored in an observation table $O = (S,E,T)$, where $S$ is a prefix-closed set of strings representing candidates for states of $L_{prop}$, $E$ a suffix-closed set of strings used to distinguish between candidates and $T$ a transition function $(S \cup S \cdot \Sigma) \cdot E \rightarrow {0,1}$. Essentially, if visualized as a 2D array where the rows are labeled with elements in $(S \cup S \cdot \Sigma)$ and columns with elements in $E$, the entries in the table are ones, if the word created by appending the row-label to the column-label is accepted by $L$ and zeros if not. 
+The goal of $L^*$ is to learn a DFA acceptor for $L$ using the observation table. S-labeled rows correspond to states in the acceptor under construction. E-labeled columns represent individual membership query results. For the observation table to be transformable into a DFA acceptor, it must first be closed and consistent.
+
+
+\begin{lstlisting}[mathescape=true, float=ht, caption=$L^*$ algorithm, label=lst:lstar]
+	$\mathbf{Initialization}$: 
+	Set observation table $O = (S,E,T)$ with $S,E = \{\epsilon\}$.
+	$populate(O)$.
+	
+	$\mathbf{repeat}$:
+		$\mathbf{while}$ $O$ is not closed or not consistent $\mathbf{do}$
+			$\mathbf{if}$ $O$ is not closed $\mathbf{then}$
+				choose $s_1 \in S, \sigma \in \Sigma$ such that
+				$row(s_1 \cdot \sigma) \neq row(s) \; \forall s \in S$
+				add $s_1 \cdot \sigma$ to $S$
+				$populate(O)$
+			$\mathbf{end}$
+			$\mathbf{if}$ $O$ is not consistent $\mathbf{then}$
+				choose $s_1, s_2 \in S, \sigma \in \Sigma$ and $e \in E$ such that
+				$row(s_1) = row(s_2)$ and $T(s_1 \cdot \sigma \cdot e) \neq T(s_2 \cdot \sigma \cdot e)$
+				add $\sigma \cdot e$ to $E$
+				$populate(O)$
+			$\mathbf{end}$		
+		$\mathbf{end}$
+		Construct $L_{prop}$ from $O$ and perform an equivalence query.	
+		$\mathbf{if}$ query returns a counterexample $c$ $\mathbf{then}$
+			add all prefixes of $c$ to $S$
+			$populate(O)$
+		$\mathbf{end}$
+	$\mathbf{until}$ teacher replies "yes" to equivalence query $L_{prop} \equiv L$
+	$\mathbf{return}$ $L_{prop}$
+		
+\end{lstlisting}
 
 Closed is defined as for all $t \in S \cdot \Sigma$ there exists an $s \in S$ so that $row(t) = row(s)$. In other words, that no new information is gained by expanding the $S$-set by any word in $\Sigma$. If an observation is not closed, it is fixed by adding $t$ to $S$ and updating the table rows through more membership queries. 
-
 Consistent means, that $\forall s_1, s_2 \,|\, row(s_1) = row(s_2) \implies \forall \sigma \in \Sigma \,|\, row(s_1 \cdot \sigma) = row(s_2 \cdot \sigma)$, or in other words, appending the same word to identical states should not result in different outcomes. If an observation table is inconsistent, it is made consistent again by adding another column to the table with the offending $\sigma$ as its label and again updating the table rows through more membership queries. 
 
-TODO: add image / listing of algorithm and explain it
+Listing~\ref{lst:lstar} shows the workings of the basic $L^*$ algorithm by Angluin. The function $populate(O)$ extends $T$ to $(S \cup S \cdot \Sigma) \cdot E$ by asking membership queries for all table entries still missing membership information. At the start of the algorithm, the observation table is initialized with $S = E = \{\epsilon\}$. Next, until a equivalence query succeeds, the observation table is repeatedly brought to a closed and consistent state by expanding the $S$ and $E$ sets respectively. Once both closed and consistent, $L_{prop}$ is constructed from $O$ and used in an equivalence query. If the equivalence query returns ``yes", the algorithm terminates, returning the learned DFA. If not, the returned counterexample is used to update the observation table and the algorithm loops back to line 5. 
 
-- make hypothesis every time the table is close and consistent --> if no, add prefixes of counter example to S-set (relevant prefixes)
-- not consistent --> increase column index by 1 adding the missing info
 
-\subsection{$KV$}
+\subsection{KV}
+Another notable AAL algorithm is the KV algorithm published in 1994 by Kearns and Vazirani \cite{KV1994}. It is designed to work in the same learner-teacher framework as $L^*$, but was designed to minimize the amount of membership queries needed to learn a finite automaton $M$. The KV algorithm does this by organizing learned information in an ordered binary tree called a classification tree $C_T$ as opposed to the table structure utilized by $L^*$. Intuitively, $L^*$ must perform membership queries for every entry in the observation table to differentiate between possible states, whereas $KV$ requires only a subset to distinguish them. 
 
+In the $KV$ algorithm, learned data is stored in two sets called the access strings set $S$ and the distinguishing strings set $D$. Every string $s \in S$ represents a distinct and unique state of the automaton $M$. In other words, any $s$ when applied starting in the initial state of $M$ leads to a unique state $M[s]$. The distinguishing strings set is defined as the set of strings $d \in D$ where for each pair $s,s' \in S, s \neq s'$ there exists a $d \in D$ such that either $M[s \cdot d]$ or $M[s' \cdot d]$ is an accepting state. $D$ is used to ensure that their are no ambiguous states. The sets $S,D$ are organized in a binary tree called the classification tree $C_T$ where parent nodes are strings from $D$ and the leaf nodes are strings from $S$. The root node is set to the empty string $\lambda$. For each node of the tree, starting from the root node, each right subtree contains access strings to accepting states while left subtrees contain access strings to rejecting states of $M$.
+Given a new string $s'$, we simply start at the root nodes, then sift down the tree by executing a membership query for $s' \cdot \lambda_1$ and depending on if the query returns ``yes" or ``no" continuing with the left or right subtree until we reach a leaf node labeled with $s$. If $s' = s$ then the states are equivalent, otherwise the classification tree is updated to include another leaf node representing the newly learned distinct state $s'$. The main learning loop of the $KV$ algorithm is shown in more detail in Listing~\ref{lst:kv}. Following the initialization of the classification table, new states learned from counterexamples are repeatedly added until an equivalence query is successful. The $Update(C_T,c)$ function adds a new leaf to the $C_T$ based on a counterexample $c$ returned from an equivalence query.
+
+\begin{lstlisting}[mathescape=true, float=ht, caption=$KV$ algorithm, label=lst:kv]
+	$\mathbf{Initialization}$: 
+		Set root node of $C_T$ to $\epsilon$. 
+		Perform membership query on $\epsilon$ to determine if the initial state is accepting or not.
+		Construct hypothesis automaton $\hat M$ consisting of only the initial state, with self-transitions for all other transitions.
+		Add two access strings $\epsilon$ and the counterexample string $c$.
+	
+	$\mathbf{repeat}$:
+		Construct hypothesis automaton $\hat M$ from $C_T$.
+		Equivalence query($\hat M$)
+		$\mathbf{if}$: query returns "yes" $\mathbf{then}$
+			$\mathbf{return}$ $\hat M$
+		$\mathbf{end}$
+		
+		$Update(C_T,c)$
+	$\mathbf{end}$
+	
+\end{lstlisting}
 
 
 \section{Fuzzing}
