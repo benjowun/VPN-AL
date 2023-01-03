@@ -14,4 +14,118 @@
 
 \label{chap:Learning}
 
-test
+% Setup
+\subsection{Environment Setup} \label{sec:Environment}
+% describe VMs, IPsec server software, configuration etc
+We developed and tested our custom mapper using two VirtualBox 6.1 Virtual Machines (VMs) running standard Ubuntu 22.04 LTS distributions. All communication took place in an isolated virtual network to eliminate possible external influences. During learning, all power saving options and similar potential causes of disruptions were disabled. For larger learning attempts, the IPSec server was restarted before each attempt to ensure identical conditions. We designated one VM as the initiator and one as the responder to create a typical client-server setup. The used Strongswan config files can be found in Appendix TODO. The open source IPsec implementation Strongswan\footnote{https://www.strongswan.org/} was installed on the responder VM and set to listen for incoming connections from the initiator VM. We used the Strongswan version US.9.5/K5.15.0-25-generic, installed using the default Ubuntu package manager, apt. The Strongswan server was configured to use pre-shared keys for authentication and default recommended security settings. Additionally, it was configured to allow unencrypted notification messages, which we used to reset the connection during the learning process. The provided Python script, \emph{IPSEC\_IKEv1\_SUL} demonstrates how we use the learning library \textsc{AALpy} in conjunction with our custom mapper to communicate with and learn the model of an IPSec server.
+
+% non-eterminism fixes
+\subsection{Combating Non-determinism}
+Despite all the precautions detailed in Subsection~\ref{sec:Environment}, the IPSec server still exhibited non-deterministic behavior, resulting in variance among the learned automata. While the majority ($\sim$60\%) of learned models were identical, the rest were clearly different, as can be seen in Figures TODO: ADD FIGURES. To help decrease the remaining non-deterministic behavior, timeouts were added to all requests in order to give the server more time to correctly work through all incoming requests. This measure helped further decrease the amount of outlying automata learned, however it did not fully fix the issue. Examination of the outliers led to the discovery that all outlying behavior was concentrated around so-called retransmissions. Essentially, the IKE specification allows for previous messages to be retransmitted if deemed useful. A possible trigger could be the final message of an IKE exchange being skipped / lost. For example, if instead of an \emph{AUTH} message, the server receives a phase two \emph{IPSEC SA} message, the server would not know if it missed a message or if their was an error on the other parties side. According to the IKE specification (TODO: RFC NUMBER), the handling of this situation is unspecified, however two possible methods are proposed. Firstly, if the \emph{IPSEC SA} message can be verified somehow to be correct, the server may ignore the missing message and continue as is. Secondly, the server could retransmit the message prior to the missing one to force the other party to respond in kind. Strongswan appears to implement these retransmissions and due to internal timeouts of connections, seem to trigger in a not-quite-deterministic fashion. These retransmissions also explain the strange transitions show in Figure TODO: figure of retransmissions (TODO: maybe mention other section). While interesting for fingerprinting, we wanted a deterministic automaton as a base case for automata-based fuzzing, so we implemented checks in our mapper to allow the ignoring of retransmissions. The retransmission-filtering can be easily enabled or disabled through a simple flag and works by checking the message ID of incoming server responses against a list of previous message IDs (excluding zero, as it is the default message ID for phase one). If a repeated message ID is found, it is flagged as a retransmission and depending on the current filtering rule, ignored. With this addition, the IPSec server became 100\% deterministic, allowing the learning of very clean automata, as shown in Figure (TODO: add figure). As an additional method of dealing with non-determinism but still keeping retransmissions, we can also catch non-determinism errors as they occur and repeat the offending query several times. If upon the first rerun the non-determinism does not occur again, we accept the existing value as the correct one and continue. If however, it persists for a set amount of repetitions with the same constant server response, we assume that the original saved response was incorrect and update it to the new one. With this non-determinism correcting added, the automata learning also works with no more non-determinism errors and the learned automata are consistent with one another.
+
+% Basic Model-Learning workflow
+\subsection{Learning Setup} % half - quarter page
+We used the Python automata learning library \textsc{AALpy} to learn our automata. It boasts support for deterministic, non-deterministic and stochastic automata, with support for various formalisms for each automata type. We chose deterministic Mealy machines to describe the IPsec server. However, learning automata with \textsc{AALpy} follows the same pattern, regardless of the type of automata.
+
+% TODO: align correctly
+\begin{figure}
+	\begin{tikzpicture} 
+		\node (n1) [draw, minimum width=4em, align=left] at (0,1) {Learning\\Algorithm};
+		\node (n2) [draw, minimum width=4em, align=left] at (3.5,1) {Mapper\\};
+		\node(n3) [draw, minimum width=4em, align=left] at (7,1) {Interface\\(Initiator)};
+		\node(n4) [draw, minimum width=4em, align=left] at (10.5,1) {SUL\\(Responder)};
+		\draw [->] (n1.8) -> (n2.170) node[midway,above,align=center] {abstract\\input};
+		\draw [->] (n2.195) -> (n1.348) node[midway,below,align=center] {abstract\\output};
+		
+		\draw [->] (n2.12.9) -> (n3.170) node[midway,above,align=center] {concrete\\input};
+		\draw [->] (n3.192.5) -> (n2.345) node[midway,below,align=center] {concrete\\output};
+		
+		\draw [<->] (n3) -> (n4) node[midway,above,align=center] {UDP};
+		
+		
+	\end{tikzpicture} 
+	\caption{Automata Learning Setup}
+	\label{fig:AALSetup}
+\end{figure}
+Figure \ref{fig:AALSetup} gives an overview of the learning process, adapted from Tappler et al.~\cite{tappler2017}. To begin, the learning algorithm sends abstract inputs chosen from the input alphabet to the mapper class, which converts it to concrete inputs. The concrete inputs are then sent to the SUL, by means of a communication interface. In our case, the mapper class comprises the major portion of our work and converts the abstract words into actual IPsec packets that can be sent to the SUL Strongswan server via UDP packets. This separation between abstract and concrete in/outputs allows for easy future modifications to the message implementations, including fuzzing support, as well as increasing the readability of our code.
+
+To begin learning an automaton with \textsc{AALpy}, we must first choose a suitable input alphabet encompassing the language known by the server, as well as the learning algorithm to be used. Our chosen input alphabet consists of the initiator-to-responder messages shown in Figure \ref{fig:IKEv1}. We use both the $L^*$ and $KV$ algorithms for learning with a state prefix equivalence oracle that provides state-coverage by means of random walks started from each state. The equivalence oracle is used by the chosen learning algorithm to test for conformance between the current hypothesis and the SUL, giving either a counterexample on failure, or confirmation that we have learned the SUL. This corresponds to an equivalence query. We also enabled several optional \textsc{AALpy} features including caching and non-determinism checks to improve the learning process. Relevant code sections can be seen in Listing \ref{lst:eqcode}.
+
+\begin{lstlisting}[float=ht, caption=Equivalence Query code, label=lst:eqcode, numbers=none, language=python]
+	# code excerpt from IPSEC_IKEv1_SUL.py
+	
+	input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick']
+	eq_oracle = StatePrefixEqOracle(input_al, sul, walks_per_state=10, walk_len=10)
+	learned_ipsec = run_Lstar(input_al, sul, eq_oracle=eq_oracle, automaton_type='mealy', cache_and_non_det_check=True)
+	
+\end{lstlisting}
+
+Additionally we defined a \emph{step} and a \emph{reset} method. We use \emph{step} to execute one input action from the current query and \emph{reset} to revert the SUL to an initial clean state. Used in combination, they correspond to membership queries, were \emph{step} is the actual query and \emph{reset} ensures identical starting conditions for each query. Relevant code fragments can be seen in Listing \ref{lst:membercode}. The abstract input generated for each membership query is then passed on to the mapper class for further processing.\\
+
+\begin{lstlisting}[float=ht, caption=Membership Query code, label=lst:membercode, numbers=none, language=python]
+	# code excerpt from IPSEC_IKEv1_SUL.py
+	
+	def step(self, letter):
+		func = getattr(self.ipsec, letter)
+		ret = func()
+		return ret
+	
+	def pre(self):
+		self.ipsec.reset()
+		
+	def post(self):
+		self.ipsec.delete()
+\end{lstlisting}
+
+Our mapper class implements methods for each communication step in a typical IPsec-IKEv1 exchange, as described in Section \ref{chap:Preliminaries}. This includes the \emph{ISAKMP SA}, \emph{KE}, \emph{AUTH}, \emph{IPSEC SA}, \emph{ACK} and \emph{DELETE} messages. The \emph{DELETE} message is special in that it actually sends two packets which is required to delete all existing connections to the Strongswan server. Also its behavior is highly dependent on the current state of the protocol. For these two reasons, it was mostly left out of the learning process. Furthermore, the mapper class contains a variety of helper functions used to handle the decryption and encryption of packets as well as parse received informational messages. To illustrate our mapper functions, (simplified) excerpts from \emph{ISAKMP SA} function are shown in Listing \ref{lst:mapper1}.
+
+\begin{lstlisting}[float=ht, caption=Mapper ex1, label=lst:mapper1, numbers=none, language=python]
+	# code excerpt from IPSEC_MAPPER.py
+	
+	def sa_main(self, ...):
+		...
+		tf = [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeDuration', 28800)]
+		sa_body_init = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(trans_nb=1, trans=ISAKMP_payload_Transform(num=1, transforms=tf)))
+		
+		policy_neg = ISAKMP(init_cookie=cookie_i, next_payload=1, exch_type=2)/sa_body_init
+		resp = self._conn.send_recv_data(policy_neg)
+		
+		if (ret := self.get_retransmission(resp)): 
+			# retransmission handling
+			...
+		
+		# Response handling (checks response code, decrypts if necessary, updates relevant local values)
+		...
+\end{lstlisting}
+
+The IPsec packets generated by the mapper class are passed on to our communication class, which acts as an interface for the SUL and handles all incoming and outgoing UDP communication. Additionally, it parses responses from the SUL into valid Scapy packets and passes them on to the mapper class. The mapper class then parses the received Scapy packets and returns an abstract output code representing the received data to the learning algorithm. This code corresponds to the type of received message, or in the case of an error response (informational message), the error type. For fuzzing purposes, several common error types were grouped together into categories and the error category was used as the return value. Finally, the abstract error codes are returned to the learning algorithm which uses it update its internal data structures and improve its understanding of the SUL. \\
+
+
+\subsection{Design Decisions and Problems}
+% Design details advantages and disadvantages --> problems and solutions (2-3p)
+
+As messages will be sent in random order during learning, we require a robust framework that correctly handles en/decryption of messages. For key management, we simply store the current base-keys but keep track of Initialization Vectors (IVs) on a per-message id (M-ID) basis. Additionally, we keep track of the M-IDs of server responses to detect and handle retransmissions of old messages. Each request, we store the response for use in the next message and update affected key material as needed. Most notably, the IVs are updated almost every request and differ between M-IDs. Informational requests also handle their IVs separately. For each request that we send, if available, we try to parse the response, decrypting it if necessary and resetting or adjusting our internal variables as required to match the server. This is required, to continuously be able to parse server responses and extract meaningful information.
+
+We use the Python library Scapy\footnote{https://scapy.readthedocs.io/en/latest} to construct ISAKMP packets as required by the IKEv1 protocol. This approach allows us to change fields and values of generated packets at will, opening the possibility of fuzzing for our future work. Parsing was made more difficult by the fact that Scapy does not support all the packets required by IPsec-IKEv1. To solve this problem, we implemented all missing packets in the Scapy ISAKMP class and used this modified version.
+
+Automata learning requires a SUL reset method to be able to return to an initial starting point after each query. We implement this using a combination of the ISAKMP \emph{DELETE} request and general ISAKMP informational error messages. While \emph{DELETE} works for established connections in phase two of IKE, we require informational error messages to trigger a reset in phase one, as delete does not work here sufficiently. Implementation was hindered at times by unclear RFC-specifications, but this was overcome by manually comparing packet dumps and Strongswan logs to fix encryption errors.\\
+
+Each concrete mapping function in our mapper class can be run regularly, with an injected error or with arbitrary values for the respective fields of the resulting packet. This allows us to learn different variations of the IPsec server. For example, our mapper class allows us to very easily switch between learning the server model when presented with valid inputs, and the model of the server when introduced to invalid, malformed messages in combination with valid ones. Additionally, this design of the mapper functions will make fuzz testing specific protocol messages quite simple. The model of the server presented with malformed inputs will serve as the basis for future model based fuzz testing and can be seen in Figure TODO: FIGURE.
+
+Since bugfixes and new features required a lot of testing and automata learning can be a very time-intensive process, we implemented several performance improvements to speed up the learning process. First we reduced the timeouts down to a minimum amount needed to still get deterministic results. Next we categorized the server informational responses according to their severity and impact and then grouped the most common ones together under the same abstract response code. This decreased the amount of states that had to be learned while at the cost of some information, but since any deviations or non-deterministic behavior would have been caught by the framework, we are confident that no important information was lost. Finally we switched out the $L^*$ learning algorithm for $KV$, as $KV$ can be more performative for learning environments where membership queries are expensive operations. As IKEv1 is a networks protocol with quite a bit of communication in each phase and we additionally have to implement small timeouts to wait for the server, each individual membership query can take several seconds. With hundreds of membership queries required to learn the IPsec server, this results in a lot of time spent running the algorithm. Consequently, any decrease to the amount of membership queries should, in theory, lead to an overall decrease in runtime. Since \textsc{AALpy} supports the $KV$, switching between the two learning algorithms is as easy as switching between the two lines shown in Listing \ref{lst:newalg} below.
+
+\begin{lstlisting}[float=ht, caption=Switching Learning Algorithms, label=lst:newalg, numbers=none, language=python]
+	# code excerpt from IPSEC_IKEv1_SUL.py
+	
+	#learned_ipsec = run_Lstar(input_al, sul, eq_oracle=eq_oracle, automaton_type='mealy', cache_and_non_det_check=True, print_level=3)
+	learned_ipsec = run_KV(input_al, sul, eq_oracle, automaton_type='mealy', print_level=3, cex_processing='rs')
+\end{lstlisting}
+
+TODO: Show various iterations / variations of models (with filtering, without, including errors etc.) TODO: Add images for new with errors and comparing KV and Lstar
+TODO: Learned Automata (show tables and pictures, think in text, not extra section here, since we dont really want to analyze them here yet in detail --> save for evaluation section)
+
+TODO: Switching to KV for performance
+TODO: faulty library fixes
+
+
+
