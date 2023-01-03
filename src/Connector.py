@@ -22,7 +22,7 @@ class Connector:
         try:
             self._sock.sendto(self.scapy_isakmp_to_bytes(data), self._dest)
             data, address = self._sock.recvfrom(1200)
-            print(f"Received {len(data)} bytes from {address}")
+            print(f"   Received {len(data)} bytes from {address}")
             return self.bytes_to_scapy_isakmp(data)
         except:
             return None

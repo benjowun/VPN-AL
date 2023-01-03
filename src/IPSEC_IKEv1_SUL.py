@@ -8,7 +8,7 @@ from time import sleep
 
 # timing params in seconds
 WAIT_TIME = 1
-CONNECTION_TIMEOUT = 3
+CONNECTION_TIMEOUT = 4
 IGNORE_RETRANSMISSION = True
 
 class IPSEC_IKEv1_SUL(SUL):
@@ -33,9 +33,8 @@ class IPSEC_IKEv1_SUL(SUL):
 
     def post(self):
         print("***Ran post***\n")
+        sleep(WAIT_TIME)
         self.ipsec.delete()
-        #sleep(WAIT_TIME) # --> there is a read that times out here anyways
-        #self.ipsec.delete()
         #self.ipsec.print_info()
     
     # map to concrete implementation
@@ -47,58 +46,6 @@ class IPSEC_IKEv1_SUL(SUL):
         ret = func()
         print(" --> " + str(ret))
         return ret
-
-
-        if letter == 'sa_main':
-            ret = self.ipsec.sa_main()
-            print(" --> " + str(ret))
-            return ret
-        elif letter == 'key_ex_main':
-            ret = self.ipsec.key_ex_main()
-            print(" --> " + str(ret))
-            return ret
-        elif letter == 'authenticate':
-            ret = self.ipsec.authenticate()
-            print(" --> " + str(ret))
-            return ret
-        elif letter == 'sa_quick':
-            ret = self.ipsec.sa_quick()
-            print(" --> " + str(ret))
-            return ret
-        elif letter == 'ack_quick':
-            ret = self.ipsec.ack_quick()
-            print(" --> " + str(ret))
-            return ret
-        elif letter == 'sa_main_err':
-            ret = self.ipsec.sa_main_err()
-            print(" --> " + str(ret))
-            return ret
-        elif letter == 'key_ex_main_err':
-            ret = self.ipsec.key_ex_main_err()
-            print(" --> " + str(ret))
-            return ret
-        elif letter == 'authenticate_err':
-            ret = self.ipsec.authenticate_err()
-            print(" --> " + str(ret))
-            return ret
-        elif letter == 'sa_quick_err':
-            ret = self.ipsec.sa_quick_err()
-            print(" --> " + str(ret))
-            return ret
-        # elif letter == 'delete_main':
-        #     ret = self.ipsec.ISAKMP_delete_packet()
-        #     print(" --> " + str(ret))
-        #     return ret
-        # elif letter == 'delete_quick':
-        #     ret = self.ipsec.IPSEC_delete_packet()
-        #     print(" --> " + str(ret))
-        #     return ret 
-        # elif letter == 'rekey_quick':
-        #     return self.ipsec.rekey_quick()
-        else:
-            print("Unexpected Input: " + str(letter))
-            self.ipsec.print_info()
-            exit(-1)
         
 
 # alternatively load a previously learned automaton from dot file and use it for learning
@@ -110,8 +57,10 @@ input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', '
 #eq_oracle = RandomWalkEqOracle(input_al, sul, num_steps=2000, reset_after_cex=True, reset_prob=0.15)
 eq_oracle = StatePrefixEqOracle(input_al, sul, walks_per_state=10, walk_len=10)
 
-learned_ipsec = run_Lstar(input_al, sul, eq_oracle=eq_oracle, automaton_type='mealy', cache_and_non_det_check=True, print_level=3)
-#learned_ipsec = run_KV(input_al, sul, eq_oracle, automaton_type='mealy', print_level=3, cex_processing='rs')
+#learned_ipsec = run_Lstar(input_al, sul, eq_oracle=eq_oracle, automaton_type='mealy', cache_and_non_det_check=True, print_level=3)
+learned_ipsec = run_KV(input_al, sul, eq_oracle, automaton_type='mealy', print_level=3, cex_processing='rs')
+
+print(learned_ipsec)
 
 learned_ipsec.save()
 learned_ipsec.visualize()
