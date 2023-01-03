@@ -157,8 +157,8 @@ class IPSEC_Mapper:
         # create an ISAKMP packet with scapy:
         
         # hardcoded cookie for now
-        # cookie_i = b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37"
-        cookie_i = random.randint(1, 4294967295).to_bytes(8, 'big')
+        cookie_i = b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37"
+        #cookie_i = random.randint(1, 4294967295).to_bytes(8, 'big')
         # split because we need the body for later calculations
         sa_body_init = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(trans_nb=1, trans=ISAKMP_payload_Transform(num=1, transforms=[('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)])))
         policy_neg = ISAKMP(init_cookie=cookie_i, next_payload=1, exch_type=2)/sa_body_init
@@ -207,8 +207,8 @@ class IPSEC_Mapper:
         # create an ISAKMP packet with scapy:
         
         # hardcoded cookie for now
-        # cookie_i = b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37"
-        cookie_i = random.randint(1, 4294967295).to_bytes(8, 'big')
+        cookie_i = b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37"
+        # cookie_i = random.randint(1, 4294967295).to_bytes(8, 'big')
         # split because we need the body for later calculations
         sa_body_init = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(trans_nb=1, trans=ISAKMP_payload_Transform(num=1, transforms=[('Encryption', 'AES-CBC'), ('KeyLength', 444), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)])))
         policy_neg = ISAKMP(init_cookie=cookie_i, next_payload=1, exch_type=2)/sa_body_init
