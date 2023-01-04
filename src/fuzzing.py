@@ -93,7 +93,13 @@ def get_boofuzz_values(param):
         return transf_esp_list
     elif param in ["nc", "hash", "ke_pk"]:
         return [b"\xff"*i for i in range(0,300,10)]
-    
+
+def clean_value(value, param):
+    if param in ["sa_len", "prp_len", "tf_len", "ke_len", "nc_len", "hash_len", "isa_len", "prp_num"]:
+        return int.from_bytes(value, 'big')
+    else:
+        return value
+
 # Filtering phase --> use small subset of values to find changeable states
 def filter():
     file = open("fuzz_results.txt", "w+")
@@ -247,15 +253,22 @@ def fuzz(testcase):
     # Run testcase using current values for params of fuzzed function
     for param in params:
         # TODO keep track of learned states and if no new ones appear for a long time, move on
+        responses = []
 
         # get iterator for param
         values = get_boofuzz_values(param)
         if type(values) == Byte or type(values) == Bytes:
             values = values.mutations(b"")
         for fv in values:
+            resp_counter = 0
+            print(f"Fuzzing {param} with: {fv}\nRun: {testcase}", file=file)
+
             if callable(fv):
                 continue
+        
+            fv = clean_value(fv, param)
             for t in testcase:
+                resps = []
                 print(f"${t}")
                 print(f"${t}", file=file)
                 if "fuzz" in t:
@@ -266,6 +279,7 @@ def fuzz(testcase):
                     parameters = {param:fv}
                     try:
                         ret = func(**parameters)
+                        resps.append(ret)
                     except SystemExit: # if the function fails to be decrypted, try to reset machine and save run info
                         print("\nCaught Exception!\n", file=file)
                     ret_ex = state.next(t.replace("fuzz", "err"))
@@ -273,16 +287,29 @@ def fuzz(testcase):
                     func = getattr(mapper, t)
                     try:
                         ret = func()
+                        resps.append(ret)
                     except SystemExit: # if the function fails to be decrypted, try to reset machine and save run info
                         print("\nCaught Exception!\n", file=file)
                     ret_ex = state.next(t)
                 print(f"**********\nExpected: {ret_ex} | Received: {ret}\n**********\n")
-                print(f"**********\nExpected: {ret_ex} | Received: {ret}\n**********\n", file=file)
+                if ret_ex != ret:
+                    print(f"**********\nExpected: {ret_ex} | Received: {ret}\n**********\n", file=file)
 
             mapper.delete()
             mapper.reset()
             state.reset()
-            print("\n\n", file=file)
+            print("Done with run\n\n", file=file)
+
+            # check if new state was reached
+            if resps in responses:
+                resp_counter += 1 # no new info
+            else:
+                responses.append(resps)
+                resp_counter = 0
+            resps.clear()
+            if resp_counter > 30: # tweak threshold as needed
+                print(f"Moving on to next param, new new information learned. Current param is {param}. Current fv is {fv}.\n Responses: {responses}")
+                break # move on to next param
 
     file.close()
 
@@ -293,4 +320,4 @@ def fuzz(testcase):
 # tc = ['sa_quick_err', 'ack_quick', 'sa_main', 'sa_quick_err', 'authenticate_err', 'sa_quick_err', 'key_ex_main', 'authenticate', 'sa_quick_fuzz', 'sa_quick', 'ack_quick', 'sa_quick', 'key_ex_main_err', 'sa_quick', 'sa_quick_err', 'authenticate', 'sa_quick_err', 'sa_main_err', 'sa_main', 'sa_quick_err', 'sa_main']
 # test(tc, "tf_esp", data)
 
-fuzz(['sa_quick_fuzz'])
+fuzz(['sa_main', 'key_ex_main', 'authenticate', 'sa_quick_fuzz']) # goes through each method once, hopefully finds any serious errors
