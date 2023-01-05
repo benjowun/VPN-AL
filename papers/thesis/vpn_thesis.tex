@@ -733,7 +733,7 @@ breaklinks=true,               % allow links exceeding a single line
 
 % tikz stuff
 \usepackage{tikz, wrapfig}
-\usetikzlibrary{positioning}
+\usetikzlibrary{positioning, calc}
 
 
 
@@ -812,7 +812,10 @@ breaklinks=true,               % allow links exceeding a single line
 	% Part 2 Original Work
 	
 	\cleardoublepage
-	\input{vpn_learning}		% Automata Learning setup and overview described as in shortpaper, then design and implementation, then setup of Fuzzing, then implementation  then Fingerprinting and then implementation
+	\input{vpn_learning}		% Automata Learning setup and overview described as in shortpaper, then design and implementation, 
+	
+	\cleardoublepage			% setup of Fuzzing, then implementation  then maaaaybe Fingerprinting and then implementation
+	\input{vpn_fuzzing}
 	
 	\cleardoublepage
 	\input{vpn_evaluation}		% Evaluating the models: Looot of pages showing models of various learned systems etc

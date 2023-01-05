@@ -33,26 +33,23 @@ Despite all the precautions detailed in Subsection~\ref{subsec:environment}, the
 While interesting for fingerprinting, we wanted a deterministic automaton as a base case for automata-based fuzzing, so we implemented checks in our mapper to allow the ignoring of retransmissions. The retransmission-filtering can be easily enabled or disabled through a simple flag and works by checking the message ID of incoming server responses against a list of previous message IDs (excluding zero, as it is the default message ID for phase one). If a repeated message ID is found, it is flagged as a retransmission and depending on the current filtering rule, ignored. With this addition, the IPSec server became 100\% deterministic, allowing the learning of a very clean automata, as shown in Figure \ref{fig:reference}. As an additional method of dealing with non-determinism but still keeping retransmissions, we can also catch non-determinism errors as they occur and repeat the offending query several times. If upon the first rerun the non-determinism does not occur again, we accept the existing value as the correct one and continue. If however, it persists for a set amount of repetitions with the same constant server response, we assume that the original saved response was incorrect and update it to the new one. With this non-determinism correcting added, the automata learning also works with no more non-determinism errors and the learned automata are consistent with one another.
 
 
-
-
 % Basic Model-Learning workflow
 \section{Learning Setup} \label{subsec:learningenv}% half - quarter page
 We used the Python automata learning library \textsc{AALpy} to learn our automata. It boasts support for deterministic, non-deterministic and stochastic automata, with support for various formalisms for each automata type. We chose deterministic Mealy machines to describe the IPsec server. However, learning automata with \textsc{AALpy} follows the same pattern, regardless of the type of automata.
 
-% TODO: align correctly
 \begin{figure}[h]
 	\begin{tikzpicture} 
-		\node (n1) [draw, minimum width=4em, align=left] at (0,1) {Learning\\Algorithm};
-		\node (n2) [draw, minimum width=4em, align=left] at (3.5,1) {Mapper\\};
-		\node(n3) [draw, minimum width=4em, align=left] at (7,1) {Interface\\(Initiator)};
-		\node(n4) [draw, minimum width=4em, align=left] at (10.5,1) {SUL\\(Responder)};
-		\draw [->] (n1.8) -> (n2.170) node[midway,above,align=center] {abstract\\input};
-		\draw [->] (n2.195) -> (n1.348) node[midway,below,align=center] {abstract\\output};
+		\node (n1) [draw, minimum width=7em, minimum height=3.5em, align=left] at (0,1) {~Learning\\~Algorithm};
+		\node (n2) [draw, minimum width=7em, minimum height=3.5em, align=left] at (4.4,1) {~Mapper};
+		\node(n3) [draw, minimum width=7em, minimum height=3.5em,  align=left] at (8.8,1) {~Interface\\~(Initiator)};
+		\node(n4) [draw, minimum width=7em, minimum height=3.5em,  align=left] at (13.2,1) {~SUL\\~(Responder)};
+		\draw [->] ($(n1)+(3.5em,+0.5em)$) -> ($(n2)+(-3.5em,+0.5em)$) node[midway,above,align=center] {\scriptsize~Abstract\\\scriptsize~Input};
+		\draw [->] ($(n2)+(-3.5em,-0.5em)$) -> ($(n1)+(3.5em,-0.5em)$) node[midway,below,align=center] {\scriptsize~Abstract\\\scriptsize~Output};
 		
-		\draw [->] (n2.12.9) -> (n3.170) node[midway,above,align=center] {concrete\\input};
-		\draw [->] (n3.192.5) -> (n2.345) node[midway,below,align=center] {concrete\\output};
+		\draw [->] ($(n2)+(3.5em,+0.5em)$) -> ($(n3)+(-3.5em,+0.5em)$) node[midway,above,align=center] {\scriptsize~Concrete\\\scriptsize~Input};
+		\draw [->] ($(n3)+(-3.5em,-0.5em)$) -> ($(n2)+(3.5em,-0.5em)$) node[midway,below,align=center] {\scriptsize~Concrete\\\scriptsize~Output};
 		
-		\draw [<->] (n3) -> (n4) node[midway,above,align=center] {UDP};
+		\draw [<->] (n3) -> (n4) node[midway,above,align=center] {\scriptsize~UDP};
 		
 		
 	\end{tikzpicture} 
@@ -135,6 +132,3 @@ Since bugfixes and new features required a lot of testing and automata learning 
 	#learned_ipsec = run_Lstar(input_al, sul, eq_oracle=eq_oracle, automaton_type='mealy', cache_and_non_det_check=True, print_level=3)
 	learned_ipsec = run_KV(input_al, sul, eq_oracle, automaton_type='mealy', print_level=3, cex_processing='rs')
 \end{lstlisting}
-
-
-
