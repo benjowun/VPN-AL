@@ -626,7 +626,6 @@ class IPSEC_Mapper:
 
         # check that the next payload is correct and that it is encrypted
         if resp[ISAKMP].next_payload == ISAKMP_payload_type.index("ID") and Raw in resp: # Raw means that its encrypted (or extra data was sent)
-            # TODO: move iv to inside the payload handling
             dprint(f"IV before sending: {hexify(self._ivs[0])}")
             iv = payload_enc[-AES.block_size:] # new iv is last block of last encrypted payload, update only if payload is accepted
             self._ivs[0] = iv
