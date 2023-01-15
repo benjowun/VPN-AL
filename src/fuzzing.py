@@ -2,7 +2,7 @@ from IPSEC_Mapper import IPSEC_Mapper
 from utils import *
 from random import randint, sample
 from boofuzz import *
-import time
+import ast
 
 CONNECTION_TIMEOUT = 4
 IGNORE_RETRANSMISSION = True
@@ -21,19 +21,19 @@ int_list = [0, 200, 2147483647]
 eight_b_list = [0, 200, b"\xff\xff\xff\xff\xff\xff\xff\xff"]
 byte_list = [0, 10, 255]
 transf_isa_list = [
-    [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'TEST'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)],
     [('Encryption', 'TEST'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)],
-    [('Encryption', 'TEST-SMALL'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)],
+    [('Encryption', 'TEST_SMALL'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)],
     [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'TEST'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)],
     [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', 'TEST'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)],
     [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'TEST'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)],
-    [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'TEST-SMALL'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)]
+    [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'TEST_SMALL'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)]
 ]
 
 transf_esp_list = [ 
     [('KeyLengthESP', 256), ('AuthenticationESP', 'TEST'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)],
     [('KeyLengthESP', 256), ('AuthenticationESP', 'HMAC-SHA'), ('EncapsulationESP', 'TEST'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)],
-    [('KeyLengthESP', 256), ('AuthenticationESP', 'HMAC-SHA'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'TEST'), ('LifeDurationESP', 3600)]
+    [('KeyLengthESP', 256), ('AuthenticationESP', 'HMAC-SHA'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'TEST'), ('LifeDurationESP', 3600)],
+    [('KeyLengthESP', 256), ('AuthenticationESP', 'TEST_SMALL'), ('EncapsulationESP', 'Tunnel'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)]
 
 ]
 data_list = [b"\xFF"*36, b"\xFF"*24, b"\xFF"*256, b"\xFF"*128]
@@ -95,14 +95,14 @@ def get_boofuzz_values(param):
         return [b"\xff"*i for i in range(0,300,10)]
 
 def clean_value(value, param):
-    if param in ["sa_len", "prp_len", "tf_len", "ke_len", "nc_len", "hash_len", "isa_len", "prp_num"]:
+    if param in ["sa_len", "prp_len", "tf_len", "ke_len", "nc_len", "hash_len", "isa_len", "prp_num"] and type(value) is bytes:
         return int.from_bytes(value, 'big')
     else:
         return value
 
 # Filtering phase --> use small subset of values to find changeable states
 def filter():
-    file = open("fuzz_results.txt", "w+")
+    file = open("filter_results.txt", "w+")
 
     # go on random 15-input long walks, check that state machine is equivalent each step (might have problem that not all states are covered well)
 
@@ -237,8 +237,11 @@ def test(testcase, param, fv):
     state.reset()
 
 # Fuzzing phase --> use relevant states for fuzzing in boofuzz
+# returns number of found interesting states
 def fuzz(testcase):
-    file = open(f"fuzz_results_{time.strftime('%Y%m%d-%H%M%S')}.txt", "w+")
+    file = open(f"fuzz_results.txt", "a+")
+    counter = 0
+    discovered = 1
     # get name of function to be fuzzed
     assert(any("_fuzz" in (fuzz_name := item) for item in testcase))
 
@@ -252,21 +255,18 @@ def fuzz(testcase):
     # fuzz all params, 
     # Run testcase using current values for params of fuzzed function
     for param in params:
-        # TODO keep track of learned states and if no new ones appear for a long time, move on
-        responses = []
-
         # get iterator for param
         values = get_boofuzz_values(param)
         if type(values) == Byte or type(values) == Bytes:
             values = values.mutations(b"")
         for fv in values:
-            resp_counter = 0
             print(f"Fuzzing {param} with: {fv}\nRun: {testcase}", file=file)
 
             if callable(fv):
                 continue
         
             fv = clean_value(fv, param)
+            print(fv)
             for t in testcase:
                 resps = []
                 print(f"${t}")
@@ -278,8 +278,8 @@ def fuzz(testcase):
 
                     parameters = {param:fv}
                     try:
+                        print(f"Param: {param} Fuzz value: {fv}")
                         ret = func(**parameters)
-                        resps.append(ret)
                     except SystemExit: # if the function fails to be decrypted, try to reset machine and save run info
                         print("\nCaught Exception!\n", file=file)
                     ret_ex = state.next(t.replace("fuzz", "err"))
@@ -287,37 +287,151 @@ def fuzz(testcase):
                     func = getattr(mapper, t)
                     try:
                         ret = func()
-                        resps.append(ret)
                     except SystemExit: # if the function fails to be decrypted, try to reset machine and save run info
                         print("\nCaught Exception!\n", file=file)
                     ret_ex = state.next(t)
                 print(f"**********\nExpected: {ret_ex} | Received: {ret}\n**********\n")
-                if ret_ex != ret:
+                if str(ret_ex) != str(ret):
                     print(f"**********\nExpected: {ret_ex} | Received: {ret}\n**********\n", file=file)
 
             mapper.delete()
             mapper.reset()
             state.reset()
             print("Done with run\n\n", file=file)
+            counter += 1
 
-            # check if new state was reached
-            if resps in responses:
-                resp_counter += 1 # no new info
-            else:
-                responses.append(resps)
-                resp_counter = 0
-            resps.clear()
-            if resp_counter > 30: # tweak threshold as needed
-                print(f"Moving on to next param, new new information learned. Current param is {param}. Current fv is {fv}.\n Responses: {responses}")
-                break # move on to next param
-
+    print(f"Number of tests run: {counter}")
+    print(f"Number of tests run: {counter}", file=file)
     file.close()
+
+def fuzz_all(filename):
+    d_file = open(filename, "r")
+    
+    i = iter(d_file.readlines())
+    for line in i:
+        line = line.strip()
+        if line == "***************************": # start parsing block
+            next(i) # is empty line
+            next(i) # results
+            next(i)
+            run = next(i).strip()
+            run = ast.literal_eval(run)
+            print(run)
+            fuzz(run)
+            assert(next(i).strip() == "***************************")
+
+# flips a word
+def flip(word: str):
+    if "_err" in word:
+        return word.replace("_err", "")
+    else:
+        return word + "_err"
+
+# returns a random word
+def rand_word():
+    words = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'sa_main_err', 'key_ex_main_err', 'authenticate_err', 'sa_quick_err', 'ack_quick_err']
+    return random.choice(words)
+
+# mutate a run, either by swapping a packet for an errorneous version, or by adding a new packet
+# takes a list of words
+def mutate(run):
+    if randint(0,1): # 50 % chance to flip
+        if randint(1,10) == 1: # 10% chance to flip random word, 90% to flip latest word
+           index = randint(0,len(run)-1)
+           run[index] = flip(run[index])
+        else:
+            run[-1] = flip(run[-1])
+    else: # 50% chance to add new word
+        if randint(1,10) == 1: # 10% chance to add at random spot, 90% to add at end
+           index = randint(0,len(run)-1)
+           run.insert(index, rand_word())
+        else:
+            run.insert(-1, rand_word())
+    return run
+
+# counts the total number of new states found, divided by the number of words in run
+def score_mutation(run):
+    score = 0
+    for word in run:
+        current_run = run.copy()
+
+        index = current_run.index(word)
+        
+        if "_err" in current_run[index]:
+            current_run[index] = current_run[index].replace("_err", "")
+        current_run[index] = current_run[index] + "_fuzz"
+        print(current_run)
+
+        func = getattr(mapper, current_run[index]) # our function that will be fuzzed
+        params = get_all_params(func)
+
+        for param in params:
+            # get fitting input for field
+            fuzz_values = get_fuzz_values(param)
+            for fv in fuzz_values:
+                fv = clean_value(fv, param)
+                for input in current_run:                    
+                    ret_expected = ""
+                    ret_real = ""
+                    if "_fuzz" in input:
+                        func = getattr(mapper, input)
+                        parameters = {param:fv}
+                        try:
+                            ret_real = func(**parameters)
+                        except SystemExit:
+                            print("Exception")
+                            break # end current run          
+                        ret_expected = state.next(input.replace("fuzz", "err"))
+                    else:
+                        func = getattr(mapper, input)
+                        
+                        try:
+                            ret_real = func()
+                        except SystemExit:
+                            print("Exception")
+                            break # end current run   
+                        ret_expected = state.next(input)                   
+                    if str(ret_real) != ret_expected: # str needed for None returns
+                        score += 1
+                        print(f"**********\nExpected: {ret_expected} | Received: {ret_real}\n**********\n")
+                mapper.delete()
+                mapper.reset()
+                state.reset()
+    return score / len(run)
+
+# want: generate run --> check if it performs better or worse than previous, keep mutation or go to next else
+# save resultant final mutation to file (with each param _fuzz ince), use it for fuzzing
+# takes a list of words
+def generate_runs(baseline=[], num_mutations=20):
+    file = open(f"mutations_{num_mutations}.txt", "w+")
+
+    if len(baseline) == 0:
+        current = rand_word()
+    else:
+        current = baseline
+    
+    current_max = score_mutation(current)
+
+    for i in range(num_mutations):
+        suggestion = mutate(current)
+        score = score_mutation(suggestion)
+        print(f"Mutation: {i}, score: {score}\n {current}\n\n", file=file)
+
+        if (score > current_max):
+            current_max = score
+            current = suggestion
+    return current
 
 # main
 # filter()
-# data = [('KeyLengthESP', 256), ('AuthenticationESP', 'TEST'), ('EncapsulationESP', 'TEST'), ('LifeTypeESP', 'Seconds'), ('LifeDurationESP', 3600)]
 
-# tc = ['sa_quick_err', 'ack_quick', 'sa_main', 'sa_quick_err', 'authenticate_err', 'sa_quick_err', 'key_ex_main', 'authenticate', 'sa_quick_fuzz', 'sa_quick', 'ack_quick', 'sa_quick', 'key_ex_main_err', 'sa_quick', 'sa_quick_err', 'authenticate', 'sa_quick_err', 'sa_main_err', 'sa_main', 'sa_quick_err', 'sa_main']
-# test(tc, "tf_esp", data)
+# data = [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'XAUTHInitPreShared'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)]
+# tc = ['sa_main_fuzz', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick']
+# test(tc, "tf", data)
 
-fuzz(['sa_main', 'key_ex_main', 'authenticate', 'sa_quick_fuzz']) # goes through each method once, hopefully finds any serious errors
+# run = ['sa_quick_err', 'ack_quick', 'sa_main', 'sa_quick_err', 'authenticate_err', 'sa_quick_err', 'ack_quick_err', 'ack_quick_err', 'sa_quick_err', 'ack_quick', 'sa_quick', 'sa_main_err', 'sa_quick_err', 'sa_main_err', 'sa_main', 'authenticate_fuzz']
+
+# fuzz(run) # goes through each method once, hopefully finds any serious errors
+# fuzz_all("filter_results.txt")
+
+generate_runs(['sa_main', 'key_ex_main', 'authenticate'])

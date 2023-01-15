@@ -32,7 +32,7 @@ ESPAttributeTypes = {
     "LifeTypeESP": (1, {"Seconds": 1, "TEST": 65535}, 0),
     "LifeDurationESP": (2, {}, 1),
     "EncapsulationESP": (4, {"Tunnel": 1, "TEST": 65535}, 0),
-    "AuthenticationESP": (5, {"HMAC-SHA": 2, "TEST": 65535}, 0),
+    "AuthenticationESP": (5, {"HMAC-SHA": 2, "TEST": 65535, "TEST_SMALL": 0,}, 0),
     "KeyLengthESP": (6, {}, 0),
 }
 
@@ -54,7 +54,7 @@ ISAKMPAttributeTypes = {"Encryption": (1, {"TEST_SMALL": 0,
                                      "SHA2-384": 5,
                                      "SHA2-512": 6, 
                                      "TEST": 65535, }, 0),
-                        "Authentication": (3, {"TEST-SMALL": 0,
+                        "Authentication": (3, {"TEST_SMALL": 0,
                                                "PSK": 1,
                                                "DSS": 2,
                                                "RSA Sig": 3,
