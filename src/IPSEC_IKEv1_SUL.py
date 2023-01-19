@@ -3,6 +3,8 @@ from aalpy.oracles import RandomWalkEqOracle, StatePrefixEqOracle
 from aalpy.learning_algs.deterministic.LStar import run_Lstar
 from aalpy.learning_algs.deterministic.KV import run_KV
 
+from Connector import Connector
+
 from IPSEC_Mapper import IPSEC_Mapper
 from time import sleep
 
@@ -11,10 +13,12 @@ WAIT_TIME = 1
 CONNECTION_TIMEOUT = 4
 IGNORE_RETRANSMISSION = True
 
+conn = Connector("10.0.2.1", 500, 500, CONNECTION_TIMEOUT)
+
 class IPSEC_IKEv1_SUL(SUL):
     def __init__(self): 
         super().__init__()
-        self.ipsec = IPSEC_Mapper(CONNECTION_TIMEOUT, IGNORE_RETRANSMISSION)
+        self.ipsec = IPSEC_Mapper(IGNORE_RETRANSMISSION, conn)
         self.logs_run = []
         self.file = open("logs.txt", "w+")
         #self.ipsec.reset()

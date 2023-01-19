@@ -1,6 +1,5 @@
 # Possible states for client: DISCONNECTED --> P1_SA --> P1_KE --> P1_AUTH --> P2_SA --> CONNECTED
 from isakmp import *
-from Connector import Connector
 from Keys import make_key_dict
 from utils import *
 from diffiehellman import DiffieHellman
@@ -22,12 +21,12 @@ class spi_container:
         self._up = False # indicates the conenction has been acknowledged        
 
 class IPSEC_Mapper:
-    def __init__(self, timeout, ignore_ret):
+    def __init__(self, ignore_ret, conn):
         self._domain = "10.0.2.0"  # might have to change mask as well if this is edited
         self._src_ip = "10.0.2.2"  # initiator
         self._dst_ip = "10.0.2.1"  # responder
         self._port = 500
-        self._conn = Connector(self._dst_ip, self._port, self._port, timeout) # Can add timeout param
+        self._conn = conn # Can include timeout param
         self._cookie_i = b""
         self._cookie_r = b""
         self._nonce_i = b""
