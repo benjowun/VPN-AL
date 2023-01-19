@@ -1,0 +1,80 @@
+Mutation: 0, score: 7.75
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'authenticate']
+
+
+Mutation: 1, score: 7.75
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'authenticate_err']
+
+
+Mutation: 2, score: 7.75
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'authenticate']
+
+
+Mutation: 3, score: 7.75
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'authenticate_err']
+
+
+Mutation: 4, score: 7.4
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'authenticate_err']
+
+
+Mutation: 5, score: 6.166666666666667
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'authenticate_err']
+
+
+Mutation: 6, score: 6.166666666666667
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'authenticate']
+
+
+Mutation: 7, score: 6.142857142857143
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'key_ex_main_err', 'authenticate']
+
+
+Mutation: 8, score: 6.142857142857143
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'key_ex_main_err', 'authenticate_err']
+
+
+Mutation: 9, score: 6.0
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'key_ex_main_err', 'sa_main_err', 'authenticate_err']
+
+
+Mutation: 10, score: 6.0
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'key_ex_main_err', 'sa_main_err', 'authenticate']
+
+
+Mutation: 11, score: 6.0
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'key_ex_main_err', 'sa_main_err', 'authenticate_err']
+
+
+Mutation: 12, score: 6.0
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'key_ex_main_err', 'sa_main_err', 'authenticate']
+
+
+Mutation: 13, score: 6.0
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'key_ex_main_err', 'sa_main_err', 'authenticate_err']
+
+
+Mutation: 14, score: 6.0
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'key_ex_main_err', 'sa_main_err', 'authenticate']
+
+
+Mutation: 15, score: 6.0
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'key_ex_main_err', 'sa_main_err', 'authenticate_err']
+
+
+Mutation: 16, score: 5.333333333333333
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'sa_quick_err', 'key_ex_main_err', 'sa_main_err', 'authenticate_err']
+
+
+Mutation: 17, score: 5.333333333333333
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'sa_quick_err', 'key_ex_main_err', 'sa_main_err', 'authenticate']
+
+
+Mutation: 18, score: 5.333333333333333
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'sa_quick_err', 'key_ex_main_err', 'sa_main_err', 'authenticate_err']
+
+
+Mutation: 19, score: 5.333333333333333
+ ['sa_main', 'key_ex_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'sa_quick', 'key_ex_main_err', 'sa_main_err', 'authenticate_err']
+
+
