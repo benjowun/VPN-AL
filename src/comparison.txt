@@ -1,7 +1,44 @@
 KV RESULTS:
-[{'learning_rounds': 4, 'automaton_size': 6, 'queries_learning': 80, 'steps_learning': 534, 'queries_eq_oracle': 60, 'steps_eq_oracle': 786, 'learning_time': 934.36, 'eq_oracle_time': 1388.1, 'total_time': 2322.46, 'classification_tree': <aalpy.learning_algs.deterministic.ClassificationTree.ClassificationTree object at 0x7fbf31ecb640>, 'cache_saved': 24}, {'learning_rounds': 4, 'automaton_size': 6, 'queries_learning': 75, 'steps_learning': 815, 'queries_eq_oracle': 60, 'steps_eq_oracle': 1090, 'learning_time': 677.08, 'eq_oracle_time': 1401.36, 'total_time': 2078.44, 'classification_tree': <aalpy.learning_algs.deterministic.ClassificationTree.ClassificationTree object at 0x7fbf3151f9d0>, 'cache_saved': 31}, {'learning_rounds': 4, 'automaton_size': 6, 'queries_learning': 80, 'steps_learning': 830, 'queries_eq_oracle': 60, 'steps_eq_oracle': 1043, 'learning_time': 939.33, 'eq_oracle_time': 1420.39, 'total_time': 2359.72, 'classification_tree': <aalpy.learning_algs.deterministic.ClassificationTree.ClassificationTree object at 0x7fbf3154cbe0>, 'cache_saved': 28}, {'learning_rounds': 4, 'automaton_size': 6, 'queries_learning': 81, 'steps_learning': 769, 'queries_eq_oracle': 60, 'steps_eq_oracle': 996, 'learning_time': 903.45, 'eq_oracle_time': 1455.13, 'total_time': 2358.58, 'classification_tree': <aalpy.learning_algs.deterministic.ClassificationTree.ClassificationTree object at 0x7fbf319d5990>, 'cache_saved': 26}, {'learning_rounds': 2, 'automaton_size': 4, 'queries_learning': 39, 'steps_learning': 348, 'queries_eq_oracle': 40, 'steps_eq_oracle': 695, 'learning_time': 257.31, 'eq_oracle_time': 665.95, 'total_time': 923.26, 'classification_tree': <aalpy.learning_algs.deterministic.ClassificationTree.ClassificationTree object at 0x7fbf319b7d30>, 'cache_saved': 9}]
+[{'learning_rounds': 4, 'automaton_size': 6, 'queries_learning': 80, 'steps_learning': 534, 'queries_eq_oracle': 60, 'steps_eq_oracle': 786, 'learning_time': 934.36, 'eq_oracle_time': 1388.1, 'total_time': 2322.46, 'classification_tree': <aalpy.learning_algs.deterministic.ClassificationTree.ClassificationTree object at 0x7fbf31ecb640>, 'cache_saved': 24}, 
+
+{'learning_rounds': 4, 'automaton_size': 6, 'queries_learning': 75, 'steps_learning': 815, 'queries_eq_oracle': 60, 'steps_eq_oracle': 1090, 'learning_time': 677.08, 'eq_oracle_time': 1401.36, 'total_time': 2078.44, 'classification_tree': <aalpy.learning_algs.deterministic.ClassificationTree.ClassificationTree object at 0x7fbf3151f9d0>, 'cache_saved': 31}, 
+
+{'learning_rounds': 4, 'automaton_size': 6, 'queries_learning': 80, 'steps_learning': 830, 'queries_eq_oracle': 60, 'steps_eq_oracle': 1043, 'learning_time': 939.33, 'eq_oracle_time': 1420.39, 'total_time': 2359.72, 'classification_tree': <aalpy.learning_algs.deterministic.ClassificationTree.ClassificationTree object at 0x7fbf3154cbe0>, 'cache_saved': 28}, 
+
+{'learning_rounds': 4, 'automaton_size': 6, 'queries_learning': 81, 'steps_learning': 769, 'queries_eq_oracle': 60, 'steps_eq_oracle': 996, 'learning_time': 903.45, 'eq_oracle_time': 1455.13, 'total_time': 2358.58, 'classification_tree': <aalpy.learning_algs.deterministic.ClassificationTree.ClassificationTree object at 0x7fbf319d5990>, 'cache_saved': 26}, 
+
+{'learning_rounds': 4, 'automaton_size': 6, 'queries_learning': 80, 'steps_learning': 815, 'queries_eq_oracle': 60, 'steps_eq_oracle': 1043, 'learning_time': 939.33, 'eq_oracle_time': 1420.39, 'total_time': 2359.72, 'classification_tree': <aalpy.learning_algs.deterministic.ClassificationTree.ClassificationTree object at 0x7fbf3154cbe0>, 'cache_saved': 28}]
+
+KV averages:
+lr: 4 (1 2)
+queries learning: 79
+steps learning: 752.6
+queries eq: 60
+steps eq: 991
+learning time: 878.91
+eq time: 1417.074
+total time: 2295.784
+cache save: 27.4
 
 
 L* RESULTS:
-[{'learning_rounds': 2, 'automaton_size': 6, 'queries_learning': 178, 'steps_learning': 891, 'queries_eq_oracle': 60, 'steps_eq_oracle': 749, 'learning_time': 1682.06, 'eq_oracle_time': 1371.77, 'total_time': 3053.83, 'characterization_set': [('sa_main',), ('key_ex_main',), ('authenticate',), ('sa_quick',), ('ack_quick',), ('ack_quick', 'authenticate', 'sa_main', 'ack_quick')], 'cache_saved': 14}, {'learning_rounds': 2, 'automaton_size': 6, 'queries_learning': 175, 'steps_learning': 819, 'queries_eq_oracle': 60, 'steps_eq_oracle': 750, 'learning_time': 1518.62, 'eq_oracle_time': 1483.12, 'total_time': 3001.74, 'characterization_set': [('sa_main',), ('key_ex_main',), ('authenticate',), ('sa_quick',), ('ack_quick',), ('ack_quick', 'ack_quick')], 'cache_saved': 17}, {'learning_rounds': 2, 'automaton_size': 6, 'queries_learning': 176, 'steps_learning': 871, 'queries_eq_oracle': 60, 'steps_eq_oracle': 745, 'learning_time': 1639.51, 'eq_oracle_time': 1397.36, 'total_time': 3036.87, 'characterization_set': [('sa_main',), ('key_ex_main',), ('authenticate',), ('sa_quick',), ('ack_quick',), ('authenticate', 'ack_quick', 'sa_main', 'ack_quick')], 'cache_saved': 15}, {'learning_rounds': 2, 'automaton_size': 6, 'queries_learning': 179, 'steps_learning': 864, 'queries_eq_oracle': 60, 'steps_eq_oracle': 747, 'learning_time': 1614.7, 'eq_oracle_time': 1388.26, 'total_time': 3002.96, 'characterization_set': [('sa_main',), ('key_ex_main',), ('authenticate',), ('sa_quick',), ('ack_quick',), ('authenticate', 'ack_quick', 'ack_quick')], 'cache_saved': 12}, {'learning_rounds': 2, 'automaton_size': 6, 'queries_learning': 179, 'steps_learning': 890, 'queries_eq_oracle': 60, 'steps_eq_oracle': 747, 'learning_time': 1663.24, 'eq_oracle_time': 1421.14, 'total_time': 3084.38, 'characterization_set': [('sa_main',), ('key_ex_main',), ('authenticate',), ('sa_quick',), ('ack_quick',), ('ack_quick', 'key_ex_main', 'sa_main', 'ack_quick')], 'cache_saved': 12}]
+[{'learning_rounds': 2, 'automaton_size': 6, 'queries_learning': 178, 'steps_learning': 891, 'queries_eq_oracle': 60, 'steps_eq_oracle': 749, 'learning_time': 1682.06, 'eq_oracle_time': 1371.77, 'total_time': 3053.83, 'characterization_set': [('sa_main',), ('key_ex_main',), ('authenticate',), ('sa_quick',), ('ack_quick',), ('ack_quick', 'authenticate', 'sa_main', 'ack_quick')], 'cache_saved': 14}, 
 
+{'learning_rounds': 2, 'automaton_size': 6, 'queries_learning': 175, 'steps_learning': 819, 'queries_eq_oracle': 60, 'steps_eq_oracle': 750, 'learning_time': 1518.62, 'eq_oracle_time': 1483.12, 'total_time': 3001.74, 'characterization_set': [('sa_main',), ('key_ex_main',), ('authenticate',), ('sa_quick',), ('ack_quick',), ('ack_quick', 'ack_quick')], 'cache_saved': 17}, 
+
+{'learning_rounds': 2, 'automaton_size': 6, 'queries_learning': 176, 'steps_learning': 871, 'queries_eq_oracle': 60, 'steps_eq_oracle': 745, 'learning_time': 1639.51, 'eq_oracle_time': 1397.36, 'total_time': 3036.87, 'characterization_set': [('sa_main',), ('key_ex_main',), ('authenticate',), ('sa_quick',), ('ack_quick',), ('authenticate', 'ack_quick', 'sa_main', 'ack_quick')], 'cache_saved': 15}, 
+
+{'learning_rounds': 2, 'automaton_size': 6, 'queries_learning': 179, 'steps_learning': 864, 'queries_eq_oracle': 60, 'steps_eq_oracle': 747, 'learning_time': 1614.7, 'eq_oracle_time': 1388.26, 'total_time': 3002.96, 'characterization_set': [('sa_main',), ('key_ex_main',), ('authenticate',), ('sa_quick',), ('ack_quick',), ('authenticate', 'ack_quick', 'ack_quick')], 'cache_saved': 12}, 
+
+{'learning_rounds': 2, 'automaton_size': 6, 'queries_learning': 179, 'steps_learning': 890, 'queries_eq_oracle': 60, 'steps_eq_oracle': 747, 'learning_time': 1663.24, 'eq_oracle_time': 1421.14, 'total_time': 3084.38, 'characterization_set': [('sa_main',), ('key_ex_main',), ('authenticate',), ('sa_quick',), ('ack_quick',), ('ack_quick', 'key_ex_main', 'sa_main', 'ack_quick')], 'cache_saved': 12}]
+
+L* total:
+learning_rounds: 2
+ql: 177.4
+sl: 867
+qeq: 60
+seq: 747.6
+lt: 1623.626
+eqt: 1412.33
+tt: 3035.96
+cache: 14

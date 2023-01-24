@@ -65,15 +65,43 @@ The model looks largely identical to the previous model, apart from some additio
 
 \subsection{Comparing $KV$ and $L^*$} \label{subsec:comp_kv_lstar}
 % section copmaring KV and Lstar
-TODO: Compare KV and Lstar -> TODO: actual statistic over 10-20 runs each
+Table \ref{tab:compkvlstar} shows average performance statistics over five learning runs each, with retransmission-filtering enabled. The same hardware and software configurations were used as described in Chapter \ref{sec:learnenv} with the learning program set up on a VirtualBox 6.1 \ac{vm} allotted 4GB of memory and one CPU core. We used all the basic packets for our input alphabet, so
+\emph{sa\_main}, \emph{key\_ex\_main}, \emph{authenticate}, \emph{sa\_quick} and \emph{ack\_quick}. The model learned is the clean model seen in Figure \ref{fig:reference}. Table \ref{tab:compkvlstar} shows the metric on the left and the respective averages for the $L^*$ and $KV$ learning algorithms respectively on the right. Interesting results are highlighted in bold. From top to bottom, the metrics measured are as follows.
+Learning rounds refers to the number of rounds the learning algorithms had to run for, or in other words, how many attempts they needed to correctly learn the \ac{sul}. Total time is the total time needed by the algorithm from start to the finished model. The total time can be split into time spent on the learning algorithm and time spent on equivalence queries. Learning membership queries refers to the number of membership queries sent to the SUL while learning steps to the steps in the learning algorithm itself. Analogously, equivalence oracle queries refers to the equivalence queries sent to the SUL and equivalence oracle steps to the steps needed by the equivalence oracle implementation. Finally, membership queries saved by caching details the performance boost gained by caching membership queries, with the value indicating the number of queries saved.
 
+As the only difference between the two configurations tested was the choice of learning algorithm, intuitively we expect relevant fields to vary the most with equivalence oracle field to be largely unchanged. This intuition is confirmed by our experiments, wherein while the time spent on equivalence queries was very similar, the time spent on membership queries differed greatly. The $L^*$ algorithm required more than double the number of membership queries than its $KV$ counterpart. As membership queries are the main performance bottleneck in our setup, this change of course led to a significantly better runtime for $KV$, with total time spent on the learning algorithm being close to half that of the $L^*$ algorithm. This difference in time spent on the learning algorithm meant, that for this experiment, the $KV$ algorithm learned a model in roughly 75\% of the time needed by the $L^*$ algorithm. Looking only at the learning algorithm, $KV$ performed roughly twice as well as its counterpart.
+
+Little variance was observed throughout previous learning attempts so this small sample size is believed to be representative. However, for even more accurate results the experiment should be carried out again for more runs. 
+
+\todo{Redo with results from 20 runs. And detail standard deviation and such statistics.}
+
+\begin{table}[t]
+	\centering
+	\begin{tabular}{ |p{6.5cm}||p{1cm}|p{1cm}|  }
+		\hline
+		\multicolumn{3}{|c|}{\textbf{Learning Algorithm Performance (Averages)}} \\
+		\hline
+		\textbf{Metric} & $\mathbf{L^*}$ & $\mathbf{KV}$ \\
+		\hline
+		Learning Rounds							&	2				&	4 				\\
+		Total Time (s)							&   3036			& 	2296   			\\
+		Time Learning Algorithm	(s)				&	\textbf{1624}	& 	\textbf{879}	\\
+		Time Equivalence Checks (s)				& 	1412			& 	1417			\\
+		Learning Membership Queries 			&   \textbf{177}	& 	\textbf{79}		\\
+		Learning Steps							& 	867	  			& 	753   			\\
+		Equivalence Oracle Queries				& 	60  			&  	60				\\
+		Equivalence Oracle Steps				& 	748  			&  	991				\\
+		Membership Queries Saved by Caching		& 	14  			&  	27				\\
+		\hline
+	\end{tabular}
+	\caption{Comparison $L^*$ and $KV$}
+	\label{tab:compkvlstar}
+\end{table}
 
 \subsection{Library Error} \label{subsec:liberror}
 % section with discovered bug
 Another notable finding from the model learning phase, was the discovery of a bug in a used Python Diffie-Hellman key exchange library. The bug was only found thanks to the exhaustive number of packets sent with our mapper class and due to the non-determinism checks implemented in \textsc{AALpy}. Despite our best efforts in removing the non-deterministic behavior from our learning process, we would still get occasional non-determinism errors at random points while learning. This problem persisted over several weeks due to the fact that the errors occurred randomly and only sporadically during some learning attempts. Initially we believed this to be also caused by retransmissions, but since the problems persisted even after introducing retransmission-filtering, that possibility was ruled out. The other option was of course problems in our implementation of the \ac{ipsec} protocol. Therefore, a lot of time was invested into painstakingly comparing logs and packet captures between our implementation and the \ac{sul} to ensure that everything lined up, since \textsc{AALpy} was still reporting non-determinism errors. Finally we discovered a discrepancy between the two and through it, that the problems were not in fact caused by our implementation, but by a used Python library. It turns out there was a very niche bug in a used Diffie-Hellman Python library where, if the most significant byte was a zero, it would be omitted from the response, causing the local result to be one byte shorter than the value calculated by the \ac{sul}. As this would only occur in the rare case where the MSB of the DH exchange was zero, this explains the random and difficult to reproduce nature of the bug. This behavior was undocumented and happened in a function call that allowed specifying the length of the returned key. As the library is not a very widespread one, the impact of this bug is presumably not very high. Regardless, it could compromise the security of affected systems and therefore the maintainer of the library has been notified of the problem. Due to the elusive nature of this bug, it would very likely not have been noticed without the exhaustive communication done by the model learning process and without seeing the slight differences in the resulting models that did not crash during the learning process.
 
 \section{Fuzzing Results} \label{subsec:fuzzresults}
-test
-% Two main parts, eval of learning and eval of testing
-
-Result: useless parameter / not matching specification? --> $isa_len$
+\todo[inline]{Fuzzing results}
+\todo[inline]{Compare mutation based fuzzing and filtering results / runtimes}
