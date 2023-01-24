@@ -2,6 +2,7 @@ from IPSEC_Mapper import IPSEC_Mapper
 from utils import *
 from random import randint, sample
 from boofuzz import *
+from Connector import *
 import ast
 
 CONNECTION_TIMEOUT = 4
@@ -11,7 +12,8 @@ IGNORE_RETRANSMISSION = True
 IGNORED_PARAMS = ["ck_i", "ck_r", "ke_pk", "nc"]
 MISS_THRESHHOLD = 3
 
-mapper = IPSEC_Mapper(CONNECTION_TIMEOUT, IGNORE_RETRANSMISSION)
+conn = Connector("10.0.2.1", 500, 500, CONNECTION_TIMEOUT)
+mapper = IPSEC_Mapper(IGNORE_RETRANSMISSION, conn)
 model = read_dot("A2.dot") # reads LearnedModel.dot by default
 state = state_machine(model) # our state machine based on model
 
@@ -397,6 +399,7 @@ def score_mutation(run):
                 mapper.delete()
                 mapper.reset()
                 state.reset()
+    print(f"Score unweighted: {score} #: {len(run)}")
     return score / len(run)
 
 # want: generate run --> check if it performs better or worse than previous, keep mutation or go to next else
@@ -420,6 +423,8 @@ def generate_runs(baseline=[], num_mutations=20):
         if (score > current_max):
             current_max = score
             current = suggestion
+
+    print(f"Max: {i}, score: {current_max}\n {current_max}\n\n", file=file)
     return current
 
 # main

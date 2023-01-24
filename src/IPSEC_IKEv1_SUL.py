@@ -2,6 +2,7 @@ from aalpy.base.SUL import SUL
 from aalpy.oracles import RandomWalkEqOracle, StatePrefixEqOracle
 from aalpy.learning_algs.deterministic.LStar import run_Lstar
 from aalpy.learning_algs.deterministic.KV import run_KV
+from statistics import mean
 
 from Connector import Connector
 
@@ -10,8 +11,8 @@ from time import sleep
 
 # timing params in seconds
 WAIT_TIME = 1
-CONNECTION_TIMEOUT = 4
-IGNORE_RETRANSMISSION = True
+CONNECTION_TIMEOUT = 2
+IGNORE_RETRANSMISSION = False
 
 conn = Connector("10.0.2.1", 500, 500, CONNECTION_TIMEOUT)
 
@@ -72,24 +73,98 @@ def learn(kv=True):
 
     print(learned_ipsec)
 
-    learned_ipsec.save()
-    learned_ipsec.visualize()
+    learned_ipsec.save("this2.dot")
+    learned_ipsec.visualize("LearnedModel2")
 
     sul.ipsec.delete() # call at end to clean any leftover connections
     return info
 
-def time(num_runs=5):
+# learning rounds, automaton size, learning queries, setps learning, eq oracle queries, eq oracle steps, 
+# learning time, eq oracle time, total time
+def time(num_runs=20):
     results_kv = []
+    lr_kv = []
+    as_kv = []
+    lqr_kv = []
+    slr_kv = []
+    eqqr_kv = []
+    seq_kv = []
+    lt_kv = []
+    eqt_kv = []
+    tt_kv = []
+
     results_lstar = []
-    for i in range(num_runs):
+    lr_ls = []
+    as_ls = []
+    lqr_ls = []
+    slr_ls = []
+    eqqr_ls = []
+    seq_ls = []
+    lt_ls = []
+    eqt_ls = []
+    tt_ls = []
+
+    i = 0
+    while i <= num_runs:
         info = learn(kv=True)
-        results_kv.append(info)
+        if info['automaton_size'] == 6: # filter out occasional outlier due to timing issues in server
+            results_kv.append(info)
+            lr_kv.append(info['learning_rounds'])
+            as_kv.append(info['automaton_size'])
+            lqr_kv.append(info['queries_learning'])
+            slr_kv.append(info['steps_learning'])
+            eqqr_kv.append(info['queries_eq_oracle'])
+            seq_kv.append(info['steps_eq_oracle'])
+            lt_kv.append(info['learning_time'])
+            eqt_kv.append(info['eq_oracle_time'])
+            tt_kv.append(info['total_time'])
+            i += 1
+            
+    i = 0
 
-    for i in range(num_runs):
+    while i <= num_runs:
         info = learn(kv=False)
-        results_lstar.append(info)
+        if info['automaton_size'] == 6:
+            results_lstar.append(info)
+            lr_ls.append(info['learning_rounds'])
+            as_ls.append(info['automaton_size'])
+            lqr_ls.append(info['queries_learning'])
+            slr_ls.append(info['steps_learning'])
+            eqqr_ls.append(info['queries_eq_oracle'])
+            seq_ls.append(info['steps_eq_oracle'])
+            lt_ls.append(info['learning_time'])
+            eqt_ls.append(info['eq_oracle_time'])
+            tt_ls.append(info['total_time'])
+            i += 1
     print(f"KV RESULTS:\n{results_kv}\n\n")
-    print(f"L* RESULTS:\n{results_lstar}")
+    print(f"L* RESULTS:\n{results_lstar}\n\n")
 
-# learn()
-time()
+    print("KV averages:")
+    print("*******************************")
+    print(f"Learning Rounds: {mean(lr_kv)}")
+    print(f"Automaton Size: {mean(as_kv)}")
+    print(f"Learning Queries: {mean(lqr_kv)}")
+    print(f"Learning Steps: {mean(slr_kv)}")
+    print(f"Learning Time: {mean(lt_kv)}")
+    print(f"Eq Oracle Queries: {mean(eqqr_kv)}")
+    print(f"Eq Oracle Steps: {mean(seq_kv)}")
+    print(f"Eq Oracle Time: {mean(eqt_kv)}")
+    print(f"Total Time: {mean(tt_kv)}")
+    print("*******************************")
+
+    print("L* averages:")
+    print("*******************************")
+    print(f"Learning Rounds: {mean(lr_ls)}")
+    print(f"Automaton Size: {mean(as_ls)}")
+    print(f"Learning Queries: {mean(lqr_ls)}")
+    print(f"Learning Steps: {mean(slr_ls)}")
+    print(f"Learning Time: {mean(lt_ls)}")
+    print(f"Eq Oracle Queries: {mean(eqqr_ls)}")
+    print(f"Eq Oracle Steps: {mean(seq_ls)}")
+    print(f"Eq Oracle Time: {mean(eqt_ls)}")
+    print(f"Total Time: {mean(tt_ls)}")
+    print("*******************************")
+
+
+learn(kv=False)
+#time()
