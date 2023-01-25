@@ -42,5 +42,23 @@ Finally, following the automatic and manual filtering, we arrived at a list of 1
 
 \todo[inline]{Diagram for fuzzing process}
 
-\subsection{Mutation-based testcase generation} \label{subsec:mutations}
-\todo[inline]{Describe scored mutation approach}
+\subsection{Mutation-based Testcase Generation} \label{subsec:mutations}
+While the run generation method described above does work, in practice it is too slow without the added filtering stages. However, even with the added filtering stages, fuzzing the remaining 175 runs still took well over several days. As an alternative, we developed the following run generation method, which results in only a single run to be tested. The goal is to generate a run which has the highest possible chance of reaching the largest amount of interesting states. To this end, we designed a method for scored, mutation-based testcase generation. 
+
+In its simplest form, mutation-based testcase generation refers to the generation of testcases, in our case runs, by repeatedly mutating a base case. In other words, we generate testcases by repeatedly applying small changes to a base testcase. These small changes, or mutations, could for example be swapping a bit, or changing a letter. In our fuzzer, we implemented two mutation operations. Adding a new letter of the input alphabet and swapping an existing letter in the run with its opposite version (so an erroneous version becomes a valid one, and vice versa). For our mutation base we can either use a random input alphabet letter, or pass a run to be used. We added this second option since \ac{ipsec} phase one packets have to be sent in a specific order to successfully authenticate. Remembering back to our attempt to use fully random runs for fuzzing, we know that phase two is explored far less than phase one. Therefore, we can start the mutations with phase one already completed if we so desire. 
+
+At this point, we had implemented very basic mutation-based testcase generation, but the runs generated were often of low interest. As our goal is to generate as meaningful a run as possible, we decided to score the generated mutations and only keep a mutation, if its score is higher than its predecessor. Intuitively, the score given should serve as a representation of how easy it is to find new states while fuzzing a given run. To calculate the score of a mutated run, we test each fuzzable field of every letter in the run using the minimal list of fuzzing values used previously for our initial filtering phase and record the amount of new states discovered. To calculate the final score, we divide the total sum of new states by the length of the run. While the scoring does take some time, as we have to test at least five fields per letter, and we test every letter in the run compared to a randomly chosen one before, it is still much faster than the initial filtering phase provided the length of the mutated run does not come close to the number of runs need to learn the model. However, we do need to run this scoring step after every mutation, so for long mutations (>30 mutations) the total runtime can exceed that of the previous filtering step. The key difference is, that after the mutations are completed, the result will be a single run that is more interesting than any previous generated run, as opposed to the 175 runs after filtering. Finally, we weighted the mutation operations to make adding a new letter at the end of the word more likely than at a random index, as well as increasing the likelihood of the last letter being flipped over random letters. These changes try to decrease the chances of wasting time changing existing interesting configurations instead of adding to them, but still leaves the possibility given enough mutations. An example mutation in which prependeding the letter sa\_main to the existing run leads to a significant score increase can be seen in Listing \ref{lst:mutations}. The most interesting run found within 20 mutations is shown in line seven.
+
+Comparing the two methods, the filtering one takes far longer, but does explore a much higher number of states. In contrast, the mutation-based approach is much faster, and focuses on a small sample of states, but generates that sample to be as interesting as possible in regards to the amount of new states that can be discovered through it.
+
+
+\begin{lstlisting}[float=h, caption=Mutations, label=lst:mutations]
+Mutation: 11, score: 82.0
+['sa_main', 'key_ex_main_err', 'key_ex_main', 'sa_main', 'authenticate', 'sa_main', 'sa_quick', 'sa_main_err', 'authenticate']
+
+Mutation: 12, score: 115.5
+['sa_main', 'sa_main', 'key_ex_main_err', 'key_ex_main', 'sa_main', 'authenticate', 'sa_main', 'sa_quick', 'sa_main_err', 'authenticate']
+...
+Mutation: 16, score: 130.66666666666666
+['sa_main', 'sa_main', 'key_ex_main_err', 'key_ex_main', 'sa_main', 'authenticate', 'sa_main', 'sa_quick', 'sa_main_err', 'ack_quick_err', 'sa_main_err', 'authenticate']
+\end{lstlisting}

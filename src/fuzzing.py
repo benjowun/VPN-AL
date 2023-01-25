@@ -416,7 +416,7 @@ def generate_runs(baseline=[], num_mutations=20):
     current_max = score_mutation(current)
 
     for i in range(num_mutations):
-        suggestion = mutate(current)
+        suggestion = mutate(current.copy())
         score = score_mutation(suggestion)
         print(f"Mutation: {i}, score: {score}\n {current}\n\n", file=file)
 
