@@ -73,7 +73,7 @@ def learn(kv=True):
 
     print(learned_ipsec)
 
-    learned_ipsec.save("this2.dot")
+    learned_ipsec.save("this.dot")
     learned_ipsec.visualize("LearnedModel2")
 
     sul.ipsec.delete() # call at end to clean any leftover connections
@@ -166,5 +166,5 @@ def time(num_runs=20):
     print("*******************************")
 
 
-learn(kv=False)
+learn(kv=True)
 #time()
