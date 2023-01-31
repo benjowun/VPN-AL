@@ -14,7 +14,8 @@
 
 \label{chap:Related}
 % TODO: check if Feldman is correct
-% TODO: add a summary of mentioned related work with each citation, total length should be about 2 pages
+% TODO: add a summary of mentioned related work with each citation
+\todo[inline]{use workshop paper stuff}
 The aim of this chapter is to give a brief overview of related work, focusing mainly on automata learning and testing of secure communication protocols.
 1987 
 The concept of learning through the means of membership and equivalence queries was introduced in 1987 by Angluin \parencite{angluin1987learning}. Angluin presented an algorithm for learning regular languages from queries and counterexamples, called $L^*$. In it, a student questions a teacher and constructs a hypothesis based on its responses. The hypothesis is then tested through equivalence queries which check if the hypothesis correctly matches the regular language being learned. While the L* algorithm was originally designed to learn deterministic finite automata (dfa), it can be simply extended to work for Mealy machines by making use of the similarities between dfa and Mealy machines, as shown by Steffen et al. \parencite{steffen2011}. Over time, many related and improved algorithms were published, such as the one proposed by Rivest and Schapire in 1993 in which homing sequences were used to infer finite automata \parencite{Rivest1993Inference}. Another, more recent algorithm came in the form of a redundancy-free active automata learning approach titled TTT by Isberner et al \parencite{Isberner2014TTT}. In this algorithm, essential data is stored in three tree data structures, stripping away unessential information. %TODO: mention version of algorithm used by AALpy
