@@ -20,11 +20,14 @@ In this chapter, we present the results of our model learning and model-based fu
 % section where we show and analyze reference and no filter models including model and statistics
 TODO: show and analyze Reference and NoFilter model versions --> Maybe move them here from previous chapter?
 
-TODO: rewrite this portion, more showing off results, less explaining
-Over the course of our work, we learned a wide variety of different models. In the following, we present the three most relevant ones, all learned from a Linux Strongswan U5.9.5 server. Error codes have been simplified for better readability. As our \ac{sul} had some issues with non-determinism while retransmissions were enabled, one major differentiating factor in our models is whether retransmission-filtering was enabled for the learning process. This had a significant impact on the resulting learned model, with the version without filtering boasting more than twice the number of states than the one with. Additionally, even when using the methods to combat non-determinism described in Chapter \ref{chap:Learning}, Section \ref{subsec:nondet} the resulting models still occasionally differed when not filtering out retransmissions. Therefore, while still suitable for fingerprinting, the non-filtered models were not used for fuzzing, as we desired a completely deterministic model to serve as our baseline.
+TODO: rewrite / expand on this portion, detail exact configurations
+Over the course of our work, we learned a wide variety of different models. In the following, we present the four most relevant ones, all learned from a Linux Strongswan U5.9.5 server, using the $KV$ learning algorithm. Error codes have been simplified for better readability. As our \ac{sul} had some issues with non-determinism while retransmissions were enabled, one major differentiating factor in our models is whether retransmission-filtering was enabled for the learning process. This had a significant impact on the resulting learned model, with the version without filtering boasting more than twice the number of states than the one with. Additionally, even when using the methods to combat non-determinism described in Chapter \ref{chap:Learning}, Section \ref{subsec:nondet} the resulting models still occasionally differed when not filtering out retransmissions. Therefore, while still suitable for fingerprinting, the non-filtered models were not used for fuzzing, as we desired a completely deterministic model to serve as our baseline.
 
 \subsection{Learned Models} \label{subsec:models}
-Figure \ref{fig:nofiltera} shows the most commonly learned model when not filtering retransmissions. Roughly 80\% of all learning attempts without filtering resulted in this model, which we will refer to as the common model, with the other 20\% being a non-uniform assortment of outliers, an example of which can be seen in Figure \ref{fig:nofilterb}. The common model took approximately 200 minutes (12187 seconds) to learn with the $L^*$ algorithm, spread over five learning rounds, and consists of 13 states. Of those 200 minutes, roughly 75\% were used for state exploration / membership queries and 25\% for conformance checking. 631 membership queries and 130 equivalence queries were performed in 5188 and 1947 steps respectively. On average, three to four non-determinism errors were caught and fixed per learned model, arising from differing timings causing retransmissions to be sent at different points. 
+\todo[inline]{rewrite section with results using kv}
+Figure \ref{fig:nofiltera} shows the two most commonly learned models when not filtering retransmissions. Roughly 80\% of all learning attempts without filtering resulted in one of these two models, which we will refer to as the common models, with the other 20\% being a non-uniform assortment of outliers, an example of which can be seen in Figure \ref{fig:nofilterb}. 
+
+The common model took approximately 200 minutes (12187 seconds) to learn with the $L^*$ algorithm, spread over five learning rounds, and consists of 13 states. Of those 200 minutes, roughly 75\% were used for state exploration / membership queries and 25\% for conformance checking. 631 membership queries and 130 equivalence queries were performed in 5188 and 1947 steps respectively.  
 
 Examining the model, we can clearly see the separation between the two phases. Phase one completes in state \emph{S3}, and phase two begins right thereafter. We can see a bunch of strange transitions throughout states \emph{S6} to \emph{S11}. In these states, we can see that phase one messages, which are usually ignored in phase two, result in \emph{IPSEC SA} responses. This behavior is caused by retransmissions being treated as responses to phase one messages sent in phase two, which are in fact ignored by the server. 
 
@@ -32,8 +35,15 @@ Another noticeable property of the learned automata, is that past state \emph{S2
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=\linewidth]{images/NoFilterA}
-	\caption{Most common learned model.}
+	\includegraphics[width=\linewidth]{images/models/retrans_case1_lstar}
+	\caption{First commonly learned model with retransmissions.}
+	\label{fig:nofiltera}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth]{images/models/retrans_case2_lstar}
+	\caption{Second commonly learned model with retransmissions.}
 	\label{fig:nofiltera}
 \end{figure}
 
@@ -41,13 +51,14 @@ In comparison, when learning the same server using retransmission-filtering, all
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=\linewidth]{images/Reference}
+	\includegraphics[width=\linewidth]{images/models/Reference}
 	\caption{Clean model learned using retransmission filtering}
 	\label{fig:reference}
 \end{figure} 
 
 Looking at the resulting model more closely, we can see that the first four states are identical to the previous model. This is due to the fact that the retransmissions only triggered for phase two messages and since they are our only source of non-determinism, we see no differences here. However, the phase two states look wildly different, showing a streamlined behavior that fits our reference \ac{ike} exchange (see Figure \ref{fig:IKEv1}) almost perfectly. The only small difference lies in the additional state \emph{S5} which loops back to state \emph{S4} with an \emph{IPSEC SA} or \emph{ACK} message. This behavior demonstrates how one can create multiple \ac{ipsec} SAs on a single \ac{ike} \ac{sa} channel. And once a new \ac{ipsec} \ac{sa} has been established, we can again send another \emph{ACK} message. In other words, the extra state is there to show that we cannot acknowledge a single \ac{ipsec} \ac{sa} twice, but need to first create a new one.
 
+\todo{stuff here}
 % Error model
 TODO: analyze error model
 Figure \ref{fig:withfilterwitherrors} shows a model learned with retransmission-filtering enabled. Additionally, the input alphabet was expanded to include an additional erroneous version of each letter that maps to a malformed \ac{ike} message. This model served as the basis for our model-based fuzzing and was, thanks to the retransmission-filtering, 100\% deterministic. It took a total of 
@@ -58,7 +69,7 @@ The model looks largely identical to the previous model, apart from some additio
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\linewidth]{images/WithFilterWithErrors}
+	\includegraphics[width=\linewidth]{images/models/WithFilterWithErrors_kv}
 	\caption{Model with malformed messages}
 	\label{fig:withfilterwitherrors}
 \end{figure}
