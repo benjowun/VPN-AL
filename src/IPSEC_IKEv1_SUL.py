@@ -12,7 +12,7 @@ from time import sleep
 # timing params in seconds
 WAIT_TIME = 1
 CONNECTION_TIMEOUT = 2
-IGNORE_RETRANSMISSION = False
+IGNORE_RETRANSMISSION = True
 
 conn = Connector("10.0.2.1", 500, 500, CONNECTION_TIMEOUT)
 
@@ -136,6 +136,7 @@ def time(num_runs=20):
             eqt_ls.append(info['eq_oracle_time'])
             tt_ls.append(info['total_time'])
             i += 1
+
     print(f"KV RESULTS:\n{results_kv}\n\n")
     print(f"L* RESULTS:\n{results_lstar}\n\n")
 
@@ -166,5 +167,5 @@ def time(num_runs=20):
     print("*******************************")
 
 
-learn(kv=True)
-#time()
+#learn(kv=True)
+time()

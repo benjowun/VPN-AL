@@ -400,7 +400,7 @@ def score_mutation(run):
                 mapper.reset()
                 state.reset()
     print(f"Score unweighted: {score} #: {len(run)}")
-    return score #/ len(run)
+    return score / len(run)
 
 # want: generate run --> check if it performs better or worse than previous, keep mutation or go to next else
 # save resultant final mutation to file (with each param _fuzz ince), use it for fuzzing
@@ -414,18 +414,17 @@ def generate_runs(baseline=[], num_mutations=20):
         current = baseline
     
     current_max = score_mutation(current)
-    current_av = current_max / len(current)
 
     for i in range(num_mutations):
         suggestion = mutate(current.copy())
         score = score_mutation(suggestion)
-        print(f"Mutation: {i}, score: {score}\n {current}\n\n", file=file)
 
-        if (score > current_av):
-            if score > current_max:
-                current_max = score
+        if score > current_max:
             current = suggestion
-            current_av = score / len(current) 
+            score = current_max
+            print(f"Mutation: {i}, score: {score}\n {suggestion}\n\n", file=file)
+        else: 
+            print(f"Mutation {i}, score: {score}\n Discarded \n ({suggestion})")
 
     print(f"Max score: {current_max}\n {current}\n\n", file=file)
     return current
@@ -442,4 +441,4 @@ def generate_runs(baseline=[], num_mutations=20):
 # fuzz(run) # goes through each method once, hopefully finds any serious errors
 # fuzz_all("filter_results.txt")
 
-generate_runs(['sa_main', 'key_ex_main', 'authenticate'])
+generate_runs(['sa_main', 'key_ex_main', 'authenticate'], 60)
