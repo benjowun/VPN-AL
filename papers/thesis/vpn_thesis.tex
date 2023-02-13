@@ -144,6 +144,27 @@ footnotesep = 10mm plus 2mm minus 0mm  % bottom of body to top of footnote
 	style=sameline,
 }
 
+% acronyms
+\usepackage[nolist,nohyperlinks]{acronym}
+\begin{acronym}
+	\acro{vpn}[VPN]{Virtual Private Network}
+	\acro{ipsec}[IPsec]{Internet Protocol Security}
+	\acro{ike}[IKE]{Internet Key Exchange protocol}
+	\acro{sul}[SUL]{system under learning}
+	\acro{sut}[SUT]{system under test}
+	\acro{pal}[PAL]{passive automata learning}
+	\acro{aal}[AAL]{active automata learning}
+	\acro{mat}[MAT]{minimally adequate teacher}
+	\acro{ah}[AH]{Authentication Header}
+	\acro{esp}[ESP]{Encapsulating Security Payload}
+	\acro{isakmp}[ISAKMP]{Internet Security Association and Key Management Protocol}
+	\acro{sa}[SA]{Security Association}
+	\acro{vm}[VM]{virtual machine}
+	\acro{afl}[AFL]{american fuzzy lop}
+	\acro{dfa}[DFA]{deterministic finite automata}
+	\acro{mid}[M-ID]{message-ID}
+	\acro{iv}[IV]{initialization vector}
+\end{acronym}
 
 
 % use caption and subfig (caption2 and subfigure are now obsolete)
@@ -728,6 +749,8 @@ breaklinks=true,               % allow links exceeding a single line
 % export adjustbox keys to includegraphics
 % must be after \usepackage{graphicx}
 \usepackage[export]{adjustbox}    % valign=t, frame, ...
+
+\usepackage{todonotes}
 
 \input{thesis-macros}
 
