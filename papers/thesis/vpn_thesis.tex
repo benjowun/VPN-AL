@@ -152,7 +152,6 @@ footnotesep = 10mm plus 2mm minus 0mm  % bottom of body to top of footnote
 	\acro{ike}[IKE]{Internet Key Exchange protocol}
 	\acro{sul}[SUL]{system under learning}
 	\acro{sut}[SUT]{system under test}
-	\acro{pal}[PAL]{passive automata learning}
 	\acro{aal}[AAL]{active automata learning}
 	\acro{mat}[MAT]{minimally adequate teacher}
 	\acro{ah}[AH]{Authentication Header}
@@ -161,9 +160,11 @@ footnotesep = 10mm plus 2mm minus 0mm  % bottom of body to top of footnote
 	\acro{sa}[SA]{Security Association}
 	\acro{vm}[VM]{virtual machine}
 	\acro{afl}[AFL]{american fuzzy lop}
-	\acro{dfa}[DFA]{deterministic finite automata}
+	\acro{dfa}[DFA]{deterministic finite automaton}
+	\acroplural{dfa}[DFA]{deterministic finite automata}
 	\acro{mid}[M-ID]{message-ID}
 	\acro{iv}[IV]{initialization vector}
+	\acro{psk}[PSK]{pre-shared key}
 \end{acronym}
 
 
@@ -552,41 +553,14 @@ vskip=0pt,               % by default would be \topsep + \partopsep.
 \ExecuteQuoteOptions{style=keithbritish}
 
 
-
-
-
 \usepackage[
 backend=biber,
 %  style=ext-authoryear-comp,   % defined in biblatex-ext package
-style=ext-authoryear,        % defined in biblatex-ext package
-sorting=nyt,
-useprefix,                   % van and von are part of second name
-mergedate=false,             % only for authoryear style
-dashed=false,                % only for authoryear style
-abbreviate=false,
-maxcitenames=2,              % if > 2 authors,
-mincitenames=1,              % use first 1 then et al
-maxbibnames=99,              % if > 99 authors,
-minbibnames=6,               % use first 6 then et al
-uniquelist=minyear,
-uniquename=init,
-hyperref=true,
-backref=true,
-backrefstyle=two,
-sortlocale=en,
+style=numeric
 ]{biblatex}
-
-
-% set for csquotes, but \autocite only available
-% after biblatex is loaded
-\SetCiteCommand{\autocite}    % or maybe \parencite
 
 % more space between entries in bib
 \setlength\bibitemsep{1.5\itemsep}
-
-% kandrews: replace round brackets with square brackets in citations
-\DeclareOuterCiteDelims{parencite}{\bibopenbracket}{\bibclosebracket}
-\DeclareInnerCiteDelims{textcite}{\bibopenbracket}{\bibclosebracket}
 
 % kandrews: replace round brackets with square brackets in bibliography
 % biblabeldate is a biblatex-ext feature
@@ -757,8 +731,6 @@ breaklinks=true,               % allow links exceeding a single line
 % tikz stuff
 \usepackage{tikz, wrapfig}
 \usetikzlibrary{positioning, calc}
-
-
 
 
 \begin{document}
