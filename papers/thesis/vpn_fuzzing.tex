@@ -14,6 +14,8 @@
 
 \label{chap:Fuzzing}
 
+\todo{less actual results, save those for the evaluation. Explain the setup more, go into greater detail. Diagram showcasing the fuzzing process}
+
 \section{Environment Setup} \label{sec:fuzzenv}
 % describe VMs, IPsec server software, configuration etc
 We ran all our fuzzing tests in the same virtual network setup we used for our automata learning, on the same Ubuntu 22.04 LTS distributions. We again designated one \ac{vm} as the initiator which would send the fuzzed messages and the other one as the responder to create a typical client-server setup. All settings on the used VMs remained the same as while learning to ensure that no discrepancies were introduced by different environment settings. The \ac{sut} was also the same Strongswan server used for learning. The major difference to learning is that for fuzzing, we no longer require \textsc{AALpy}. Our only real dependency, apart from our mapper class, is the Python fuzzing framework boofuzz, version 0.4.1, which we use for input generation. 
@@ -21,6 +23,7 @@ We ran all our fuzzing tests in the same virtual network setup we used for our a
 \subsection{Adapting the Model} \label{subsec:adapting_model}
 While we had already successfully learned a (deterministic) model of the \ac{sul} when exposed to expected inputs, this proved to be not particularly useful for model-based fuzzing, as each fuzz case would be treated as new behavior. Instead, prior to fuzzing, we learn a new model, again with retransmission-filtering enabled, but this time also with an expanded input alphabet. In addition to the previous input alphabet letters, we add an erroneous version of each input letter that maps to an \ac{ike} packet with some sort of error or malformation, as shown in Listing \ref{lst:inputal_2}. This doubles the size of our input alphabet. The goal is to learn the behavior of the \ac{sul} when exposed to typical errors or malformed packets that could arise during fuzzing, to be able to filter away as much uninteresting information as possible and focus on more unusual behavior. An example of such a malformed packet could be an incorrect length field, a wrong hash value or simply an unsupported \ac{sa} option. Since we have designed our mapper class in such a way as to allow for easy manipulation of packets, this was an easy change to implement. Some additional server responses had to be parsed correctly, but all in all, not much had to be changed. The resulting model can be seen in Figure \ref{fig:withfilterwitherrors} and was used as our reference model while testing.  
 
+\todo{this can be in text}
 \begin{lstlisting}[float=h, caption=The Updated Input Alphabet, label=lst:inputal_2, numbers=none, language=python]
 	input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'sa_main_err', 'key_ex_main_err', 'authenticate_err', 'sa_quick_err', 'ack_quick_err']
 \end{lstlisting}
