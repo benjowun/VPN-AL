@@ -413,7 +413,7 @@ def generate_runs(baseline=[], num_mutations=20):
     else:
         current = baseline
     
-    current_max = score_mutation(current)
+    current_max = score_mutation(current) / 2 #start a bit lower to promote mutations
 
     for i in range(num_mutations):
         suggestion = mutate(current.copy())
@@ -421,10 +421,10 @@ def generate_runs(baseline=[], num_mutations=20):
 
         if score > current_max:
             current = suggestion
-            score = current_max
+            current_max = score
             print(f"Mutation: {i}, score: {score}\n {suggestion}\n\n", file=file)
         else: 
-            print(f"Mutation {i}, score: {score}\n Discarded \n ({suggestion})")
+            print(f"Mutation {i}, score: {score}\n Discarded \n ({suggestion})", file=file)
 
     print(f"Max score: {current_max}\n {current}\n\n", file=file)
     return current
