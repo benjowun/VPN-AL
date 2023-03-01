@@ -57,8 +57,8 @@ def learn(kv=True):
     # automation = load_automaton_from_file('path_to_file.dot', automation_type='mealy')
 
     sul = IPSEC_IKEv1_SUL()
-    #input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'sa_main_err', 'key_ex_main_err', 'authenticate_err', 'sa_quick_err', 'ack_quick_err'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
-    input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
+    input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'sa_main_err', 'key_ex_main_err', 'authenticate_err', 'sa_quick_err', 'ack_quick_err'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
+    #input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
 
 
     #eq_oracle = RandomWalkEqOracle(input_al, sul, num_steps=2000, reset_after_cex=True, reset_prob=0.15)
@@ -81,7 +81,7 @@ def learn(kv=True):
 
 # learning rounds, automaton size, learning queries, setps learning, eq oracle queries, eq oracle steps, 
 # learning time, eq oracle time, total time
-def time(num_runs=20):
+def time(num_runs=10):
     results_kv = []
     lr_kv = []
     as_kv = []

@@ -15,7 +15,7 @@ MISS_THRESHHOLD = 3
 conn = Connector("10.0.2.1", 500, 500, CONNECTION_TIMEOUT)
 mapper = IPSEC_Mapper(IGNORE_RETRANSMISSION, conn)
 model = read_dot("A2.dot") # reads LearnedModel.dot by default
-state = state_machine(model) # our state machine based on model
+#state = state_machine(model) # our state machine based on model
 
 # Fuzz values TODO: add more
 short_list = [0,200,65535]
@@ -169,7 +169,7 @@ def filter():
                         # hence we use the _err version of messages on the state machine
                         if "_err" not in og_input:
                             og_input += "_err"
-                        ret_expected = state.next(og_input)
+                        ret_expected = model.step(og_input)
                     else:
                         func = getattr(mapper, input)
                         
@@ -184,7 +184,7 @@ def filter():
                             run_done = True
                             break # end current run
                         
-                        ret_expected = state.next(input)
+                        ret_expected = model.step(input)
                     
                     if str(ret_real) != ret_expected: # str needed for None returns
                         miss_count += 1
@@ -209,7 +209,7 @@ def filter():
                 # TODO: add check to see if we are in phase 1 or phase 2 again
                 mapper.delete()
                 mapper.reset()
-                state.reset()
+                model.reset_to_initial()
 
                 if run_done:
                     break
@@ -228,15 +228,15 @@ def test(testcase, param, fv):
             func = getattr(mapper, t)
             parameters = {param:fv}
             ret = func(**parameters)
-            ret_ex = state.next(t.replace("fuzz", "err"))
+            ret_ex = model.step(t.replace("fuzz", "err"))
         else:
             func = getattr(mapper, t)
             ret = func()
-            ret_ex = state.next(t)
+            ret_ex = model.step(t)
         print(f"**********\nExpected: {ret_ex} | Received: {ret}\n**********\n")
     mapper.delete()
     mapper.reset()
-    state.reset()
+    model.reset_to_initial()
 
 # Fuzzing phase --> use relevant states for fuzzing in boofuzz
 # returns number of found interesting states
@@ -284,21 +284,21 @@ def fuzz(testcase):
                         ret = func(**parameters)
                     except SystemExit: # if the function fails to be decrypted, try to reset machine and save run info
                         print("\nCaught Exception!\n", file=file)
-                    ret_ex = state.next(t.replace("fuzz", "err"))
+                    ret_ex = model.step(t.replace("fuzz", "err"))
                 else:
                     func = getattr(mapper, t)
                     try:
                         ret = func()
                     except SystemExit: # if the function fails to be decrypted, try to reset machine and save run info
                         print("\nCaught Exception!\n", file=file)
-                    ret_ex = state.next(t)
+                    ret_ex = model.step(t)
                 print(f"**********\nExpected: {ret_ex} | Received: {ret}\n**********\n")
                 if str(ret_ex) != str(ret):
                     print(f"**********\nExpected: {ret_ex} | Received: {ret}\n**********\n", file=file)
 
             mapper.delete()
             mapper.reset()
-            state.reset()
+            model.reset_to_initial()
             print("Done with run\n\n", file=file)
             counter += 1
 
@@ -383,7 +383,7 @@ def score_mutation(run):
                         except SystemExit:
                             print("Exception")
                             break # end current run          
-                        ret_expected = state.next(input.replace("fuzz", "err"))
+                        ret_expected = model.step(input.replace("fuzz", "err"))
                     else:
                         func = getattr(mapper, input)
                         
@@ -392,13 +392,13 @@ def score_mutation(run):
                         except SystemExit:
                             print("Exception")
                             break # end current run   
-                        ret_expected = state.next(input)                   
+                        ret_expected = model.step(input)                   
                     if str(ret_real) != ret_expected: # str needed for None returns
                         score += 1
                         print(f"**********\nExpected: {ret_expected} | Received: {ret_real}\n**********\n")
                 mapper.delete()
                 mapper.reset()
-                state.reset()
+                model.reset_to_initial()
     print(f"Score unweighted: {score} #: {len(run)}")
     return score / len(run)
 
@@ -436,9 +436,9 @@ def generate_runs(baseline=[], num_mutations=20):
 # tc = ['sa_main_fuzz', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick']
 # test(tc, "tf", data)
 
-# run = ['sa_quick_err', 'ack_quick', 'sa_main', 'sa_quick_err', 'authenticate_err', 'sa_quick_err', 'ack_quick_err', 'ack_quick_err', 'sa_quick_err', 'ack_quick', 'sa_quick', 'sa_main_err', 'sa_quick_err', 'sa_main_err', 'sa_main', 'authenticate_fuzz']
+run = ['sa_main', 'key_ex_main_fuzz']
 
-# fuzz(run) # goes through each method once, hopefully finds any serious errors
+fuzz(run) # goes through each method once, hopefully finds any serious errors
 # fuzz_all("filter_results.txt")
 
-generate_runs(['sa_main', 'key_ex_main', 'authenticate'], 60)
+# generate_runs(['sa_main', 'key_ex_main', 'authenticate'], 60)
