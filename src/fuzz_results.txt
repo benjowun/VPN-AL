@@ -1,0 +1,2467 @@
+Fuzzing isa_len with: b'\x00\x00\x00\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\x00\x00\x00\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xff\x00\x00\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'AAAA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'AAAA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'AAAA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'AAAA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'AAAA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'AAAA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: <function compose.<locals>.<lambda>.<locals>.<lambda> at 0x7f3b6cd471c0>
+Run: ['sa_main', 'key_ex_main_fuzz']
+Fuzzing isa_len with: <function compose.<locals>.<lambda>.<locals>.<lambda> at 0x7f3b6cd47250>
+Run: ['sa_main', 'key_ex_main_fuzz']
+Fuzzing isa_len with: <function compose.<locals>.<lambda>.<locals>.<lambda> at 0x7f3b6cd47130>
+Run: ['sa_main', 'key_ex_main_fuzz']
+Fuzzing isa_len with: b'\x00\x00\x81#'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\x00\xfa\xca\xde'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\x1b\xad\xb0\x02'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\x8b\xad\xf0\r'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xa5\xa5\xa5\xa5'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xa5\x00\x00\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xab\xab\xab\xab'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xab\xad\xba\xbe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xab\xba\xba\xbe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xab\xad\xca\xfe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xb1k\x00\xb5'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xba\xad\xf0\r'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xba\xaa\xaa\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xba\xd2""'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xba\xdb\xad\xba'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xba\xdc\x0f\xfe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xba\xdd\xca\xfe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xbb\xad\xbe\xef'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xbe\xef\xca\xce'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xc0\x00\x10\xff'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xca\xfe\xba\xbe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xca\xfe\xd0\r'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xca\xfe\xfe\xed'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xcc\xcc\xcc\xcc'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xcd\xcd\xcd\xcd'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\r\x15\xea^'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xdd\xdd\xdd\xdd'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xde\xad\x10\xcc'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xde\xad\xba\xbe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xde\xad\xbe\xef'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xde\xad\xca\xfe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xde\xad\xc0\xde'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xde\xad\xfa\x11'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xde\xad\xf0\r'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xde\xfe\xc8\xed'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xde\xad\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xeb\xeb\xeb\xeb'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xfa\xde\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xfd\xfd\xfd\xfd'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xfe\xe1\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xfe\xed\xfa\xce'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing isa_len with: b'\xfe\xee\xfe\xee'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\x00\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\x00\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xff\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'AA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'AA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'AA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'AA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'AA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'AA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: <function compose.<locals>.<lambda>.<locals>.<lambda> at 0x7f3b6cd47d00>
+Run: ['sa_main', 'key_ex_main_fuzz']
+Fuzzing ke_len with: <function compose.<locals>.<lambda>.<locals>.<lambda> at 0x7f3b6cd45870>
+Run: ['sa_main', 'key_ex_main_fuzz']
+Fuzzing ke_len with: <function compose.<locals>.<lambda>.<locals>.<lambda> at 0x7f3b6cd457e0>
+Run: ['sa_main', 'key_ex_main_fuzz']
+Fuzzing ke_len with: b'\x00\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\x00\xfa'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\x1b\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\x8b\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xa5\xa5'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xa5\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xab\xab'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xab\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xab\xba'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xab\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xb1k'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xba\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xba\xaa'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xba\xd2'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xba\xdb'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xba\xdc'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xba\xdd'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xbb\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xbe\xef'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xc0\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xca\xfe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xca\xfe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xca\xfe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xcc\xcc'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xcd\xcd'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\r\x15'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xdd\xdd'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xde\xfe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xeb\xeb'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xfa\xde'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xfd\xfd'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xfe\xe1'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xfe\xed'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing ke_len with: b'\xfe\xee'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\x00\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\x00\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xff\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'AA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'AA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'AA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'AA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'AA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'AA'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: <function compose.<locals>.<lambda>.<locals>.<lambda> at 0x7f3b6cd7d000>
+Run: ['sa_main', 'key_ex_main_fuzz']
+Fuzzing nc_len with: <function compose.<locals>.<lambda>.<locals>.<lambda> at 0x7f3b6cd7d090>
+Run: ['sa_main', 'key_ex_main_fuzz']
+Fuzzing nc_len with: <function compose.<locals>.<lambda>.<locals>.<lambda> at 0x7f3b6cd7cf70>
+Run: ['sa_main', 'key_ex_main_fuzz']
+Fuzzing nc_len with: b'\x00\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\x00\xfa'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\x1b\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\x8b\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xa5\xa5'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xa5\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xab\xab'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xab\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xab\xba'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xab\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xb1k'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xba\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xba\xaa'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xba\xd2'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xba\xdb'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xba\xdc'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xba\xdd'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xbb\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xbe\xef'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xc0\x00'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xca\xfe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xca\xfe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xca\xfe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xcc\xcc'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xcd\xcd'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\r\x15'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xdd\xdd'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xde\xfe'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xde\xad'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xeb\xeb'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xfa\xde'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xfd\xfd'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xfe\xe1'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xfe\xed'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Fuzzing nc_len with: b'\xfe\xee'
+Run: ['sa_main', 'key_ex_main_fuzz']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+$key_ex_main_fuzz
+%%%%%%%%%%%%%%%%%%%%
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+Done with run
+
+
+Number of tests run: 153
