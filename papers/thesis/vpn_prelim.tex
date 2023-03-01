@@ -60,7 +60,6 @@ The goal of $L^*$ is to learn a \ac{dfa} acceptor for $L$ using the observation 
 		$\mathbf{end}$
 	$\mathbf{until}$ teacher replies "yes" to equivalence query $L_{prop} \equiv L$
 	$\mathbf{return}$ $L_{prop}$
-		
 \end{lstlisting}
 
 Closed is defined as for all $t \in S \cdot \Sigma$ there exists an $s \in S$ so that $row(t) = row(s)$. In other words, that no new information is gained by expanding the $S$-set by any word in $\Sigma$. If an observation is not closed, it is fixed by adding $t$ to $S$ and updating the table rows through more membership queries. 
