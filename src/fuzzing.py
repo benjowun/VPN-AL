@@ -449,11 +449,11 @@ starttime = time.time()
 # tc = ['sa_main_fuzz', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick']
 # test(tc, "tf", data)
 
-run =  ['sa_main', 'key_ex_main', 'authenticate', 'key_ex_main', 'sa_main', 'key_ex_main', 'sa_main_err', 'ack_quick_err', 'ack_quick_err', 'sa_quick', 'authenticate']
+#run =  ['sa_main', 'key_ex_main', 'authenticate', 'key_ex_main', 'sa_main', 'key_ex_main', 'sa_main_err', 'ack_quick_err', 'ack_quick_err', 'sa_quick', 'authenticate']
 
 # fuzz(run) # goes through each method once, hopefully finds any serious errors
-# fuzz_all("filter_results.txt")
-fuzz_each_input(run)
+fuzz_all("filter_results.txt")
+# fuzz_each_input(run)
 
 # generate_runs(['sa_main', 'key_ex_main', 'authenticate'], 60)
 
