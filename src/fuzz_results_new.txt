@@ -1,3 +1,5 @@
+runtime: 28722 seconds
+
 Fuzzing isa_len with: b'\x00\x00\x00\x00'
 Run: ['sa_main_fuzz', 'key_ex_main', 'authenticate', 'key_ex_main', 'sa_main', 'key_ex_main', 'sa_main_err', 'ack_quick_err', 'ack_quick_err', 'sa_quick', 'authenticate']
 $sa_main_fuzz
