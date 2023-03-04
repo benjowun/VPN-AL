@@ -3,6 +3,7 @@ from utils import *
 from random import randint, sample
 from boofuzz import *
 from Connector import *
+import time
 import ast
 
 CONNECTION_TIMEOUT = 4
@@ -241,7 +242,7 @@ def test(testcase, param, fv):
 # Fuzzing phase --> use relevant states for fuzzing in boofuzz
 # returns number of found interesting states
 def fuzz(testcase):
-    file = open(f"fuzz_results.txt", "a+")
+    file = open(f"fuzz_results_new.txt", "a+")
     counter = 0
     discovered = 1
     # get name of function to be fuzzed
@@ -305,6 +306,17 @@ def fuzz(testcase):
     print(f"Number of tests run: {counter}")
     print(f"Number of tests run: {counter}", file=file)
     file.close()
+
+def fuzz_each_input(run):
+    tested=[]
+    for i in range(len(run)) :
+        temp_run = run.copy()
+        if "_err" in temp_run[i]:
+            temp_run[i] = temp_run[i].replace("_err", "")
+        temp_run[i] = temp_run[i] + "_fuzz"
+        tested.append(temp_run)
+        fuzz(temp_run)
+    print(tested)
 
 def fuzz_all(filename):
     d_file = open(filename, "r")
@@ -429,6 +441,7 @@ def generate_runs(baseline=[], num_mutations=20):
     print(f"Max score: {current_max}\n {current}\n\n", file=file)
     return current
 
+starttime = time.time()
 # main
 # filter()
 
@@ -436,9 +449,12 @@ def generate_runs(baseline=[], num_mutations=20):
 # tc = ['sa_main_fuzz', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick']
 # test(tc, "tf", data)
 
-run = ['sa_main', 'key_ex_main_fuzz']
+run =  ['sa_main', 'key_ex_main', 'authenticate', 'key_ex_main', 'sa_main', 'key_ex_main', 'sa_main_err', 'ack_quick_err', 'ack_quick_err', 'sa_quick', 'authenticate']
 
-fuzz(run) # goes through each method once, hopefully finds any serious errors
+# fuzz(run) # goes through each method once, hopefully finds any serious errors
 # fuzz_all("filter_results.txt")
+fuzz_each_input(run)
 
 # generate_runs(['sa_main', 'key_ex_main', 'authenticate'], 60)
+
+print(f"Runtime: {time.time() - starttime} seconds")
