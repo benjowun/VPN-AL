@@ -445,14 +445,14 @@ starttime = time.time()
 # main
 # filter()
 
-# data = [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'XAUTHInitPreShared'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)]
-# tc = ['sa_main_fuzz', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick']
-# test(tc, "tf", data)
+data = [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'TEST'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)]
+tc = ['sa_main_fuzz', 'key_ex_main', 'authenticate']
+test(tc, "tf", data)
 
 #run =  ['sa_main', 'key_ex_main', 'authenticate', 'key_ex_main', 'sa_main', 'key_ex_main', 'sa_main_err', 'ack_quick_err', 'ack_quick_err', 'sa_quick', 'authenticate']
 
 # fuzz(run) # goes through each method once, hopefully finds any serious errors
-fuzz_all("filter_results.txt")
+# fuzz_all("filter_results.txt")
 # fuzz_each_input(run)
 
 # generate_runs(['sa_main', 'key_ex_main', 'authenticate'], 60)
