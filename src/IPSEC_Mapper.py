@@ -89,7 +89,7 @@ class IPSEC_Mapper:
         if m_id in self._ivs:
             iv = self._ivs[m_id]
         else:
-            iv = self._ivs[0]
+            iv = self._ivs[0]       
 
         # iv for encryption: HASH(last recved encrypted block | m_id)
         h = SHA1.new(iv + m_id)
@@ -159,7 +159,7 @@ class IPSEC_Mapper:
         cookie_i = b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37"
         #cookie_i = random.randint(1, 4294967295).to_bytes(8, 'big')
         # split because we need the body for later calculations
-        sa_body_init = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(trans_nb=1, trans=ISAKMP_payload_Transform(num=1, transforms=[('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)])))
+        sa_body_init = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(trans_nb=1, trans=ISAKMP_payload_Transform(num=1, transforms=[('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '2048MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)])))
         policy_neg = ISAKMP(init_cookie=cookie_i, next_payload=1, exch_type=2)/sa_body_init
 
         resp = self._conn.send_recv_data(policy_neg)
@@ -209,7 +209,7 @@ class IPSEC_Mapper:
         cookie_i = b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37"
         # cookie_i = random.randint(1, 4294967295).to_bytes(8, 'big')
         # split because we need the body for later calculations
-        sa_body_init = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(trans_nb=1, trans=ISAKMP_payload_Transform(num=1, transforms=[('Encryption', 'AES-CBC'), ('KeyLength', 444), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)])))
+        sa_body_init = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(trans_nb=1, trans=ISAKMP_payload_Transform(num=1, transforms=[('Encryption', 'AES-CBC'), ('KeyLength', 444), ('Hash', 'SHA'), ('GroupDesc', '2048MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)])))
         policy_neg = ISAKMP(init_cookie=cookie_i, next_payload=1, exch_type=2)/sa_body_init
 
         resp = self._conn.send_recv_data(policy_neg)
@@ -272,7 +272,7 @@ class IPSEC_Mapper:
             prp_num = 1
 
         if tf == None:
-            tf = [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)]
+            tf = [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '2048MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)]
 
         # split because we need the body for later calculations
         sa_body_init = ISAKMP_payload_SA(length=sa_len, prop=ISAKMP_payload_Proposal(length=prp_len, trans_nb=prp_num, trans=ISAKMP_payload_Transform(num=1, length=tf_len, transforms=tf)))
@@ -281,6 +281,7 @@ class IPSEC_Mapper:
         #policy_neg.show()
         dprint(f"Bytes: {hexify(raw(policy_neg))}")
         resp = self._conn.send_recv_data(policy_neg)
+        
         if resp == None: # should never happen
             # exit(-1)
             return None
@@ -327,21 +328,22 @@ class IPSEC_Mapper:
         PSK = b"AahBd2cTvEyGevxO08J7w2SqRGbnIeBc" 
 
         # public / private key pair
-        dh = DiffieHellman(group=2, key_bits=256)
+        dh = DiffieHellman(group=14, key_bits=256)
         private_key = dh.get_private_key()
         public_key = dh.get_public_key()
-        while len(private_key) < 40 or len(public_key) < 128: # DH sometimes outputs key that requires one less byte for encoding, since we don't want to worry about different padding schemes, we do not use those
-            dh = DiffieHellman(group=2, key_bits=256) # create new key pair and hope its length is valid (chance is very high)
+        
+        while len(private_key) < 40 or len(public_key) < 256: # DH sometimes outputs key that requires one less byte for encoding, since we don't want to worry about different padding schemes, we do not use those
+            dh = DiffieHellman(group=14, key_bits=256) # create new key pair and hope its length is valid (chance is very high)
             private_key = dh.get_private_key()
             dprint(f"len of private: {len(private_key)}")
             public_key = dh.get_public_key()
             dprint(" - refreshsed DH keys")
-        assert(len(public_key) == 128)
+        assert(len(public_key) == 256)
 
         # Nonce: for now hardcoded: # TODO: generate one / fuzz it
         nonce_client = b"\x12\x16\x3c\xdf\x99\x2a\xad\x47\x31\x8c\xbb\x8a\x76\x84\xb4\x44\xee\x47\x48\xa6\x87\xc6\x02\x9a\x99\x5d\x08\xbf\x70\x4e\x56\x2b"
         
-        key_ex = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=4, exch_type=2, length=196)/ISAKMP_payload_KE(length=132, load=public_key)/ISAKMP_payload_Nonce(length=36, load=nonce_client) #/ISAKMP_payload_NAT_D()
+        key_ex = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=4, exch_type=2)/ISAKMP_payload_KE(load=public_key)/ISAKMP_payload_Nonce(load=nonce_client) #/ISAKMP_payload_NAT_D()
         resp = self._conn.send_recv_data(key_ex)
         if resp == None:
             return None
@@ -420,21 +422,21 @@ class IPSEC_Mapper:
         PSK = b"AahBd2cTvEyGevxO08J7w2SqRGbnIeBc" 
 
         # public / private key pair
-        dh = DiffieHellman(group=2, key_bits=256)
+        dh = DiffieHellman(group=14, key_bits=256)
         private_key = dh.get_private_key()
         public_key = dh.get_public_key()
-        while len(private_key) < 40 or len(public_key) < 128: # DH sometimes outputs key that requires one less byte for encoding, since we don't want to worry about different padding schemes, we do not use those
-            dh = DiffieHellman(group=2, key_bits=256) # create new key pair and hope its length is valid (chance is very high)
+        while len(private_key) < 40 or len(public_key) < 256: # DH sometimes outputs key that requires one less byte for encoding, since we don't want to worry about different padding schemes, we do not use those
+            dh = DiffieHellman(group=14, key_bits=256) # create new key pair and hope its length is valid (chance is very high)
             private_key = dh.get_private_key()
             dprint(f"len of private: {len(private_key)}")
             public_key = dh.get_public_key()
             dprint(" - refreshsed DH keys")
-        assert(len(public_key) == 128)
+        assert(len(public_key) == 256)
 
         # Nonce: for now hardcoded: # TODO: generate one / fuzz it
         nonce_client = b"\x12\x16\x3c\xdf\x99\x2a\xad\x47\x31\x8c\xbb\x8a\x76\x84\xb4"
         
-        key_ex = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=4, exch_type=2, length=196)/ISAKMP_payload_KE(length=132, load=public_key)/ISAKMP_payload_Nonce(length=11, load=nonce_client) #/ISAKMP_payload_NAT_D()
+        key_ex = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=4, exch_type=2)/ISAKMP_payload_KE(load=public_key)/ISAKMP_payload_Nonce(length=11, load=nonce_client) #/ISAKMP_payload_NAT_D()
         resp = self._conn.send_recv_data(key_ex)
         if resp == None:
             return None
@@ -486,10 +488,10 @@ class IPSEC_Mapper:
             ck_r = self._cookie_r
 
         if isa_len  == None:
-            isa_len = 196
+            isa_len = 324
 
         if ke_len == None:
-            ke_len = 132
+            ke_len = 260
 
         if nc_len  == None:
             nc_len = 36
@@ -500,11 +502,11 @@ class IPSEC_Mapper:
         
         # DH-Key exchange
         # public / private key pair
-        dh = DiffieHellman(group=2, key_bits=256)
+        dh = DiffieHellman(group=14, key_bits=256)
         private_key = dh.get_private_key()
         public_key = dh.get_public_key()
-        while len(private_key) < 40 or len(public_key) < 128: # DH sometimes outputs key that requires one less byte for encoding, since we don't want to worry about different padding schemes, we do not use those
-            dh = DiffieHellman(group=2, key_bits=256) # create new key pair and hope its length is valid (chance is very high)
+        while len(private_key) < 40 or len(public_key) < 256: # DH sometimes outputs key that requires one less byte for encoding, since we don't want to worry about different padding schemes, we do not use those
+            dh = DiffieHellman(group=14, key_bits=256) # create new key pair and hope its length is valid (chance is very high)
             private_key = dh.get_private_key()
             dprint(f"len of private: {len(private_key)}")
             public_key = dh.get_public_key()
@@ -1713,18 +1715,9 @@ class IPSEC_Mapper:
     # utility function called by delete to reset Mapper to base state (server is reset with delete)
     # important -  ivs, self._keyed etc.
     def reset(self):
-        self._cookie_i = b""
-        self._cookie_r = b""
-        self._nonce_i = b""
-        self._nonce_r = b""
-        self._sa_body_init = b""
-        self._ivs = {0: b""}
-        self._keys = {}
-        self._spis = []
-        self._keyed = False
-        self._ids = {}
-        resp = self._conn.recv_data()
-        if resp:
+        resp = self._conn.recv_data() 
+
+        while resp: # to fully flush any remaining messages (e.g. from DELETE)
             print("Found leftover data!")
             if (ret := self.get_retransmission(resp)): # retransmission handling
                 if ret == "RET":
@@ -1736,6 +1729,18 @@ class IPSEC_Mapper:
                     print(notification)
                 else:
                     print(f"Error: encountered unimplemented Payload type in RESET")
+            resp = self._conn.recv_data()
+
+        self._cookie_i = b""
+        self._cookie_r = b""
+        self._nonce_i = b""
+        self._nonce_r = b""
+        self._sa_body_init = b""
+        self._ivs = {0: b""}
+        self._keys = {}
+        self._spis = []
+        self._keyed = False
+        self._ids = {}
         print(" - RESET!\n")
 
     # sanity check, runs all in sequence, should work with no problems
