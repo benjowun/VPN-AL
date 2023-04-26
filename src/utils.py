@@ -4,7 +4,8 @@ import random
 
 valid_names = ['Encryption', 'KeyLength', 'Hash',
                'GroupDesc', 'Authentication', 'LifeType', 'LifeDuration']
-debug = False
+debug = True
+libre = True
 
 # model: {state, {input, (new_state, output)}}
 

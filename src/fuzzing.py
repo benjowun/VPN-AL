@@ -15,7 +15,10 @@ MISS_THRESHHOLD = 3
 
 conn = Connector("10.0.2.1", 500, 500, CONNECTION_TIMEOUT)
 mapper = IPSEC_Mapper(IGNORE_RETRANSMISSION, conn)
-model = read_dot("A2.dot") # reads LearnedModel.dot by default
+if libre:
+    model = read_dot("A2_libre.dot")
+else:
+    model = read_dot("A2.dot") # reads LearnedModel.dot by default
 #state = state_machine(model) # our state machine based on model
 
 # Random Seed
@@ -255,32 +258,35 @@ def sanity():
     print("ack_quick")
     mapper.ack_quick()
 
-    print("delete")
-    mapper.delete()
-    mapper.reset()
+    # time.sleep(5)
+    # print("delete")
+    # mapper.delete_v2()
+    # mapper.reset()
 
-    print("Moving on to fuzzing tests...")
-    time.sleep(5)
-    # testing fuzzing functions
-    print("sa_main_fuzz")
-    mapper.sa_main_fuzz()
-    print("key_ex_main_fuzz")
-    mapper.key_ex_main_fuzz()
-    print("authenticate_fuzz")
-    mapper.authenticate_fuzz()
-    print("sa_quick_fuzz")
-    mapper.sa_quick_fuzz()
-    print("ack_quick_fuzz")
-    mapper.ack_quick_fuzz()
+    # # print("Moving on to fuzzing tests...")
+    # # # time.sleep(5)
+    # print("sa_main_fuzz")
+    # mapper.sa_main_fuzz()
+    # print("key_ex_main_fuzz")
+    # mapper.key_ex_main_fuzz()
+    # print("authenticate_fuzz")
+    # mapper.authenticate_fuzz()
+    # print("sa_quick_fuzz")
+    # mapper.sa_quick_fuzz()
+    # print("ack_quick_fuzz")
+    # mapper.ack_quick_fuzz()
 
-    print("delete")
-    mapper.delete()
-    mapper.reset()
+    # print("delete_v2")
+    # mapper.delete_v2()
+    # mapper.reset()
 
 # Fuzzing phase --> use relevant states for fuzzing in boofuzz
 # returns number of found interesting states
 def fuzz(testcase):
-    file = open(f"fuzz_results_new.txt", "a+")
+    if libre:
+        file = open(f"fuzz_results_libre_new.txt", "a+")
+    else:
+        file = open(f"fuzz_results_new.txt", "a+")
     counter = 0
     responses = [] # (t, output)
 
@@ -393,9 +399,11 @@ def rand_word():
     words = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'sa_main_err', 'key_ex_main_err', 'authenticate_err', 'sa_quick_err', 'ack_quick_err']
     return random.choice(words)
 
-# mutate a run, either by swapping a packet for an errorneous version, or by adding a new packet
+# mutate a none-empty run, either by swapping a packet for an errorneous version, or by adding a new packet
 # takes a list of words
 def mutate(run=[], amount=1):
+    assert(len(run) > 0)
+
     for i in range(amount):
         if randint(0,1): # 50 % chance to flip
             if randint(1,5) == 1: # 20% chance to flip random word, 80% to flip latest word
@@ -513,6 +521,18 @@ def generate_random_run(length=5):
     run = []
     for i in range(length):
         run.append(rand_word())
+    return run
+
+def calc_baseline(length=5, num_sequences=5):
+    total = 0
+    runs = []
+    for i in range(num_sequences):
+        run = generate_random_run(length)
+        runs.append(run)
+        score = score_mutation(run)
+        total += score
+    
+    print(f"Average score: {total / num_sequences}")
 
 # creates 2 spliced populations from two parents
 def crossover(pop1, pop2):
@@ -535,7 +555,7 @@ def crossover(pop1, pop2):
 # starting_populations: an optional set of starting populations
 # 
 # Workflow: starting populations (random, or set) --> mutate --> score --> keep best performing, discard rest --> (splice) --> refill missing populations with random --> repeat
-def generate_run_genetic(num_populations=10, num_kept=3, num_iterations=10, mutation_amount=2, starting_length=5, starting_populations=[]):
+def generate_run_genetic(num_populations=10, num_kept=3, num_iterations=5, mutation_amount=2, starting_length=5, starting_populations=[]):
     file = open(f"genetic_{num_iterations}.txt", "w+")
     populations = starting_populations
     scores = [] # top scorers and scores
@@ -557,6 +577,7 @@ def generate_run_genetic(num_populations=10, num_kept=3, num_iterations=10, muta
             population = mutate(population, mutation_amount)
             score = score_mutation(population)
             scores.append((score, population))
+            print(f"Score: {score}")
 
 
         print(f"Populations before filtering: {populations}", file=file)
@@ -599,14 +620,15 @@ starttime = time.time()
 # tc = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick']
 # test(tc, "tf", data)
 
-#run =  ['sa_main', 'key_ex_main', 'authenticate', 'key_ex_main', 'sa_main', 'key_ex_main', 'sa_main_err', 'ack_quick_err', 'ack_quick_err', 'sa_quick', 'authenticate']
+run =  ['sa_main', 'key_ex_main', 'key_ex_main', 'sa_main_err', 'key_ex_main_err', 'sa_main_err', 'sa_quick_err', 'sa_main', 'sa_main_err', 'authenticate', 'authenticate']
 
 #run = ['sa_main', 'key_ex_main_fuzz', 'authenticate']
-#fuzz(run) # goes through each method once, hopefully finds any serious errors
+# fuzz(run) # goes through each method once, hopefully finds any serious errors
 # fuzz_all("filter_results.txt")
-# fuzz_each_input(run)
+fuzz_each_input(run)
 
-generate_runs(['sa_main', 'key_ex_main', 'authenticate'], 50)
+# generate_runs(['sa_main', 'key_ex_main', 'authenticate'], 25)
+# generate_run_genetic(starting_length=3)
+# calc_baseline(18, 10)
 
-# sanity()
 print(f"Runtime: {time.time() - starttime} seconds")

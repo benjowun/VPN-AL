@@ -3,6 +3,7 @@ from aalpy.oracles import RandomWalkEqOracle, StatePrefixEqOracle
 from aalpy.learning_algs.deterministic.LStar import run_Lstar
 from aalpy.learning_algs.deterministic.KV import run_KV
 from statistics import mean
+import utils
 
 from Connector import Connector
 
@@ -45,7 +46,7 @@ class IPSEC_IKEv1_SUL(SUL):
     # map to concrete implementation
     def step(self, letter):
         #print(self.ipsec.print_info())
-        print("$" + letter)
+        print("$" + str(letter))
         self.logs_run.append(letter)
         func = getattr(self.ipsec, letter)
         ret = func()
@@ -57,8 +58,8 @@ def learn(kv=True):
     # automation = load_automaton_from_file('path_to_file.dot', automation_type='mealy')
 
     sul = IPSEC_IKEv1_SUL()
-    #input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'sa_main_err', 'key_ex_main_err', 'authenticate_err', 'sa_quick_err', 'ack_quick_err'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
-    input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
+    input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'sa_main_err', 'key_ex_main_err', 'authenticate_err', 'sa_quick_err', 'ack_quick_err'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
+    #input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
 
 
     #eq_oracle = RandomWalkEqOracle(input_al, sul, num_steps=2000, reset_after_cex=True, reset_prob=0.15)
@@ -73,10 +74,15 @@ def learn(kv=True):
 
     print(learned_ipsec)
 
-    learned_ipsec.save("this.dot")
-    learned_ipsec.visualize("LearnedModelLibreswan")
-
-    sul.ipsec.delete() # call at end to clean any leftover connections
+    if utils.libre:
+        learned_ipsec.save("libre.dot")
+        learned_ipsec.visualize("LearnedModelLibreLatest")
+        sul.ipsec.delete_v2()
+    else:
+        learned_ipsec.save("strong.dot")
+        learned_ipsec.visualize("LearnedModelStrongLatest")
+        sul.ipsec.delete() # call at end to clean any leftover connections
+    
     return info
 
 # learning rounds, automaton size, learning queries, setps learning, eq oracle queries, eq oracle steps, 

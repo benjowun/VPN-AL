@@ -2,6 +2,10 @@ from scapy.all import raw
 from isakmp import *
 from scapy.layers.l2 import Ether
 import socket
+import time
+import utils
+if utils.libre:
+    from paramiko import SSHClient, AutoAddPolicy
 
 # Too low timeouts might fail, 0.5 is already pushing it, to be certain, increase by a bit
 class Connector:
@@ -13,8 +17,16 @@ class Connector:
         server_address = ("10.0.2.2", 500)
         self._sock.bind(server_address)
 
-    def __del__(self):
+        if utils.libre:
+            self._ssh = SSHClient()
+            self._ssh.set_missing_host_key_policy(AutoAddPolicy())
+            self._ssh.load_system_host_keys()
+            self._ssh.connect("10.0.3.1", username="benjamin", password="nimajneb")
+
+    def __del__(self, libre = utils.libre):
         self._sock.close()
+        if libre:
+            self._ssh.close()
 
     # takes a Scapy packet as data
     # TODO: error handling
@@ -26,8 +38,6 @@ class Connector:
             return self.bytes_to_scapy_isakmp(data)
         except:
             return None
-
-
 
     def send_recv_raw_data(self, data):
         self._sock.sendto(self.scapy_isakmp_to_bytes(data), self._dest)
@@ -51,3 +61,18 @@ class Connector:
 
     def send_data(self, data):
         self._sock.sendto(self.scapy_isakmp_to_bytes(data), self._dest)
+
+    def ssh_reset(self):
+        if utils.libre:
+            print("connecting ssh...")
+            command = 'sudo ipsec auto --down vm1tovm2'
+            stdin, stdout, stderr = self._ssh.exec_command(command, get_pty=True)
+            stdin.write('nimajneb\n')
+            stdin.flush()
+            stdout.channel.recv_exit_status() # block till exectued
+            output = stdout.read().decode()
+            print(f"     SSH: {output}")
+            time.sleep(2) # wait for server to restart
+        else:
+            print("ERROR: ENABLE LIBRESWAN SUPPORT IN UTILS!")
+            exit(-1)

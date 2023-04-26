@@ -37,6 +37,7 @@ class IPSEC_Mapper:
         self._spis = []
         self._keyed = False # Flag to indicate active connection is keyed
         self._ids = {} # For detecting retransmits, stores the return values per m_id
+        self._nonces = [] # To help detect p1 retransmission on libreswan
         self._ignore_ret = ignore_ret
 
     # helper methods
@@ -67,6 +68,11 @@ class IPSEC_Mapper:
     def get_retransmission(self, packet):
         id = packet[ISAKMP].id
         if id == 0:
+            # check for phase 1 retransmissions
+            if packet[ISAKMP].next_payload == ISAKMP_payload_type.index("KE") and ISAKMP_payload_Nonce in packet and libre:
+                nonce = packet[ISAKMP_payload_Nonce].load
+                if nonce in self._nonces:
+                    return "RET"
             return None
         elif id in self._ids:
             print(f"  - retransmission {id}")
@@ -207,7 +213,7 @@ class IPSEC_Mapper:
         
         # hardcoded cookie for now
         cookie_i = b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37"
-        # cookie_i = random.randint(1, 4294967295).to_bytes(8, 'big')
+        #cookie_i = random.randint(1, 4294967295).to_bytes(8, 'big')
         # split because we need the body for later calculations
         sa_body_init = ISAKMP_payload_SA(prop=ISAKMP_payload_Proposal(trans_nb=1, trans=ISAKMP_payload_Transform(num=1, transforms=[('Encryption', 'AES-CBC'), ('KeyLength', 444), ('Hash', 'SHA'), ('GroupDesc', '2048MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)])))
         policy_neg = ISAKMP(init_cookie=cookie_i, next_payload=1, exch_type=2)/sa_body_init
@@ -245,6 +251,9 @@ class IPSEC_Mapper:
                 #self.reset() # in this state, any error, returns us to start
                 return notification
             else:
+                if libre:
+                    print("Assuming that this was a retranmission - LIBRESWAN STUFF")
+                    return None
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
@@ -266,7 +275,9 @@ class IPSEC_Mapper:
         # create an ISAKMP packet with scapy:        
         # update all potentially fuzzed values
         if ck_i == None:
-            ck_i = random.randint(1, 4294967295).to_bytes(8, 'big')
+            #ck_i = random.randint(1, 4294967295).to_bytes(8, 'big')
+            cookie_i = b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37"
+
 
         if prp_num== None:
             prp_num = 1
@@ -386,6 +397,7 @@ class IPSEC_Mapper:
             iv = h.digest()
             iv = iv[:16] #trim to needed length
             self._ivs[0] = iv
+            self._nonces.append(nonce_server) # for p1 retransmission handling
 
             dprint(f"IV: {hexify(iv)}")
             dprint(f"DH_key: {hexify(shared_key)}")
@@ -408,6 +420,9 @@ class IPSEC_Mapper:
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
+                if libre:
+                    print("Assuming that this was a retranmission - LIBRESWAN STUFF")
+                    return None
                 raise SystemExit()
                 return None # ? Probably?
 
@@ -458,6 +473,9 @@ class IPSEC_Mapper:
                     self._ids[resp[ISAKMP].id] = notification
                 return notification
             else:
+                if libre:
+                    print("Assuming that this was a retranmission - LIBRESWAN STUFF")
+                    return None
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
@@ -557,6 +575,7 @@ class IPSEC_Mapper:
             iv = h.digest()
             iv = iv[:16] #trim to needed length
             self._ivs[0] = iv
+            self._nonces.append(nonce_server) # for p1 retransmission handling
 
             dprint(f"IV: {hexify(iv)}")
             dprint(f"DH_key: {hexify(shared_key)}")
@@ -579,6 +598,9 @@ class IPSEC_Mapper:
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
+                if libre:
+                    print("Assuming that this was a retranmission - LIBRESWAN STUFF")
+                    return None
                 raise SystemExit()
                 return None # ? Probably?
 
@@ -664,6 +686,9 @@ class IPSEC_Mapper:
                 return notification
             else:
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
+                if libre:
+                    print("Assuming that this was a retranmission - LIBRESWAN STUFF")
+                    return None
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
                 raise SystemExit()
@@ -733,6 +758,9 @@ class IPSEC_Mapper:
                 return notification
             else:
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
+                if libre:
+                    print("Assuming that this was a retranmission - LIBRESWAN STUFF")
+                    return None
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
                 raise SystemExit()
@@ -835,6 +863,9 @@ class IPSEC_Mapper:
                 return notification
             else:
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
+                if libre:
+                    print("Assuming that this was a retranmission - LIBRESWAN STUFF")
+                    return None
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
                 raise SystemExit()
@@ -1037,8 +1068,6 @@ class IPSEC_Mapper:
         msg = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=8, exch_type=32, flags=["encryption"], id=int.from_bytes(m_id, 'big'), length=188)/Raw(load=payload_quick_enc)
         resp = self._conn.send_recv_data(msg)
         if resp == None:
-            print("SA QUICK ERR expects error msg")
-            exit(-1)
             return None
         
         if (ret := self.get_retransmission(resp)): # retransmission handling
@@ -1287,6 +1316,9 @@ class IPSEC_Mapper:
                 return notification
             else:
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
+                if libre:
+                    print("Assuming that this was a retranmission - LIBRESWAN STUFF")
+                    return None
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
                 raise SystemExit()
@@ -1339,6 +1371,9 @@ class IPSEC_Mapper:
                 return notification
             else:
                 print(f"Error: encountered unimplemented Payload type: {resp[ISAKMP].next_payload}")
+                if libre:
+                    print("Assuming that this was a retranmission - LIBRESWAN STUFF")
+                    return None
                 if resp[ISAKMP].id != 0:
                     self._ids[resp[ISAKMP].id] = None
                 raise SystemExit()
@@ -1589,17 +1624,26 @@ class IPSEC_Mapper:
                     exit(-1)
             return None
 
+    # delete fully with the remote_reset script
+    def delete_v2(self):
+        self._conn.ssh_reset()
+
     # send delete messages --> resets server
     # workarounds with notify for p1 - SA pre keying
     def delete(self):
+        if libre:
+            self.delete_v2()
+            return None
         if not self._keys:
-            # cool workaround to delete SAs
-            print(" - Delete workaround")
-            # ONly need to kill stuff if it has been created, i.e. we have cookies
+            # workarounds to delete SAs on Strongswan / Libreswan
+            print(" - Delete workarounds")
+            # Only need to kill stuff if it has been created, i.e. we have cookies
             if self._cookie_i:
                 print("   ...Sent delete ISAKMP message")
                 p_delete = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, exch_type=5)/ISAKMP_payload_Notification(not_type=11)
-                self._conn.send_data(p_delete)
+                self._conn.send_recv_data(p_delete)
+                
+                #self._ssh.ssh_reset() # requires the remote_reset.py server to be running on target
             return None
         # create unencrypted delete message --> this will fail on default strongswan apparently
         # check if SA has been established yet:
@@ -1661,11 +1705,12 @@ class IPSEC_Mapper:
             #print(f"iv_new len: {len(self._ivs[7777])}")
             dprint(f"new iv 7777 {hexify(self._ivs[7777])}")
             p1 = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id1, 'big'), length=76)/Raw(load=payload_enc)
-            self._conn.send_data(p1)
+            self._conn.send_recv_data(p1)
 
 
         ## Second packet: isakmp
         p_delete2 = ISAKMP_payload_Delete(SPIsize=16, SPI=[(self._cookie_i+self._cookie_r), (self._cookie_i+self._cookie_r)])
+        pl = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=12, exch_type=5)/p_delete2
         #print(f"delete2 (isakmp): {hexify(raw(p_delete2))}")
 
         m_id2 = (8888).to_bytes(4, 'big') # random  --> does not really matter that it is reused here, since we clear everything on delete anyways
@@ -1710,7 +1755,7 @@ class IPSEC_Mapper:
         dprint(f"new iv 8888 {hexify(self._ivs[8888])}")
         p2 = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, next_payload=8, exch_type=5, flags=["encryption"], id=int.from_bytes(m_id2, 'big'), length=92)/Raw(load=payload_enc)
 
-        self._conn.send_data(p2)
+        self._conn.send_recv_data(p2)
         
     # utility function called by delete to reset Mapper to base state (server is reset with delete)
     # important -  ivs, self._keyed etc.
@@ -1721,7 +1766,8 @@ class IPSEC_Mapper:
             print("Found leftover data!")
             if (ret := self.get_retransmission(resp)): # retransmission handling
                 if ret == "RET":
-                    return None
+                    dprint("      Found retransmission in reset")
+                    # return None
                 print(ret)
             else:
                 notification = self.parse_notification(resp)
@@ -1729,6 +1775,10 @@ class IPSEC_Mapper:
                     print(notification)
                 else:
                     print(f"Error: encountered unimplemented Payload type in RESET")
+                    print(f"Nonces: {self._nonces}")
+                    resp.show()
+                    #exit(0)
+            sleep(1)
             resp = self._conn.recv_data()
 
         self._cookie_i = b""
@@ -1741,6 +1791,7 @@ class IPSEC_Mapper:
         self._spis = []
         self._keyed = False
         self._ids = {}
+        # self._nonces = [] # these are not reset, as they should be globally unique... at least in theory, in practice, while unlikely, collisions can probably happen
         print(" - RESET!\n")
 
     # sanity check, runs all in sequence, should work with no problems

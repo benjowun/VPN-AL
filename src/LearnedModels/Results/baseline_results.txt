@@ -1,0 +1,2 @@
+length:8, sequences:5 - Average score: 0.05416666666666666
+length:18, sequences:5 - Average score: 0.39166666666666666
