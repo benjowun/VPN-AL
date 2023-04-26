@@ -1,0 +1,53 @@
+%----------------------------------------------------------------
+%
+%  File    :  vpn_setup.tex
+%
+%  Author  :  Keith Andrews, IICM, TU Graz, Austria
+% 
+%  Created :  22 Feb 96
+% 
+%  Changed :  19 Feb 2004
+% 
+%----------------------------------------------------------------
+
+\chapter{Environment Setup} \label{chap:setup}
+
+This chapter provides an in-depth discussion of the environment used for both learning and fuzzing, focusing on its setup and configuration. The chapter begins with a detailed examination of the \ac{vm} setup, providing enough information to allow for the creation of a functionally identical \ac{vm} environment. Relevant networking optimizations and design choices are highlighted. Following the discussion of the \ac{vm} configuration, the installation and configuration of the two utilized \ac{ipsec} \ac{vpn} servers are examined in detail. Special focus is given to providing a comprehensive overview of the relevant \ac{ipsec} configuration file options, including which options map to which keywords for the two servers respectively. Additionally, the most notable differences between the two servers are showcased and discussed.
+
+\section{VM Setup} \label{sec:vm_setup}
+All model learning and testing took place in a virtual environment using two VirtualBox 6.1 \acp{vm} running standard Ubuntu 22.04 LTS distributions (x64). Each \ac{vm} was allotted  \SI{4}{\giga\byte} of memory and one CPU core. To set up the base Ubuntu \ac{vm} using VirtualBox, we downloaded the Ubuntu image from the official source~\footnote{\url{https://ubuntu.com/download/desktop}} and created a new generic Ubuntu (x64) \ac{vm} in VirtualBox, specifying the downloaded Ubuntu image as the target ISO image. Next, we configured the hardware settings as detailed above and set the network to use NAT mode to be able to use the host computers internet connection to install updates and the \ac{vpn} software.
+Additionally, a shared folder was created on the client \ac{vm}, linked to the local development folder on the host computer. This allowed for very easy testing, as there was no need to copy over Python code after every change. Instead it could simply be run from the mounted folder directly. Following the installation and configuration of the \ac{vpn} software (explained in Section~\ref{sec:vpn_setup}), using a separate \ac{vm} for each implementation, so one for Strongswan and one for Libreswan, all that remained was the final network configuration.
+
+VirtualBox supports many networking modes for its \acp{vm}, including several that allow for inter-\ac{vm} communication. These include host-only, internal, bridged and NAT-network networking modes.
+As we wished to minimize external traffic, we configured the \acp{vm} to use the internal networking mode, as it is the only one that solely supports \ac{vm}-\ac{vm} communication.
+The internal networking mode works by creating named internal networks that one can assign the network adapters of individual \acp{vm} to. All \acp{vm} within the same internal network can communicate freely with one-another, but not with the host computer, or any other network for that matter. We created a separate internal test network for each client-server pair of \acp{vm}, ensuring that all communication is isolated to the two involved parties. One important VirtualBox setting, is to change the network adapter from the default Intel, to the paravirtualized network adapter. Paravirtualized means, that instead of virtualizing networking hardware, VirtualBox simply ensures that packets arrive at their designated destination, through a special software interface in the guest operating system. This leads to a noticeable network performance increase. Within the guest Ubuntu installations, we configured the server to use the 2.0.2.1 and the client to use the 2.0.2.2 IP addresses respectively. We use the 2.0.2.0 network (255.255.255.0 subnet mask) with 2.0.2.0 as our default gateway. VirtualBox handles all of the internal routing, provided the two \acp{vm} are in the same internal network. Libreswan requires an additional second internal network with a different IP range to be configured. It is required for SSH-based resetting of the server from the client. This is discussed in Chapter~\ref{chap:Learning} in more detail.
+
+As we use a separate internal network for each pair of \acp{vm}, we can leave the IP configurations identical between pairs and only have to change the used internal network name. This makes cloning pairs of \acp{vm} very practical, allowing for numerous identical test setups to be run at the same time, limited solely by the computing power of the host machine.
+
+
+- pic of two VMs side-by-side
+
+\section{VPN Configuration} \label{sec:vpn_setup}
+The two \ac{ipsec} implementations learned and tested were strongSwan and Libreswan. Both are popular open source \ac{ipsec} implementations, with strongSwan featuring support for Linux, Android, FreeBSD, Apple OSX and Windows~\cite{doc:strongswan} and being the more widespread choice of the two. The libreswan \ac{ipsec} implementation supports Linux, FreeBSD and Apple OSX~\cite{doc:libreswan}. Both projects can trace their roots back to the now discontinued FreeS/WAN \ac{ipsec} project, an early \ac{ipsec} implementation for Linux. Both support \ac{ike}v1 and \ac{ike}-v2, as well as an extensive list of additional features and authentication methods. For this project, we installed both implementations and configured them to use \ac{ike}v1 with \acp{psk} for authentication. The libreswan implementation uses a so-called \emph{ipsec.conf} configuration file to specify connection details including \ac{ike} version, mode and authentication type. The \ac{ipsec} service is started/restarted via the command \texttt{ipsec start} or \texttt{ipsec restart}. The configuration file is used to then automatically start server connection and to wait for incoming connections. On the other hand, strongSwan actually supports two types of configuration files. One more modern one using the Versatile IKE Control Interface, and another legacy option, also using an \emph{ipsec.conf} configuration file. The \ac{ipsec} service is started using the same commands. To make the configuration file translation between \ac{ipsec} implementations as straightforward as possible, we chose to use the \emph{ipsec.conf} configuration file for both implementations. What follows is an overview of the used \emph{ipsec.conf} settings for both implementations.
+
+
+
+
+
+- show all config options (including relevant default values)
+- note differences in the two (which maps to which option)
+	- mention the newer ipsec config options, highlight that both servers use ipsec.conf, wanted to keep stuff as reusable as possible
+- how to start each of the services / restart
+- name of the relevant services (charon vs ???)
+- mention debugging options --> logs and wireshark (e.g. decryption in wireshark for strongswan)
+
+- pic of debugging in wireshark
+- attach decrypted wireshark dump in appendix!
+
+
+- pic of libreswan status?
+- pic of strongswan status?
+
+\TODO: adapt this as needed
+% describe VMs, IPsec server software, configuration etc
+All inter-\ac{vm} communication took place in an isolated virtual network to eliminate possible external influences. During learning and fuzzing, all power saving options and similar potential causes of disruptions were disabled. Additionally, the \ac{ipsec} server was restarted before each learning attempt to ensure identical starting conditions. One \ac{vm} was designated as the initiator and one as the responder to create a typical client-server setup. We chose the open source \ac{ipsec} implementation Strongswan~\cite{software:strongswan} as our \ac{sul}. The Strongswan server was installed on the responder \ac{vm} and set to listen for incoming connections from the initiator \ac{vm}. We used the Strongswan version US.9.5/K5.15.0-25-generic, installed using the default Ubuntu package manager, apt. The Strongswan server was configured to use \acp{psk} for authentication and default recommended security settings. Additionally, it was configured to allow unencrypted notification messages, which were used to reset the connection during the learning process. Our Strongswan configuration files can be found in Appendix TODO \todo{appendix}. The Python library \textsc{AALpy}~\cite{software:aalpy} version 1.2.9 was used in conjunction with the packet manipulation library Scapy\footnote{\url{https://scapy.net/}}, version 2.4.5, in order to learn a model of the \ac{sut}. Significant effort was put into expanding the \ac{isakmp} Scapy module to support all packets required for \ac{ipsec} as the module lacked many features out-of-the-box. The provided Python script, \todo{this}\emph{IPSEC\_IKEv1\_SUL}\footnote{TODO: github or supplementary material link} demonstrates how \textsc{AALpy} can be used in conjunction with our custom mapper to communicate with and learn the model of an \ac{ipsec} server. Figure~\ref{fig:AALSetup} shows a typical learning attempt using two connected \acp{vm}. The right \ac{vm} shows the output of an underway learning attempt, while the left one shows the corresponding Strongswan server logs.
