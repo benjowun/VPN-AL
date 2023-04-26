@@ -3,6 +3,7 @@ from aalpy.oracles import RandomWalkEqOracle, StatePrefixEqOracle
 from aalpy.learning_algs.deterministic.LStar import run_Lstar
 from aalpy.learning_algs.deterministic.KV import run_KV
 from statistics import mean
+import utils
 
 from Connector import Connector
 
@@ -45,7 +46,7 @@ class IPSEC_IKEv1_SUL(SUL):
     # map to concrete implementation
     def step(self, letter):
         #print(self.ipsec.print_info())
-        print("$" + letter)
+        print("$" + str(letter))
         self.logs_run.append(letter)
         func = getattr(self.ipsec, letter)
         ret = func()
@@ -73,10 +74,15 @@ def learn(kv=True):
 
     print(learned_ipsec)
 
-    learned_ipsec.save("this.dot")
-    learned_ipsec.visualize("LearnedModel2")
-
-    sul.ipsec.delete() # call at end to clean any leftover connections
+    if utils.libre:
+        learned_ipsec.save("libre.dot")
+        learned_ipsec.visualize("LearnedModelLibreLatest")
+        sul.ipsec.delete_v2()
+    else:
+        learned_ipsec.save("strong.dot")
+        learned_ipsec.visualize("LearnedModelStrongLatest")
+        sul.ipsec.delete() # call at end to clean any leftover connections
+    
     return info
 
 # learning rounds, automaton size, learning queries, setps learning, eq oracle queries, eq oracle steps, 
@@ -167,5 +173,5 @@ def time(num_runs=10):
     print("*******************************")
 
 
-#learn(kv=True)
-time()
+learn(kv=True)
+#time()
