@@ -258,9 +258,9 @@ def sanity():
     print("ack_quick")
     mapper.ack_quick()
 
-    # time.sleep(5)
-    # print("delete")
-    # mapper.delete_v2()
+    time.sleep(5)
+    print("delete")
+    mapper.delete()
     # mapper.reset()
 
     # # print("Moving on to fuzzing tests...")
@@ -625,10 +625,11 @@ run =  ['sa_main', 'key_ex_main', 'key_ex_main', 'sa_main_err', 'key_ex_main_err
 #run = ['sa_main', 'key_ex_main_fuzz', 'authenticate']
 # fuzz(run) # goes through each method once, hopefully finds any serious errors
 # fuzz_all("filter_results.txt")
-fuzz_each_input(run)
+# fuzz_each_input(run)
 
 # generate_runs(['sa_main', 'key_ex_main', 'authenticate'], 25)
 # generate_run_genetic(starting_length=3)
 # calc_baseline(18, 10)
+sanity()
 
 print(f"Runtime: {time.time() - starttime} seconds")
