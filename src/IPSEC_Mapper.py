@@ -276,8 +276,7 @@ class IPSEC_Mapper:
         # update all potentially fuzzed values
         if ck_i == None:
             #ck_i = random.randint(1, 4294967295).to_bytes(8, 'big')
-            cookie_i = b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37"
-
+            ck_i = b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37"
 
         if prp_num== None:
             prp_num = 1

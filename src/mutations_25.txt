@@ -1,0 +1,84 @@
+Mutation: 0, score: 0.6
+ ['sa_main', 'key_ex_main', 'authenticate_err']
+
+
+Mutation: 1, score: 0.75
+ ['sa_main', 'key_ex_main', 'key_ex_main_err', 'authenticate_err']
+
+
+Mutation 2, score: 0.6
+ Discarded 
+ (['sa_main', 'sa_quick', 'key_ex_main', 'key_ex_main_err', 'authenticate_err'])
+Mutation 3, score: 0.72
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'key_ex_main_err', 'authenticate_err'])
+Mutation 4, score: 0.2
+ Discarded 
+ (['sa_main', 'key_ex_main_err', 'key_ex_main_err', 'authenticate_err'])
+Mutation 5, score: 0.6
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'sa_quick_err', 'authenticate_err'])
+Mutation: 6, score: 1.2000000000000002
+ ['sa_main', 'key_ex_main', 'key_ex_main_err', 'authenticate']
+
+
+Mutation 7, score: 1.1199999999999999
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'key_ex_main_err', 'authenticate'])
+Mutation 8, score: 0.96
+ Discarded 
+ (['sa_main', 'ack_quick_err', 'key_ex_main', 'key_ex_main_err', 'authenticate'])
+Mutation 9, score: 0.96
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'authenticate', 'authenticate'])
+Mutation 10, score: 0.96
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'ack_quick', 'authenticate'])
+Mutation 11, score: 1.1199999999999999
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'sa_quick', 'authenticate'])
+Mutation 12, score: 0.75
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'authenticate_err'])
+Mutation 13, score: 1.1199999999999999
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'key_ex_main_err', 'authenticate'])
+Mutation 14, score: 0.75
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'authenticate_err'])
+Mutation 15, score: 0.75
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'authenticate_err'])
+Mutation 16, score: 0.75
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'authenticate_err'])
+Mutation 17, score: 0.75
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'authenticate_err'])
+Mutation 18, score: 1.1199999999999999
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'key_ex_main', 'authenticate'])
+Mutation 19, score: 0.75
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'authenticate_err'])
+Mutation 20, score: 1.0
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main', 'authenticate'])
+Mutation 21, score: 0.96
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'authenticate_err', 'authenticate'])
+Mutation: 22, score: 2.08
+ ['sa_main', 'key_ex_main', 'key_ex_main_err', 'sa_main', 'authenticate']
+
+
+Mutation 23, score: 0.48
+ Discarded 
+ (['sa_main', 'key_ex_main_err', 'key_ex_main_err', 'sa_main', 'authenticate'])
+Mutation 24, score: 1.32
+ Discarded 
+ (['sa_main', 'key_ex_main', 'key_ex_main_err', 'sa_main', 'authenticate_err'])
+Max score: 2.08
+ ['sa_main', 'key_ex_main', 'key_ex_main_err', 'sa_main', 'authenticate']
+
+
+Runtime: 13176.97311782837
