@@ -8,7 +8,9 @@ $sa_main_fuzz
 Expected: ERROR_NOTIFICATION | Received: ISAKMP_SA
 **********
 
---> Authentication field is only checked in key_exchange, not a finding!
+--> Authentication field is only checked in key_exchange!
+--> confirmed for: StrongSwan --> not in libreswan!!!
+
 
 Fuzzing isa_len with: 0
 Run: ['sa_quick_err', 'ack_quick', 'sa_main', 'sa_quick_err', 'authenticate_err', 'sa_quick_err', 'key_ex_main', 'authenticate_fuzz', 'ack_quick', 'key_ex_main']
@@ -32,3 +34,6 @@ Expected: ERROR_NOTIFICATION | Received: None
 **********
 
 --> isa_len field is not checked!
+--> confirmed for: StrongSwan, libreswan
+
+

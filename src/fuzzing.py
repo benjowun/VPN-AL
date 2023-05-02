@@ -616,20 +616,18 @@ starttime = time.time()
 # main
 # filter()
 
-# data = [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '2048MODPgr'), ('Authentication', 'PSK'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)]
-# tc = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick']
+# data = [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'TEST'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)]
+# tc = ['sa_quick_err', 'ack_quick', 'sa_main_fuzz', 'sa_quick_err', 'authenticate_err', 'sa_quick_err', 'key_ex_main', 'authenticate', 'sa_main', 'key_ex_main']
 # test(tc, "tf", data)
 
-run =  ['sa_main', 'key_ex_main', 'key_ex_main', 'sa_main_err', 'key_ex_main_err', 'sa_main_err', 'sa_quick_err', 'sa_main', 'sa_main_err', 'authenticate', 'authenticate']
-
-#run = ['sa_main', 'key_ex_main_fuzz', 'authenticate']
+run = ['sa_main', 'key_ex_main', 'key_ex_main_err', 'sa_main', 'authenticate']
 # fuzz(run) # goes through each method once, hopefully finds any serious errors
 # fuzz_all("filter_results.txt")
-# fuzz_each_input(run)
+fuzz_each_input(run)
 
 # generate_runs(['sa_main', 'key_ex_main', 'authenticate'], 25)
 # generate_run_genetic(starting_length=3)
 # calc_baseline(18, 10)
-sanity()
+# sanity()
 
 print(f"Runtime: {time.time() - starttime} seconds")
