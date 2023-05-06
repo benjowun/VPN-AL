@@ -487,7 +487,7 @@ def score_mutation(run):
     print(f"Score weighted: {score / len(run)}", file=file)
     print(f"Score new weighting: {score * (len(visited_states)/(len(total_states)))}", file=file)
     print(f"Weighted, clean: {score / len(run) * (len(visited_states) / len(total_states))}", file=file)
-    return score / len(run) * (len(visited_states) / len(total_states)) # average # of unique interesting behavior per fuzzed state weighted by the amount of total states covered to promote good coverage
+    return (score / len(run)) * (len(visited_states) / len(total_states)) # average # of unique interesting behavior per fuzzed state weighted by the amount of total states covered to promote good coverage
 
 # want: generate run --> check if it performs better or worse than previous, keep mutation or go to next else
 # save resultant final mutation to file (with each param _fuzz ince), use it for fuzzing
