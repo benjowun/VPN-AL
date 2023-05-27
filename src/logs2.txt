@@ -1759,3 +1759,141 @@ Score unweighted: 11 #: 5
 Score weighted: 2.2
 Score new weighting: 6.6
 Weighted, clean: 1.32
+Skipped: 0
+Coverage: Visited: {'s1'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 0 #: 4
+Score weighted: 0.0
+Score new weighting: 0.0
+Weighted, clean: 0.0
+Skipped: 0
+Coverage: Visited: {'s1'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 0 #: 5
+Score weighted: 0.0
+Score new weighting: 0.0
+Weighted, clean: 0.0
+Skipped: 0
+Coverage: Visited: {'s1'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 0 #: 3
+Score weighted: 0.0
+Score new weighting: 0.0
+Weighted, clean: 0.0
+Skipped: 0
+Coverage: Visited: {'s1'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 0 #: 4
+Score weighted: 0.0
+Score new weighting: 0.0
+Weighted, clean: 0.0
+Skipped: 0
+Coverage: Visited: {'s1'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 0 #: 4
+Score weighted: 0.0
+Score new weighting: 0.0
+Weighted, clean: 0.0
+Skipped: 4
+Coverage: Visited: {'s1'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 1 #: 3
+Score weighted: 0.3333333333333333
+Score new weighting: 0.16666666666666666
+Weighted, clean: 0.05555555555555555
+Skipped: 8
+Coverage: Visited: {'s1'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 2 #: 4
+Score weighted: 0.5
+Score new weighting: 0.3333333333333333
+Weighted, clean: 0.08333333333333333
+Skipped: 0
+Coverage: Visited: {'s1'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 0 #: 5
+Score weighted: 0.0
+Score new weighting: 0.0
+Weighted, clean: 0.0
+Skipped: 33
+Coverage: Visited: {'s1'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 15 #: 10
+Score weighted: 1.5
+Score new weighting: 2.5
+Weighted, clean: 0.25
+Skipped: 4
+Coverage: Visited: {'s1'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 1 #: 10
+Score weighted: 0.1
+Score new weighting: 0.16666666666666666
+Weighted, clean: 0.016666666666666666
+Skipped: 34
+Coverage: Visited: {'s1', 's2', 's4', 's3'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 13 #: 10
+Score weighted: 1.3
+Score new weighting: 8.666666666666666
+Weighted, clean: 0.8666666666666667
+Skipped: 17
+Coverage: Visited: {'s1'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 4 #: 10
+Score weighted: 0.4
+Score new weighting: 0.6666666666666666
+Weighted, clean: 0.06666666666666667
+Skipped: 0
+Coverage: Visited: {'s1'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 0 #: 10
+Score weighted: 0.0
+Score new weighting: 0.0
+Weighted, clean: 0.0
+Skipped: 9
+Coverage: Visited: {'s1', 's2'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 4 #: 2
+Score weighted: 2.0
+Score new weighting: 1.3333333333333333
+Weighted, clean: 0.6666666666666666
+Skipped: 170
+Coverage: Visited: {'s1', 's3', 's6', 's4', 's2', 's5'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 47 #: 13
+Score weighted: 3.6153846153846154
+Score new weighting: 47.0
+Weighted, clean: 3.6153846153846154
+Skipped: 4
+Coverage: Visited: set(), total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 1 #: 1
+Score weighted: 1.0
+Score new weighting: 0.0
+Weighted, clean: 0.0
+Skipped: 60
+Coverage: Visited: {'s3', 's1', 's2'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 24 #: 14
+Score weighted: 1.7142857142857142
+Score new weighting: 12.0
+Weighted, clean: 0.8571428571428571
+Skipped: 18
+Coverage: Visited: {'s3', 's1', 's2'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 7 #: 7
+Score weighted: 1.0
+Score new weighting: 3.5
+Weighted, clean: 0.5
+Skipped: 91
+Coverage: Visited: {'s1', 's3', 's6', 's4', 's2'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 34 #: 16
+Score weighted: 2.125
+Score new weighting: 28.333333333333336
+Weighted, clean: 1.7708333333333335
+Skipped: 174
+Coverage: Visited: {'s1', 's3', 's6', 's4', 's2', 's5'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 34 #: 12
+Score weighted: 2.8333333333333335
+Score new weighting: 34.0
+Weighted, clean: 2.8333333333333335
+Skipped: 36
+Coverage: Visited: {'s3', 's4', 's1', 's2'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 17 #: 11
+Score weighted: 1.5454545454545454
+Score new weighting: 11.333333333333332
+Weighted, clean: 1.0303030303030303
+Skipped: 170
+Coverage: Visited: {'s1', 's3', 's6', 's4', 's2', 's5'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 47 #: 13
+Score weighted: 3.6153846153846154
+Score new weighting: 47.0
+Weighted, clean: 3.6153846153846154
+Skipped: 36
+Coverage: Visited: {'s3', 's4', 's1', 's2'}, total: ['s1', 's2', 's3', 's4', 's5', 's6']
+Score unweighted: 17 #: 11
+Score weighted: 1.5454545454545454
+Score new weighting: 11.333333333333332
+Weighted, clean: 1.0303030303030303

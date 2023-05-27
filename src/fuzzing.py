@@ -227,6 +227,21 @@ def filter():
 
     file.close()
 
+def calc_fitness_filter(amount):
+    runs = get_rand_runs(amount)
+    score = 0
+
+    for run in runs:
+        run = run[0]
+        run = run.replace("self.", "")
+        run = run.split(",")
+        run = [i.strip() for i in run if (i and i != " ")] # remove empty strings
+
+        score += score_mutation(run)
+
+    score = score / amount
+    print(f"Average Fitness score: {score}")
+
 # testing function
 def test(testcase, param, fv):
     for t in testcase:
@@ -247,6 +262,8 @@ def test(testcase, param, fv):
     model.reset_to_initial()
 
 def sanity():
+    print("sa main err")
+    mapper.sa_main_err()
     print("sa_main")
     mapper.sa_main()
     print("key_ex_main")
@@ -258,9 +275,9 @@ def sanity():
     print("ack_quick")
     mapper.ack_quick()
 
-    time.sleep(5)
-    print("delete")
-    mapper.delete()
+    # time.sleep(5)
+    # print("delete")
+    # mapper.delete()
     # mapper.reset()
 
     # # print("Moving on to fuzzing tests...")
@@ -555,7 +572,7 @@ def crossover(pop1, pop2):
 # starting_populations: an optional set of starting populations
 # 
 # Workflow: starting populations (random, or set) --> mutate --> score --> keep best performing, discard rest --> (splice) --> refill missing populations with random --> repeat
-def generate_run_genetic(num_populations=10, num_kept=3, num_iterations=5, mutation_amount=2, starting_length=5, starting_populations=[]):
+def generate_run_genetic(num_populations=10, num_kept=3, num_iterations=5, mutation_amount=2, starting_length=3, starting_populations=[]):
     file = open(f"genetic_{num_iterations}.txt", "w+")
     populations = starting_populations
     scores = [] # top scorers and scores
@@ -564,7 +581,7 @@ def generate_run_genetic(num_populations=10, num_kept=3, num_iterations=5, mutat
     
     if not starting_populations:
         for i in range(num_populations):
-            populations.append(generate_random_run(starting_length)) # starting length defaults to 5
+            populations.append(generate_random_run(starting_length)) # starting length defaults to 3
 
     # we now have our starting population
     print(f"Starting populations: {populations}", file=file)
@@ -616,18 +633,19 @@ starttime = time.time()
 # main
 # filter()
 
-# data = [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '1024MODPgr'), ('Authentication', 'TEST'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)]
-# tc = ['sa_quick_err', 'ack_quick', 'sa_main_fuzz', 'sa_quick_err', 'authenticate_err', 'sa_quick_err', 'key_ex_main', 'authenticate', 'sa_main', 'key_ex_main']
+# data = [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '2048MODPgr'), ('Authentication', 'TEST'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)]
+# tc = ['sa_main_fuzz', 'key_ex_main', 'authenticate']
 # test(tc, "tf", data)
 
-run = ['sa_main', 'key_ex_main', 'key_ex_main_err', 'sa_main', 'authenticate']
+run = ['sa_main', 'ack_quick', 'ack_quick_err', 'key_ex_main', 'key_ex_main_err', 'sa_quick', 'key_ex_main', 'sa_main_err', 'sa_main_err', 'authenticate', 'key_ex_main', 'authenticate_err', 'sa_quick_err', 'sa_quick', 'key_ex_main_err', 'key_ex_main_err', 'sa_quick_err', 'authenticate']
 # fuzz(run) # goes through each method once, hopefully finds any serious errors
 # fuzz_all("filter_results.txt")
-fuzz_each_input(run)
+# fuzz_each_input(run)
 
 # generate_runs(['sa_main', 'key_ex_main', 'authenticate'], 25)
 # generate_run_genetic(starting_length=3)
 # calc_baseline(18, 10)
 # sanity()
+calc_fitness_filter(10)
 
 print(f"Runtime: {time.time() - starttime} seconds")

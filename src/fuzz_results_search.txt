@@ -1,0 +1,275 @@
+Fuzzing isa_len with: 0
+Run: ['sa_main', 'key_ex_main_fuzz', 'authenticate']
+$key_ex_main_err
+**********
+Expected: ERROR_NOTIFICATION | Received: ISAKMP_KEY_EX
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+Fuzzing isa_len with: 0
+Run: ['sa_main', 'key_ex_main_fuzz', 'authenticate']
+$authenticate
+**********
+Expected: None | Received: ISAKMP_AUTH
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+Number of tests run: 153
+Fuzzing isa_len with: 0
+Run: ['sa_main_fuzz', 'key_ex_main', 'sa_main_err', 'sa_main', 'sa_main_err', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$sa_main_err
+**********
+Expected: ERROR_NOTIFICATION | Received: ISAKMP_SA
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+Fuzzing isa_len with: 0
+Run: ['sa_main_fuzz', 'key_ex_main', 'sa_main_err', 'sa_main', 'sa_main_err', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$key_ex_main
+**********
+Expected: None | Received: ISAKMP_KEY_EX
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+
+Caught Exception!
+
+Fuzzing isa_len with: 0
+Run: ['sa_main_fuzz', 'key_ex_main', 'sa_main_err', 'sa_main', 'sa_main_err', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$sa_main_err
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+Fuzzing prp_num with: 1
+Run: ['sa_main_fuzz', 'key_ex_main', 'sa_main_err', 'sa_main', 'sa_main_err', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: ERROR_NOTIFICATION
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+Fuzzing tf with: [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '2048MODPgr'), ('Authentication', 'TEST'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)]
+Run: ['sa_main_fuzz', 'key_ex_main', 'sa_main_err', 'sa_main', 'sa_main_err', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$key_ex_main
+**********
+Expected: None | Received: ERROR_NOTIFICATION
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+Number of tests run: 348
+Fuzzing isa_len with: 0
+Run: ['sa_main', 'key_ex_main_fuzz', 'sa_main_err', 'sa_main', 'sa_main_err', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$key_ex_main_err
+**********
+Expected: ERROR_NOTIFICATION | Received: ISAKMP_KEY_EX
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+Fuzzing isa_len with: 0
+Run: ['sa_main', 'key_ex_main_fuzz', 'sa_main_err', 'sa_main', 'sa_main_err', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: ERROR_NOTIFICATION
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+Number of tests run: 153
+Fuzzing isa_len with: 0
+Run: ['sa_main', 'key_ex_main', 'sa_main_fuzz', 'sa_main', 'sa_main_err', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$sa_main_err
+**********
+Expected: ERROR_NOTIFICATION | Received: ISAKMP_SA
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+
+Caught Exception!
+
+Fuzzing isa_len with: 3735929054
+Run: ['sa_main', 'key_ex_main', 'sa_main_fuzz', 'sa_main', 'sa_main_err', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$sa_main
+**********
+Expected: ERROR_NOTIFICATION | Received: ISAKMP_SA
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+Number of tests run: 348
+Fuzzing isa_len with: 0
+Run: ['sa_main', 'key_ex_main', 'sa_main_err', 'sa_main_fuzz', 'sa_main_err', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$sa_main_err
+**********
+Expected: ERROR_NOTIFICATION | Received: ISAKMP_SA
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+Fuzzing isa_len with: 0
+Run: ['sa_main', 'key_ex_main', 'sa_main_err', 'sa_main_fuzz', 'sa_main_err', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$authenticate_err
+**********
+Expected: ERROR_NOTIFICATION | Received: None
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+
+Caught Exception!
+
+Fuzzing isa_len with: 0
+Run: ['sa_main', 'key_ex_main', 'sa_main_err', 'sa_main_fuzz', 'sa_main_err', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: None
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+Fuzzing isa_len with: 0
+Run: ['sa_main', 'key_ex_main', 'sa_main_err', 'sa_main_fuzz', 'sa_main_err', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$key_ex_main
+**********
+Expected: ISAKMP_KEY_EX | Received: None
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+
+Caught Exception!
+
+Fuzzing prp_len with: 47826
+Run: ['sa_main', 'key_ex_main', 'sa_main_err', 'sa_main_fuzz', 'sa_main_err', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$sa_main
+**********
+Expected: ISAKMP_SA | Received: ERROR_NOTIFICATION
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+
+Caught Exception!
+
+Number of tests run: 348
+Fuzzing isa_len with: 0
+Run: ['sa_main', 'key_ex_main', 'sa_main_err', 'sa_main', 'sa_main_fuzz', 'sa_main_err', 'sa_main_err', 'authenticate_err']
+$sa_main_err
+**********
+Expected: ERROR_NOTIFICATION | Received: ISAKMP_SA
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+
+Caught Exception!
+
+
+Caught Exception!
+
+Number of tests run: 348
+Fuzzing isa_len with: 0
+Run: ['sa_main', 'key_ex_main', 'sa_main_err', 'sa_main', 'sa_main_err', 'sa_main_fuzz', 'sa_main_err', 'authenticate_err']
+$sa_main_err
+**********
+Expected: ERROR_NOTIFICATION | Received: ISAKMP_SA
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+
+Caught Exception!
+
+Number of tests run: 348
+Fuzzing isa_len with: 0
+Run: ['sa_main', 'key_ex_main', 'sa_main_err', 'sa_main', 'sa_main_err', 'sa_main_err', 'sa_main_fuzz', 'authenticate_err']
+$sa_main_err
+**********
+Expected: ERROR_NOTIFICATION | Received: ISAKMP_SA
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+Number of tests run: 348
+Number of tests run: 132
+
+Runtime: 25897.30326938629 seconds
+

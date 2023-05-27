@@ -1462,9 +1462,11 @@ class IPSEC_Mapper:
     # sends a delete ISAKMP packet (encrypted if already keyed, else plain)
     def ISAKMP_delete_packet(self):
         if not self._keys:
-            # send unencrypted (note: strongswan ignores this)
-            p_delete2 = ISAKMP_payload_Delete(SPIsize=16, SPI=[(self._cookie_i+self._cookie_r), (self._cookie_i+self._cookie_r)])
-            resp = self._conn.send_recv_data(p_delete2)
+            # Only need to kill stuff if it has been created, i.e. we have cookies
+            if self._cookie_i:
+                print("   ...Sent delete ISAKMP message")
+                p_delete = ISAKMP(init_cookie=self._cookie_i, resp_cookie=self._cookie_r, exch_type=5)/ISAKMP_payload_Notification(not_type=16)
+                resp = self._conn.send_recv_data(p_delete)
             if resp != None:
                 if (ret := self.get_retransmission(resp)): # retransmission handling
                     if ret == "RET":
@@ -1849,7 +1851,10 @@ class IPSEC_Mapper:
                 ret = t()
                 print(str(ret))
 
-
+    def test_msg(self):
+        key_ex = ISAKMP(init_cookie=b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37", resp_cookie=b"\x9d\xd2\xec\xf3\xea\x8a\x47\x37", next_payload=4, exch_type=2)/ISAKMP_payload_KE()/ISAKMP_payload_Nonce()
+        for i in range(16):
+            self._conn.send_data(key_ex)
 # map = IPSEC_Mapper(2, True)
 # map.test()
 # map.sa_main_fuzz()

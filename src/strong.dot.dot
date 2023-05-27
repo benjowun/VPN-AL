@@ -1,8 +1,10 @@
-digraph "libre.dot" {
+digraph "strong.dot" {
 s1 [label=s1];
 s2 [label=s2];
 s3 [label=s3];
 s4 [label=s4];
+s5 [label=s5];
+s6 [label=s6];
 s1 -> s2  [label="sa_main/ISAKMP_SA"];
 s1 -> s1  [label="key_ex_main/None"];
 s1 -> s1  [label="authenticate/None"];
@@ -13,16 +15,26 @@ s2 -> s3  [label="key_ex_main/ISAKMP_KEY_EX"];
 s2 -> s2  [label="authenticate/None"];
 s2 -> s2  [label="sa_quick/None"];
 s2 -> s2  [label="ack_quick/None"];
-s3 -> s3  [label="sa_main/None"];
-s3 -> s3  [label="key_ex_main/ERROR_NOTIFICATION"];
+s3 -> s1  [label="sa_main/ERROR_NOTIFICATION"];
+s3 -> s1  [label="key_ex_main/ERROR_NOTIFICATION"];
 s3 -> s4  [label="authenticate/ISAKMP_AUTH"];
 s3 -> s3  [label="sa_quick/None"];
 s3 -> s3  [label="ack_quick/None"];
 s4 -> s4  [label="sa_main/None"];
-s4 -> s4  [label="key_ex_main/ERROR_NOTIFICATION"];
+s4 -> s4  [label="key_ex_main/None"];
 s4 -> s4  [label="authenticate/None"];
-s4 -> s4  [label="sa_quick/IPSEC_SA"];
+s4 -> s5  [label="sa_quick/IPSEC_SA"];
 s4 -> s4  [label="ack_quick/None"];
+s5 -> s5  [label="sa_main/None"];
+s5 -> s5  [label="key_ex_main/None"];
+s5 -> s5  [label="authenticate/None"];
+s5 -> s5  [label="sa_quick/IPSEC_SA"];
+s5 -> s6  [label="ack_quick/None"];
+s6 -> s6  [label="sa_main/None"];
+s6 -> s6  [label="key_ex_main/None"];
+s6 -> s6  [label="authenticate/None"];
+s6 -> s5  [label="sa_quick/IPSEC_SA"];
+s6 -> s5  [label="ack_quick/ERROR_NOTIFICATION"];
 __start0 [label="", shape=none];
 __start0 -> s1  [label=""];
 }
