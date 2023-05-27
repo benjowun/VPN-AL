@@ -1,0 +1,17 @@
+Fuzzing isa_len with: 0
+Run: ['sa_main', 'key_ex_main_fuzz', 'authenticate']
+$key_ex_main_err
+**********
+Expected: ERROR_NOTIFICATION | Received: ISAKMP_KEY_EX
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+Fuzzing isa_len with: 0
+Run: ['sa_main', 'key_ex_main_fuzz', 'authenticate']
+$authenticate
+**********
+Expected: None | Received: ISAKMP_AUTH
+**********
+
+%%%%%%%%%%%%%%%%%%%%
+Number of tests run: 153
