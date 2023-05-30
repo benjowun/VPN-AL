@@ -4,10 +4,6 @@
 %
 %  Author  :  Benjamin Wunderling, TU Graz, Austria
 % 
-%  Created :  22 Feb 96
-% 
-%  Changed :  19 Feb 2004
-% 
 %----------------------------------------------------------------
 
 \chapter{Fuzzing}
@@ -25,7 +21,7 @@ This chapter presents our model-based fuzzing setup used to test a strongSwan \a
 \section{Fuzzing Setup} \label{sec:fuzz_intro}
 A basic fuzzing loop consists of test data generation, execution on the \ac{sut} and observing the \ac{sut} for strange behavior. Applied to fuzzing an \ac{ipsec} server in a potential black-box scenario, some additional considerations and steps are required, as seen in Figure~\ref{fig:fuzz_overview}. Firstly, it must be taken into consideration, that the \ac{sut} reacts differently to inputs depending on which state it is in and a lot of states are locked behind specific sequences of valid inputs (e.g. phase two requiring a prior successful phase one). Therefore, it stands to reason that in order to achieve good coverage of \ac{sut} functionality, the \ac{sut} must be put into specific states prior to receiving each fuzzed test case. To this end, specific input sequences are passed to the fuzzer, which, at random, chooses a single input of each input sequence to fuzz, while still sending the other unchanged inputs surrounding the fuzzed input to the \ac{sut} as well.
 Note that technically, the mapped concrete \ac{isakmp} packet is fuzzed and not the abstract input, as is explained in more detail in Subsection~\ref{subsec:sequence_generation}, however, we will continue to refer to it as the ``fuzzed input''.
-Additionally, the \ac{sut} is reset after each execution of a fuzzed input sequence, ensuring that each fuzzed input is executed in exactly the same starting state of the \ac{sut}. Figure~\ref{fig:fuzz_overview} shows an example of such a fuzzed input sequence, with the fuzzed input being the third input of the sequence. In order to be able to detect strange behavior, a Mealy machine implementation of a learned reference model of the \ac{sut} is created, depicted in yellow in Figure~\ref{fig:fuzz_overview}. Each input that is sent to the \ac{sut}, depicted in red in Figure~\ref{fig:fuzz_overview}, is also executed on the Mealy machine in parallel, comparing the response codes of the \ac{sut} and Mealy machine. A mismatch between the response of the \ac{sut} and the expected one returned by the Mealy machine indicates, that a new state or behavior has been discovered. As the Mealy machine was created from the model of the \ac{sut}, any new behavior can be treated as interesting behavior worth further investigation. Input sequence generation/selection, new state detection and fuzz input generation is all handled separately from the \ac{sul} interface, in a new script called \emph{fuzzing.py}~\footnote{TODO: github or supplementary material link}.
+Additionally, the \ac{sut} is reset after each execution of a fuzzed input sequence, ensuring that each fuzzed input is executed in exactly the same starting state of the \ac{sut}. Figure~\ref{fig:fuzz_overview} shows an example of such a fuzzed input sequence, with the fuzzed input being the third input of the sequence. In order to be able to detect strange behavior, a Mealy machine implementation of a learned reference model of the \ac{sut} is created, depicted in yellow in Figure~\ref{fig:fuzz_overview}. Each input that is sent to the \ac{sut}, depicted in red in Figure~\ref{fig:fuzz_overview}, is also executed on the Mealy machine in parallel, comparing the response codes of the \ac{sut} and Mealy machine. A mismatch between the response of the \ac{sut} and the expected one returned by the Mealy machine indicates, that a new state or behavior has been discovered. As the Mealy machine was created from the model of the \ac{sut}, any new behavior can be treated as interesting behavior worth further investigation. Input sequence generation/selection, new state detection and fuzz input generation is all handled separately from the \ac{sul} interface, in a new script called \emph{fuzzing.py}~\footnote{\url{https://github.com/benjowun/VPN-AL}}.
 
 \begin{figure}
 \begin{centering}
@@ -89,7 +85,7 @@ Additionally, the \ac{sut} is reset after each execution of a fuzzed input seque
 		\draw[-latex] (sut) -- node[pos=0.5, above, font=\small]{output} (comp);
 		
 \end{tikzpicture}
-\caption{Overview of the fuzzing process.}
+\caption{Overview of the fuzzing process for a single input sequence.}
 \label{fig:fuzz_overview}
 \end{centering}
 \end{figure}
@@ -115,7 +111,7 @@ The final piece missing for our fuzzer is the input sequence-generation phase, i
 
 Firstly, instead of fuzzing every possible field of the protocol, the selection of fields to fuzz was narrowed down to 5-10 key fields from each packet. As abstract inputs are mapped to concrete packets in the mapper class, the terminology used will be, that for each input, 5-10 fields are fuzzed. However, it is important to keep in mind, that the actual fuzzing happens on a protocol level, post the abstract-to-concrete mapping. In other words, actual fields of the protocol are fuzzed and not the abstract input words themselves. The fields to be fuzzed were chosen based on our estimation of their impact and chance of leading to errors. Additionally, fields unique to specific messages were prioritized. Length fields, \ac{sa} proposals and hashes/keys were deemed especially interesting, but also general fields, such as the responder/initiator cookies were added. All the chosen fields were added as parameters to their respective mapper class methods and default to their usual values. Packets can then have all or just some of their fields fuzzed, as needed. When fuzzed, the fields are fed with input from a matching boofuzz data generator as explained in Subsection~\ref{subsec:data_gen}.
 
-Additionally, three separate approaches for the generation/selection of relevant input sequences to use during fuzzing were implemented. The first method focuses on reusing existing input sequences from the model learning stage to achieve a more widespread coverage, while the second method generates a new input sequence using a search-based approach, that is designed to lead to as many new states as possible when fuzzed. Finally, a genetic algorithm for input sequence generation is showcased. The three methods are presented in more detail below.
+Additionally, three separate approaches for the generation/selection of relevant input sequences to use during fuzzing were implemented. The first method focuses on reusing existing input sequences from the model-learning stage to achieve a more widespread coverage, while the second method generates a new input sequence using a search-based approach, that is designed to lead to as many new states as possible when fuzzed. Finally, a genetic algorithm for input sequence generation is showcased. The three methods are presented in more detail below.
 
 \subsubsection{Filtering-based Input Sequence Selection} \label{subsubsec:fuzz_filtering}
 % procedure --> 2 phases: p1 - prefiltering, p2 - boofuzz fuzz lists
@@ -124,16 +120,16 @@ Note, that by filtering out input sequences and by choosing the inputs to fuzz r
 
 Following the automatic filtering, the results are examined and identical or not relevant cases are removed manually. For example, we noticed that every input sequence in which cookies were fuzzed led to new states, due to new cookies indicating a completely new connection. Since our implementation learned the model with static initiator cookies, this will always lead to a new state. 
 
-Finally, following the automatic and manual filtering, 175 input sequences of various lengths remained, compared to roughly ten times the number before filtering. The filtered list of input sequences can be found in Appendix~\todo{APPENDIX} and contains all the discovered input sequences that exhibited new behavior. While not exhaustive, this approach of input sequence selection through filtering learning input sequences gives good coverage over a variety of different input scenarios. However, fuzzing 175 distinct input sequences takes a considerable amount of time (upwards of a full week), due to the long length of some input sequences, as well as the high amount of fuzzed values for each field of each tested input. While the selection of input sequences could certainly be optimized further, for example by adding additional filtering steps, the runtime is likely to remain rather high and would not be suitable for quick scans during security testing. It is however suitable for more in-depth testing. Instead of our approach using existing input sequences and filtering, we also implemented two promising methods of input sequence generation using a search-based approach and a genetic-based approach respectively, that are described in Subsection \ref{subsubsec:search}.
+Finally, following the automatic and manual filtering, 175 input sequences of various lengths remained, compared to roughly ten times the number before filtering. The filtered list of input sequences can be found in our supplementary material~\footnote{\url{https://github.com/benjowun/VPN-AL}} and contains all the discovered input sequences that exhibited new behavior. While not exhaustive, this approach of input sequence selection through filtering learning input sequences gives good coverage over a variety of different input scenarios. However, fuzzing 175 distinct input sequences takes a considerable amount of time (upwards of a full week), due to the long length of some input sequences, as well as the high amount of fuzzed values for each field of each tested input. While the selection of input sequences could certainly be optimized further, for example by adding additional filtering steps, the runtime is likely to remain rather high and would not be suitable for quick scans during security testing. It is however suitable for more in-depth testing. Instead of our approach using existing input sequences and filtering, we also implemented two promising methods of input sequence generation using a search-based approach and a genetic-based approach respectively, that are described in Subsection \ref{subsubsec:search}.
 
 \begin{figure}
 \begin{centering}
 \begin{tikzpicture}
-		\node (0) at (0, 8) [draw, rounded corners=0.1cm, fill=green, minimum width=3cm,minimum height=0.9cm] {Input sequences from Model Learning};
+		\node (0) at (0, 8) [draw, rounded corners=0.1cm, fill=green, minimum width=3cm,minimum height=0.9cm, minimum width=6.5cm] {Input Sequences from Model Learning};
 		\node (1) at (0, 6) [diamond,aspect=2.5,draw, rounded corners=0.2cm, fill=orange] {Automatic Filtering};
-		\node (2) at (0, 4) [draw, rounded corners=0.1cm, fill=green, minimum width=3cm,minimum height=0.9cm] {Filtered Results};
+		\node (2) at (0, 4) [draw, rounded corners=0.1cm, fill=green, minimum width=3cm,minimum height=0.9cm, minimum width=6.5cm] {Filtered Results};
 		\node (3) at (0, 2) [diamond,aspect=2.5,draw, rounded corners=0.2cm, fill=orange]{Manual Filtering};
-		\node (4) at (0, 0) [draw, rounded corners=0.1cm, fill=magenta, minimum width=3cm,minimum height=0.9cm] {Final Results};
+		\node (4) at (0, 0) [draw, rounded corners=0.1cm, fill=magenta, minimum width=3cm,minimum height=0.9cm, minimum width=6.5cm] {Final Results};
 
 		\draw[-latex] (0) to (1);
 		\draw[-latex] (1) to (2);
@@ -160,23 +156,23 @@ If the fitness score of a changed input sequence is better or equal than its pre
 Calculating the fitness of an input sequence does take some time, as at least five fields are tested per input, and every input in the input sequence is minimally fuzzed. In comparison, in the filtering-based approach, only a random choice of input was fuzzed in each input sequence. However, it is still much faster than the initial filtering phase, provided the length of the input sequence being scored does not approach to the number of input sequences tested during model learning, divided by five (the average number of fields tested per input). Note, that while usually significantly faster than the filtering phase, fitness calculation occurs after every change to the input sequence being generated during the search-based approach, so for long input sequences (>30 inputs) the total runtime can exceed that of the previous filtering step. The key difference is, that after the search is completed, the result will be a single input sequence that is more interesting than any previously generated input sequence generated through the search, as opposed to the 175 input sequences after filtering. To help further increase the likelihood of generating interesting input sequences, the change/mutation operations were weighted to make adding a new letter at the end of the word more likely than at a random index, as well as the likelihood of the last letter being flipped over random letters being increased. These changes try to decrease the chances of wasting time changing existing interesting configurations, instead of adding to them, but still leaves the possibility given enough iterations. The rational being, that by adding more inputs, potentially more unique states can be visited, increasing coverage and potentially increasing the fitness of the input sequence. 
 
 An excerpt of a search-based input sequence generation over 50 iterations can be seen in Listing \ref{lst:search}. 
-The initial sequence, seen in Line 2, shows the starting point for future changes. Next, in Line 5, \texttt{authenticate} is mutated into \texttt{authenticate\_err}. As the calculated fitness of the new input sequence is higher than the previous, the change is accepted. Mutation B in Line 8 inserts a new \texttt{sa\_main\_err} between the \texttt{key\_ex\_main} and \texttt{authenticate\_err} inputs. This change is also accepted, as the fitness score increases again. Mutation C shows an even more significant fitness increase by almost 0.5 points, by changing \texttt{authenticate\_err} to \texttt{authenticate}. Finally, a \texttt{key\_ex\_main\_err} is inserted between \texttt{sa\_main\_err} and \texttt{authenticate}. As this change leads to a decrease in fitness, the change is rejected and the search continues using the previous input sequence.
+The initial sequence, seen in Line~\ref{line:search_1}, shows the starting point for future changes. Next, in Line~\ref{line:search_2}, \texttt{authenticate} is mutated into \texttt{authenticate\_err}. As the calculated fitness of the new input sequence is higher than the previous, the change is accepted. Mutation B in Line~\ref{line:search_3} inserts a new \texttt{sa\_main\_err} between the \texttt{key\_ex\_main} and \texttt{authenticate\_err} inputs. This change is also accepted, as the fitness score increases again. Mutation C shows an even more significant fitness increase by almost 0.5 points, by changing \texttt{authenticate\_err} to \texttt{authenticate} in Line~\ref{line:search_4}. Finally, a \texttt{key\_ex\_main\_err} is inserted between \texttt{sa\_main\_err} and \texttt{authenticate} in Line~\ref{line:search_5}. As this change leads to a decrease in fitness, the change is rejected and the search continues using the previous input sequence.
 
-\begin{lstlisting}[float=h, caption=Search-based input sequence generation., label=lst:search]
+\begin{lstlisting}[float=h, caption=Search-based input sequence generation example mutations., label=lst:search, escapechar=§]
 	Initial Sequence: 	
-	(['sa_main', 'key_ex_main', 'authenticate'])
+	(['sa_main', 'key_ex_main', 'authenticate']) §\label{line:search_1}§
 	
 	Mutation: A, fitness: 1.1666666666666667
-	['sa_main', 'key_ex_main', 'authenticate_err']
+	['sa_main', 'key_ex_main', 'authenticate_err'] §\label{line:search_2}§
 	
 	Mutation: B, fitness: 1.375
-	['sa_main', 'key_ex_main', 'sa_main_err', 'authenticate_err']
+	['sa_main', 'key_ex_main', 'sa_main_err', 'authenticate_err'] §\label{line:search_3}§
 	
 	Mutation: C, fitness: 1.8333333333333333
-	['sa_main', 'key_ex_main', 'sa_main_err', 'authenticate']
+	['sa_main', 'key_ex_main', 'sa_main_err', 'authenticate'] §\label{line:search_4}§
 	
 	Mutation D, fitness: 1.7333333333333334 
-	(['sa_main', 'key_ex_main', 'sa_main_err', 'key_ex_main_err', 'authenticate'])
+	(['sa_main', 'key_ex_main', 'sa_main_err', 'key_ex_main_err', 'authenticate']) §\label{line:search_5}§
 	Discarded
 	...
 \end{lstlisting}

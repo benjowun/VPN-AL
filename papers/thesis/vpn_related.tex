@@ -2,11 +2,7 @@
 %
 %  File    :  vpn_related.tex
 %
-%  Author  :  Keith Andrews, IICM, TU Graz, Austria
-% 
-%  Created :  22 Feb 96
-% 
-%  Changed :  19 Feb 2004
+%  Author  :  Benjamin Wunderling, TU Graz, Austria
 % 
 %----------------------------------------------------------------
 
@@ -29,4 +25,7 @@ In contrast, the predecessor to \ac{ipsec}-\ac{ike}v2, \ac{ipsec}-\ac{ike}v1, di
 \ac{ipsec}-\ac{ike}v1 is frequently fuzzed, however until now, without employing learning-based testing methods. For example, Yang et al. built a custom mutation-based fuzzer for the \ac{ike}v1 protocol, focusing on known vulnerabilities of the protocol~\cite{ikefuzz13}. Tsankov et al. discovered an unknown \ac{ike} vulnerability through the use of a semi-valid input coverage fuzzer, focusing on inputs where all but one constraint are fulfilled~\cite{tsankov}. Additionally, several popular IPsec libraries, including strongSwan, utilize the \ac{oss} fuzzing framework, OSS-Fuzz~\cite{serebryany2017oss}, ensuring that they are regularly fuzzed using the LibFuzzer, AFL++ and Hongfuzz fuzzing libraries~\cite{serebryany-libfuzzer, AFLplusplus-Woot20, swiecki-honggfuzz}.
 
 In contrast, while our work also focuses on the \ac{ipsec}-\ac{ike}v1 protocol, we approach it as a black-box system, using model learning to extract a behavioral model of the \ac{sul} and using that model for model-based fuzzing. We use the learned models for model-based fuzzing, employing search-based and genetic fuzzing techniques to further optimize the fuzzing process. Zeller et al. describe these fuzzing techniques based on metaheuristics and more in their comprehensive book on fuzzing \cite{fuzzingbook2023:SearchBasedFuzzer}. In doing so, together with the fuzzer by Yang et al., our work completes the coverage of model-based testing approaches for both \ac{ike} versions.
+
+The model-learning section of this thesis builds upon our prior work, published and presented as part of the Workshop on Applications of
+Formal Methods and Digital Twins~\cite{shortpaper}. This thesis substantially expands on the previous work by learning additional models and leveraging the learned models for the purpose of model-based fuzzing.
 

@@ -5,14 +5,12 @@
 %  Author  			: Benjamin Wunderling
 %  Template from	: Keith Andrews, IICM, TU Graz, Austria	
 % 
-%  Changed 			:  22 Jan 2021
-% 
 %----------------------------------------------------------------
 
 
 % --- Main Title Page ------------------------------------------------
 
-
+\iffalse
 \vspace*{2cm}
 
 
@@ -44,25 +42,26 @@ Benjamin Wunderling
 
 
 \cleardoublepage
-
+\fi
 
 \vspace*{-3cm}
 
 \begin{center}
 \includegraphics[height=1cm]{diagrams/tugraz-logo.pdf}
 
-\vspace{2cm}
+\vspace{3cm}
+
+{\Large\sffamily Benjamin Wunderling, BSc}
+
+\vspace{1cm}
 
 \begin{spacing}{1.1}
 \huge\sffamily\bfseries
 Model Learning and Fuzzing of the IPsec-IKEv1 VPN Protocol\\
 \end{spacing}
 
-\vspace{2cm}
+\vspace{3cm}
 
-{\Large\sffamily Benjamin Wunderling BSc}
-
-\vspace{2cm}
 
 {\Large\sffamily\bfseries Master's Thesis}
 
@@ -87,7 +86,7 @@ Master's Degree Programme: Computer Science
 
 \vspace{5mm}
 
-{\large\sffamily Graz University of Technology}
+{\large\sffamily\bfseries Graz University of Technology}
 
 
 
@@ -110,13 +109,6 @@ Institute of Software Technology (IST)
 
 
 \vfill
-
-{\footnotesize\sffamily \copyright~Copyright \thisyear{} by Benjamin Wunderling,
-except as otherwise noted.}
-
-{\footnotesize\sffamily This work is placed under a
-Creative Commons Attribution 4.0 International
-(\href{https://creativecommons.org/licenses/by/4.0/}{CC BY 4.0}) licence.}
 
 
 \end{center}
@@ -203,23 +195,8 @@ Signature/Unterschrift
 \begin{center}
 {\Large\sffamily\bfseries Abstract}
 \end{center}
-
-Writing a thesis is a vast, overwhelming endeavor. There are many
-obstacles and false dawns along the way. This thesis takes a fresh
-look at the process and addresses new ways of accomplishing this
-daunting goal.
-
-The abstract should concisely describe what the thesis is about and
-what its contributions to the field are (what is new). Market your
-contributions to your readership. Also make sure you mention all
-relevant keywords in the abstract, since many readers read \emph{only}
-the abstract and many search engines index \emph{only} title and
-abstract.
-
-This thesis explores the issues concerning the clear structuring and
-the academic criteria for a thesis and presents numerous novel
-insights. Special attention is paid to the use of clear and simple
-English for an international audience, and advice is given as to the
-use of technical aids to thesis production. Two appendices provide
-specific local guidance.
+% Motivation
+In light of the growing number of individuals working from home, the importance of secure \ac{vpn} communication protocols has increased significantly. Consequently, the need for rigorous security testing of \ac{vpn} software has become more critical than ever before. 
+In this thesis, we employ \ac{aal} to demonstrate how behavioral models of two black-box \ac{ipsec} \ac{vpn} implementations can be automatically learned. We subsequently utilize the learned models to facilitate security testing the \ac{ipsec} implementations through model-based fuzzing. 
+More specifically, we first learn behavioral models of strongSwan and libreswan \ac{ipsec} servers using both the $L^*$ and $KV$ model learning algorithms. Learned models of both \ac{ipsec} implementations are presented and the utilized learning algorithms are compared and evaluated. The learned models are then used to perform model-based fuzzing of the respective implementations. New states are detected by comparing against the previously-learned models. Additionally, we employ search-based methods, including a genetic algorithm-based approach, aided by the learned models, in order to enhance the effectiveness of fuzzing. Our fuzzing analysis uncovered several new security issues, including several standard violations and a potential deadlock state. Furthermore, our model learning approach led to the discovery of a bug in a cryptographic Python library.
 

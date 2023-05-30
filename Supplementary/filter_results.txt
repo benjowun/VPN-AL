@@ -1398,3 +1398,5 @@ Fuzzing: isa_len with 0 in run:
 ['sa_quick_err', 'ack_quick', 'sa_main', 'sa_quick_err', 'authenticate_err', 'sa_quick_err', 'key_ex_main', 'authenticate', 'sa_quick_err', 'sa_quick', 'key_ex_main', 'sa_main_fuzz', 'authenticate', 'authenticate', 'ack_quick', 'ack_quick_err', 'ack_quick', 'sa_main', 'ack_quick', 'ack_quick_err']
 ***************************
 
+
+Average Fitness score: 1.5919351481851483

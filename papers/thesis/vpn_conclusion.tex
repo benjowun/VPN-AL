@@ -2,11 +2,7 @@
 %
 %  File    :  vpn_conclusion.tex
 %
-%  Author  :  Keith Andrews, IICM, TU Graz, Austria
-% 
-%  Created :  22 Feb 96
-% 
-%  Changed :  19 Feb 2004
+%  Author  :  Benjamin Wunderling, TU Graz, Austria
 % 
 %----------------------------------------------------------------
 
@@ -14,7 +10,7 @@
 \label{chap:Conclusion}
 
 \subsection{Summary}
-In this thesis, we learned behavioral models of two \ac{ipsec} server implementations, strongSwan and libreswan. We presented the most relevant learned models of both implementations, comparing them with respect to various metrics including runtime and the number of required queries. Our results show, that our learning setup succeeds in its goal of reliably learning models of the target \ac{ipsec} \ac{ike}v1 server implementations. We contrasted two popular model learning algorithms $KV$ and $L^*$ and explained why we consider $KV$ to be better suited for our learning setup. Furthermore, we highlighted the difficulties that arose during model learning, such as issues with non-determinism, and presented our proposed solutions. Additionally, we demonstrated the usefulness of \ac{aal} from a testing standpoint by showcasing a Python cryptography library bug found during model learning. 
+In this thesis, we learned behavioral models of two \ac{ipsec} server implementations, strongSwan and libreswan. We presented the most relevant learned models of both implementations, comparing them with respect to various metrics including runtime and the number of required queries. Our results show, that our learning setup succeeds in its goal of reliably learning models of the target \ac{ipsec} \ac{ike}v1 server implementations. We contrasted two popular model-learning algorithms $KV$ and $L^*$ and explained why we consider $KV$ to be better suited for our learning setup. Furthermore, we highlighted the difficulties that arose during model learning, such as issues with non-determinism, and presented our proposed solutions. Additionally, we demonstrated the usefulness of \ac{aal} from a testing standpoint by showcasing a Python cryptography library bug found during model learning. 
 
 We used the learned models to perform model-based fuzzing of the \ac{ipsec} implementations under test. We presented the results of our fuzzer, highlighting the most interesting findings, most notably, multiple deviations from the RFC specification, as well as a potential deadlock. We recommend, that the findings be thoroughly examined, to ensure that they do not pose compatibility or security risks. Furthermore, we compared the various utilized input sequence generation methods to each other and a random baseline. For our \acp{sut}, all non-baseline input sequence generation methods discovered all findings. However, significant differences in the calculated fitness scores of the respective methods were observed, with the genetic algorithm-based method performing the best. As the used fitness score takes the state coverage into account, the genetic method will likely have the greatest chance at finding interesting behavior. However, from a pure runtime perspective, the search-based method was the most efficient for the \ac{sut} at hand. The filtering-based method was by far the slowest, with fuzzing of the generated input sequences taking almost 10 times as long as fuzzing the genetic-algorithm generated input sequences. While perhaps slightly more thorough, the comparable fitness score of the genetic-algorithm generated input sequences, combined with its significantly faster runtime fuzzing them, leads us to the conclusion, that of the tested methods, the genetic algorithm-based input sequence generation method is the one best suited for further fuzzing work.
 
