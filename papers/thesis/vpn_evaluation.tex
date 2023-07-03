@@ -102,7 +102,7 @@ In comparison, when learning the same server implementation with retransmission-
 	\begin{tabular}{|l|l|l|l|l|l|l|}
 		\hline
 		\rowcolor[HTML]{C0C0C0} 
-		Model     		& States & TT (s)  & TL (s)  & TC (s)  & MQ  & EQ  \\ \hline
+		Model     		& States & TT (s)  & TL (s)  & TC (s)  & OQ  & CT  \\ \hline
 		First Common 	& 10     & 3092 & 1501 & 1591 & 171 & 100 \\ \hline
 		Second Common  	& 12     & 4507 & 2382 & 2126 & 215 & 120 \\ \hline
 		Base      		& 6      & 1214 & 480  & 734  & 78  & 60  \\ \hline
@@ -133,7 +133,7 @@ Figure \ref{fig:withfilterwitherrors} shows the (simplified, with self-transitio
 	\begin{tabular}{|l|l|l|l|l|l|l|}
 		\hline
 		\rowcolor[HTML]{C0C0C0} 
-		Model     & States & TT (s)   & TL (s)   & TC (s)   & MQ  & CT  \\ \hline
+		Model     & States & TT (s)   & TL (s)   & TC (s)   & OQ  & CT  \\ \hline
 		First Common  & 10     & 5094 & 3489 & 1605 & 462 & 100 \\ \hline
 		Second Common  & 12     & 7520 & 5393 & 2126 & 522 & 120 \\ \hline
 		Base      & 6      & 1652 & 899  & 753  & 177 & 60  \\ \hline
@@ -160,8 +160,8 @@ Table~\ref{tab:runtime_summary_averages} shows the average statistics of both le
 	\begin{tabular}{|l|l|l|l|l|l|l|}
 		\hline
 		\rowcolor[HTML]{C0C0C0} 
-		Model    	& States & TT (s)   & TL (s)   	  & TC (s)   & MQ  & CT  \\ \hline
-		Common A  	& 10     & 4093 	  & 2495	 	  & 1553 	 & 317 & 100 \\ \hline
+		Model    	& States & TT (s)   & TL (s)   	  & TC (s)   & OQ  & CT  \\ \hline
+		Common A  	& 10     & 4048 	  & 2495	 	  & 1553 	 & 317 & 100 \\ \hline
 		Common B  	& 12     & 6014 	  & 3888		  & 2126 	 & 369 & 120 \\ \hline
 		Base      	& 6      & 1433 	  & 690 		  & 744  	 & 128 & 60  \\ \hline
 		Fuzzing Ref.& 6      & 2263 	  & 1690		  & 573  	 & 387 & 60  \\ \hline
