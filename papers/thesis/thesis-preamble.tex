@@ -1,0 +1,251 @@
+\usepackage[          % set page and margin sizes
+  a4paper,
+  twoside=true,
+  top=10mm,
+  bottom=10mm,
+  left=20mm,
+  right=20mm,
+  bindingoffset=10mm,
+  head=10mm,
+  foot=10mm,
+  headsep=10mm,
+  footskip=10mm,
+  includeheadfoot,
+]{geometry}
+
+\usepackage{times}                   % use PostScript fonts
+\usepackage{relsize}                 % relative font sizes \smaller \larger
+
+\usepackage[T1]{fontenc}        % 8-bit output chars (must be before inputenx)
+\usepackage[utf8]{inputenx}     % input char encoding
+
+\usepackage{textcomp}                % symbols such as \texttimes and \texteuro
+
+\usepackage[bf]{titlesec}
+% format chapter captions (vorher \Huge)
+\titleformat{\chapter}{\bf\huge}{\thechapter\quad}{0em}{}
+\titlespacing*{\chapter}{0em}{-2em}{1.5em}
+
+% use caption and subfig (caption2 and subfigure are now obsolete)
+\usepackage[
+  position=bottom,
+  margin=1cm,
+  font=small,
+  labelfont={bf,sf},
+  format=hang,
+  indention=0mm,
+]{caption,subfig}
+
+\captionsetup[subfigure]{
+  margin=0pt,
+  parskip=0pt,
+  hangindent=0pt,
+  indention=0pt,
+  singlelinecheck=true,
+  justification=raggedright
+}
+
+\usepackage[toc,page]{appendix}
+
+% fancyhdr to make nice headers and footers
+% and deal with long chapter names
+
+\usepackage{fancyhdr}         % headers and footers
+\pagestyle{fancy}             % must call to set defaults before redefining
+
+\renewcommand{\headrulewidth}{0mm}
+\renewcommand{\footrulewidth}{0mm}
+\fancyhf{}
+
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[RE,LO]{\nouppercase{\leftmark}}
+
+\usepackage[svgnames,table,xcdraw]{xcolor}
+\usepackage{todonotes}
+
+\usepackage[austrian,english]{babel}  % load babel *before* natbib or jurabib
+
+\usepackage[]{natbib}         % natbib but with my own knat.bst
+                                    % made with the custom-bib package
+\usepackage{acronym}
+
+\usepackage{url}
+\def\UrlFont{\small\ttfamily}
+
+
+\usepackage{ifpdf}
+
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithm}
+
+% own stuff
+% tikz
+\usepackage{tikz, wrapfig}
+\usetikzlibrary{positioning, calc, shapes.geometric, automata}
+
+\usepackage{listings}
+\usepackage{siunitx}
+\usepackage{rotating}
+
+\definecolor{darkgreen}{rgb}{0.0,0.2,0.0}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.2}
+\definecolor{darkred}{rgb}{0.2,0.0,0.0}
+\definecolor{verylightgrey}{gray}{0.95}
+\definecolor{lightgrey}{gray}{0.9}
+\definecolor{grey}{gray}{0.7}
+\definecolor{black}{gray}{0.0}
+
+\definecolor{tableheadercolour}{gray}{0.8}
+\definecolor{tablerowcolour}{gray}{0.93}
+
+\lstset{                              % set parameters for listings
+	floatplacement=tp,                  % default float placement
+	numberbychapter,
+	inputencoding=utf8,
+	language=,                          % empty = plain text
+	tabsize=2,
+	xleftmargin=2\parindent,
+	xrightmargin=2\parindent,
+	frame=none,
+	framexleftmargin=0mm,
+	rulesepcolor=\color{verylightgrey},
+	numbers=left,
+	stepnumber=1,
+	numberstyle=\scriptsize,
+	numbersep=2ex,
+	breaklines,
+	showtabs=false,
+	showspaces=false,
+	showstringspaces=false,
+	%
+	basicstyle=\small\ttfamily,
+	keywordstyle=\color{black},
+	identifierstyle=\color{black},
+	commentstyle=\color{SteelBlue},
+	stringstyle=\color{black},
+	%
+	captionpos=b,
+	abovecaptionskip=\abovecaptionskip,
+	belowcaptionskip=\belowcaptionskip,
+	extendedchars=true,           % listings usually only support 7-bit ascii chars
+	literate=%                    % map some one-byte utf8 chars for use in listings
+	%    { }{{~}}1                   % non-breaking space
+	{©}{{\textcopyright}}1
+	{€}{{\texteuro}}1
+	{Ö}{{\"O}}1
+	{Ä}{{\"A}}1
+	{Ü}{{\"U}}1
+	{ß}{{\ss}}1
+	{ö}{{\"o}}1
+	{ä}{{\"a}}1
+	{ü}{{\"u}}1,
+}
+
+
+%begin{latexonly}
+\ifpdf
+  % pdflatex
+  %\usepackage[pdftex]{graphicx}
+  \DeclareGraphicsExtensions{.pdf,.jpg,.png}
+  \pdfcompresslevel=9
+  \pdfpageheight=297mm
+  \pdfpagewidth=210mm
+  \usepackage{rotating}				% sidewaystable
+  \usepackage[         % hyperref should be last package loaded
+    pdftex,
+    pdftitle={Title of  the thesis},
+    pdfsubject={Master's Thesis},
+    pdfauthor={Firstname Surname},
+    pdfkeywords={Keywords, separated by commas},
+    bookmarks,
+    bookmarksnumbered,
+    linktocpage,
+    pagebackref,
+    colorlinks,
+    linkcolor=black,
+    anchorcolor=black,
+    citecolor=black,
+    urlcolor=black,
+    pdfview={FitH},
+    pdfstartview={Fit},
+    pdfpagemode=UseOutlines,       % open bookmarks in Acrobat
+    plainpages=false,              % avoids duplicate page number problem
+    pdfpagelabels,                 % avoids duplicate page number problem
+  ]{hyperref}
+
+  \renewcommand*{\backref}[1]{}
+  \renewcommand*{\backrefalt}[4]{
+  \ifcase #1
+  (Not cited.)
+  \or
+  (Cited on page~#2.)
+  \else
+  (Cited on pages~#2.)
+  \fi
+  }
+
+  \renewcommand*{\backrefsep}{, }
+  \renewcommand*{\backreftwosep}{ and~}
+  \renewcommand*{\backreflastsep}{ and~}
+
+\else
+  % latex
+  \usepackage{rotating}				% sidewaystable
+  \usepackage{graphicx}
+  \DeclareGraphicsExtensions{.eps}
+\fi
+%end{latexonly}
+
+
+% \includeonly{intro,biblio}   % selective inclusion
+
+\newenvironment{absolutelynopagebreak}
+{\par\nobreak\vfil\penalty0\vfilneg
+	\vtop\bgroup}
+{\par\xdef\tpd{\the\prevdepth}\egroup
+	\prevdepth=\tpd}
+
+
+
+
+\newcommand{\halfh}{9.5cm}        % height of figures for 2 per page
+\newcommand{\thirdh}{6cm}         % height of figures for 3 per page
+
+
+\setlength{\parskip}{3pt plus 1pt minus 0pt}  % vert. space before a paragraph
+
+
+\setcounter{tocdepth}{2}        % lowest section level entered in ToC % TODO FIXXME: wieder auf 1 zur�cksetzen?
+\setcounter{secnumdepth}{2}     % lowest section level still numbered
+
+
+\input{thesis-macros}
+
+
+% Reduce vertical distance between items
+% itemize
+\let\origitemize\itemize
+\def\itemize{\origitemize\itemsep0pt}
+%enumerate
+\let\origenumerate\enumerate
+\def\enumerate{\origenumerate\itemsep0pt}
+
+
+% FIXXME: bessere Positionierung der Graphiken
+%\setcounter{totalnumber}{8}
+%\setcounter{topnumber}{5}
+%\setcounter{bottomnumber}{5}
+
+%\renewcommand{\topfraction}{0.999}
+%\renewcommand{\bottomfraction}{0.999}
+%\renewcommand{\textfraction}{0.0005}
+
+
+\newcommand{\percent}[1]{$#1\%$}
+
+\newcommand*{\lstitem}[1]{
+	\setbox0\hbox{\lstinline{#1}}  
+	\item[\usebox0]  
+	% \item[\hbox{\lstinline{#1}}]
+	\hfill \\
+}
