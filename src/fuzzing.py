@@ -227,8 +227,9 @@ def filter():
 
     file.close()
 
-def calc_fitness_filter(amount):
-    runs = get_rand_runs(amount)
+def calc_fitness_filter():
+    runs = get_rand_runs()
+    l = len(runs)
     score = 0
 
     for run in runs:
@@ -239,7 +240,7 @@ def calc_fitness_filter(amount):
 
         score += score_mutation(run)
 
-    score = score / amount
+    score = score / l
     print(f"Average Fitness score: {score}")
 
 # testing function
@@ -631,21 +632,22 @@ def generate_run_genetic(num_populations=10, num_kept=3, num_iterations=5, mutat
 
 starttime = time.time()
 # main
-# filter()
+#filter()
 
 # data = [('Encryption', 'AES-CBC'), ('KeyLength', 256), ('Hash', 'SHA'), ('GroupDesc', '2048MODPgr'), ('Authentication', 'TEST'), ('LifeType', 'Seconds'), ('LifeDuration', 28800)]
 # tc = ['sa_main_fuzz', 'key_ex_main', 'authenticate']
 # test(tc, "tf", data)
 
-run = ['sa_main', 'ack_quick', 'ack_quick_err', 'key_ex_main', 'key_ex_main_err', 'sa_quick', 'key_ex_main', 'sa_main_err', 'sa_main_err', 'authenticate', 'key_ex_main', 'authenticate_err', 'sa_quick_err', 'sa_quick', 'key_ex_main_err', 'key_ex_main_err', 'sa_quick_err', 'authenticate']
+# run = ['sa_main', 'ack_quick', 'ack_quick_err', 'key_ex_main', 'key_ex_main_err', 'sa_quick', 'key_ex_main', 'sa_main_err', 'sa_main_err', 'authenticate', 'key_ex_main', 'authenticate_err', 'sa_quick_err', 'sa_quick', 'key_ex_main_err', 'key_ex_main_err', 'sa_quick_err', 'authenticate']
 # fuzz(run) # goes through each method once, hopefully finds any serious errors
 # fuzz_all("filter_results.txt")
 # fuzz_each_input(run)
 
-# generate_runs(['sa_main', 'key_ex_main', 'authenticate'], 25)
-# generate_run_genetic(starting_length=3)
+generate_runs(['sa_main', 'key_ex_main', 'authenticate'], 50)
+# starting = [['ack_quick', 'sa_main_err', 'authenticate_err'], ['authenticate_err', 'sa_quick_err', 'sa_main'], ['ack_quick_err', 'sa_main_err', 'sa_main'], ['authenticate', 'authenticate_err', 'key_ex_main_err'], ['key_ex_main', 'authenticate', 'key_ex_main'], ['sa_main', 'key_ex_main', 'authenticate'], ['sa_main_err', 'sa_quick_err', 'sa_main'], ['sa_main_err', 'authenticate', 'sa_quick_err'], ['ack_quick', 'key_ex_main_err', 'sa_quick'], ['ack_quick', 'key_ex_main', 'ack_quick_err']]
+# generate_run_genetic(starting_length=3, num_iterations=5, num_populations=10, starting_populations=starting)
 # calc_baseline(18, 10)
 # sanity()
-calc_fitness_filter(10)
+# calc_fitness_filter()
 
 print(f"Runtime: {time.time() - starttime} seconds")
