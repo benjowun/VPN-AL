@@ -2,11 +2,7 @@
 %
 %  File    :  vpn_related.tex
 %
-%  Author  :  Keith Andrews, IICM, TU Graz, Austria
-% 
-%  Created :  22 Feb 96
-% 
-%  Changed :  19 Feb 2004
+%  Author  :  Benjamin Wunderling, TU Graz, Austria
 % 
 %----------------------------------------------------------------
 
@@ -15,11 +11,11 @@
 \label{chap:Related}
 The aim of this chapter is to give a brief overview of related work, focusing mainly on automata learning and testing of security-critical communication protocols.
 
-Model learning is a popular tool for creating behavioral models of network and communication protocols. The learned models showcase the behavior of the \ac{sul} and can be analyzed to find differences between implementation and specification. Furthermore, the learned models can be used to help guide additional security testing measures, such as fuzzing, or pentesting. 
+Automata or model learning is a popular tool for creating behavioral models of network and communication protocols. The learned models showcase the behavior of the \ac{sul} and can be analyzed to find differences between implementation and specification. Furthermore, the learned models can be used to help guide additional security testing measures, such as fuzzing, or pentesting. 
 
-Model learning has been applied to a variety of different protocols, including many security-critical ones. When applied to security-critical communication protocols, the model learning is often called protocol-state fuzzing. De Ruiter and Poll~\cite{DBLP:conf/uss/RuiterP15} automatically and systematically analyzed TLS implementations by using the random inputs sent during the model-learning process to test the \ac{sul} for unexpected and dangerous behavior. The unexpected behavior then had to be manually examined for impact and exploitability. Tappler et al.~\cite{DBLP:conf/icst/TapplerAB17} similarly analyzed various MQTT broker/server implementations, finding several specification violations and faulty behavior. Furthermore, the 802.11 4-Way Handshake of Wi-Fi was analyzed by Stone et al.~\cite{DBLP:conf/esorics/StoneCR18} using automata learning to test implementations on various routers, finding servery vulnerabilities.
+Model learning has been applied to a variety of different protocols, including many security-critical ones. When applied to security-critical communication protocols, the model learning is often called protocol-state fuzzing. De Ruiter and Poll~\cite{DBLP:conf/uss/RuiterP15} automatically and systematically analyzed TLS implementations by using the random inputs sent during the model-learning process to test the \ac{sul} for unexpected and dangerous behavior. The unexpected behavior then had to be manually examined for impact and exploitability. Tappler et al.~\cite{tappler2017} similarly analyzed various MQTT broker/server implementations, finding several specification violations and faulty behavior. Furthermore, the 802.11 4-Way Handshake of Wi-Fi was analyzed by Stone et al.~\cite{DBLP:conf/esorics/StoneCR18} using automata learning to test implementations on various routers, finding servery vulnerabilities.
 Fiterau and Brostean combined model learning with model checking, in which an abstract model is checked for specified properties to ensure correctness and security. In their work, they learned and analyzed both TCP~\cite{DBLP:conf/cav/Fiterau-Brostean16} and SSL~\cite{DBLP:conf/spin/Fiterau-Brostean17} implementations, showcasing several implementation deviations from the respective RFC specifications.
-The Bluetooth Low Energy (BLE) protocol was investigated by Pferscher and Aichernig~\cite{pferscher2021fingerprinting}. In addition to finding several behavioral differences between BLE devices, they were able to distinguish the individual devices based on the learned models, essentially allowing the identification of hardware, based on the learned model (i.e. fingerprinting).
+The Bluetooth Low Energy (BLE) protocol was investigated by Pferscher and Aichernig~\cite{pferscher2021fingerprinting}. In addition to finding several behavioral differences between BLE devices, they were able to distinguish the individual devices based on the learned models, essentially allowing the identification of hardware, based on the learned model (i.e., fingerprinting).
 
 Specifically within the domain of \acp{vpn}, Novickis et al.~\cite{novickis2016protocol} and Daniel et al.~\cite{daniel2018inferring} performed protocol-state fuzzing of the OpenVPN protocol. In contrast to our approach, they chose to learn a more abstract model of the entire OpenVPN session, where details about the key exchange were abstracted in the learned model. Novickis et al. discovered several non security-critical contradictions between the official documentation and actual implementation.
 
@@ -29,4 +25,7 @@ In contrast, the predecessor to \ac{ipsec}-\ac{ike}v2, \ac{ipsec}-\ac{ike}v1, di
 \ac{ipsec}-\ac{ike}v1 is frequently fuzzed, however until now, without employing learning-based testing methods. For example, Yang et al. built a custom mutation-based fuzzer for the \ac{ike}v1 protocol, focusing on known vulnerabilities of the protocol~\cite{ikefuzz13}. Tsankov et al. discovered an unknown \ac{ike} vulnerability through the use of a semi-valid input coverage fuzzer, focusing on inputs where all but one constraint are fulfilled~\cite{tsankov}. Additionally, several popular IPsec libraries, including strongSwan, utilize the \ac{oss} fuzzing framework, OSS-Fuzz~\cite{serebryany2017oss}, ensuring that they are regularly fuzzed using the LibFuzzer, AFL++ and Hongfuzz fuzzing libraries~\cite{serebryany-libfuzzer, AFLplusplus-Woot20, swiecki-honggfuzz}.
 
 In contrast, while our work also focuses on the \ac{ipsec}-\ac{ike}v1 protocol, we approach it as a black-box system, using model learning to extract a behavioral model of the \ac{sul} and using that model for model-based fuzzing. We use the learned models for model-based fuzzing, employing search-based and genetic fuzzing techniques to further optimize the fuzzing process. Zeller et al. describe these fuzzing techniques based on metaheuristics and more in their comprehensive book on fuzzing \cite{fuzzingbook2023:SearchBasedFuzzer}. In doing so, together with the fuzzer by Yang et al., our work completes the coverage of model-based testing approaches for both \ac{ike} versions.
+
+The model-learning section of this thesis builds upon our prior work, published and presented as part of the Workshop on Applications of
+Formal Methods and Digital Twins~\cite{shortpaper}. This thesis substantially expands on the previous work by learning additional models and leveraging the learned models for the purpose of model-based fuzzing.
 

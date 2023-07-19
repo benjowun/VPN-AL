@@ -1,0 +1,52 @@
+\documentclass[11pt]{report}
+
+\include{thesis-preamble}
+
+\begin{document}
+
+%\frontmatter
+\normalsize
+\pagestyle{empty}            % for title pages
+
+\pagenumbering{alph}
+\include{thesis-title}       % Title Pages, Abstracts, Pledge
+\include{thesis-acknowl}     % Acknowledgements
+\include{thesis-contents}    % Table of Contents, List of Figures, List of Tables
+
+%\mainmatter
+\pagestyle{fancy}               % for main pages
+\pagenumbering{arabic}          % for main pages  
+
+\include{thesis-intro}          % Introduction
+
+\include{vpn_related}
+
+\include{thesis-preliminaries}  % Preliminaries 
+
+% setup
+\include{thesis-method}
+
+% \include{your main files}
+\include{vpn_learning}
+\include{vpn_fuzzing}
+
+% evaluation
+\include{vpn_evaluation}
+
+
+\include{thesis-conclusion}     % Conclusion and Future Work
+
+
+\appendix
+ \noappendicestocpagenum
+ %\addappheadtotoc
+
+\include{thesis-appendix}      % Appendix A
+
+
+%\backmatter
+\include{thesis-biblio}      % Bibliography
+% \include{glossary}      % Glossary
+% \include{index}         % Index
+
+\end{document}
