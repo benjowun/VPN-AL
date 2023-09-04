@@ -22,7 +22,7 @@ class IPSEC_IKEv1_SUL(SUL):
         super().__init__()
         self.ipsec = IPSEC_Mapper(IGNORE_RETRANSMISSION, conn)
         self.logs_run = []
-        self.file = open("logs.txt", "w+")
+        #self.file = open("logs.txt", "w+")
         #self.ipsec.reset()
 
     def __exit__(self):
@@ -31,9 +31,9 @@ class IPSEC_IKEv1_SUL(SUL):
     def pre(self):
         print("\n***Ran pre***")
         self.ipsec.reset()
-        for s in self.logs_run:
-            self.file.write("self." + str(s) + ", ")
-        self.file.write("\n")
+        # for s in self.logs_run:
+        #     self.file.write("self." + str(s) + ", ")
+        #self.file.write("\n")
         self.logs_run = []
         #self.ipsec.print_info()
 
@@ -58,8 +58,8 @@ def learn(kv=True):
     # automation = load_automaton_from_file('path_to_file.dot', automation_type='mealy')
 
     sul = IPSEC_IKEv1_SUL()
-    #input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'sa_main_err', 'key_ex_main_err', 'authenticate_err', 'sa_quick_err', 'ack_quick_err'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
-    input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
+    input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick', 'sa_main_err', 'key_ex_main_err', 'authenticate_err', 'sa_quick_err', 'ack_quick_err'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
+    #input_al = ['sa_main', 'key_ex_main', 'authenticate', 'sa_quick', 'ack_quick'] # removed rekey, as it is essentially just another sa and ack, TODO: add delete again
 
 
     #eq_oracle = RandomWalkEqOracle(input_al, sul, num_steps=2000, reset_after_cex=True, reset_prob=0.15)
