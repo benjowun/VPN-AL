@@ -45,7 +45,7 @@
 \backcite {pereyda2019boofuzz}{{9}{3.3}{section.3.3}}
 \backcite {pict}{{9}{3.3}{section.3.3}}
 \backcite {ferguson1999cryptographic}{{13}{3.4}{lstnumber.3.1.11}}
-\backcite {kaufman2014internet}{{13}{3.4}{lstnumber.3.1.11}}
+\backcite {rfc:ikev2}{{13}{3.4}{lstnumber.3.1.11}}
 \backcite {avm2022}{{13}{3.4}{lstnumber.3.1.11}}
 \backcite {doc:strongswan}{{15}{4.2}{section.4.2}}
 \backcite {doc:libreswan}{{15}{4.2}{section.4.2}}
@@ -60,3 +60,4 @@
 \backcite {rfc:ikev1}{{53}{7.2.1}{lstnumber.7.1.18}}
 \backcite {rfc:isakmp}{{53}{7.2.1}{lstnumber.7.1.18}}
 \backcite {rfc:ikev1}{{54}{7.2.1}{lstnumber.7.2.9}}
+\backcite {dot}{{62}{A}{appendix.a.A}}
