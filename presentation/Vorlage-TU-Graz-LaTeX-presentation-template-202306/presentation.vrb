@@ -1,0 +1,13 @@
+\frametitle{Finding - StrongSwan Authentication}
+\vspace{-2ex}
+	\begin{lstlisting}[]
+		Fuzzing SA Transform with: [..., ('Authentication', 'FUZZED_VALUE'), ...]
+		
+		Run: [..., 'sa_main_fuzz', ...]
+		
+		$sa_main_fuzz
+		
+		**********
+		Expected: ERROR_NOTIFICATION | Received: ISAKMP_SA
+		**********
+	\end{lstlisting}

@@ -113,7 +113,7 @@ $L^*$ uses the \ac{mat} framework to learn a Mealy machine representation of the
 	$\mathbf{Initialization}$
 	
 	$\mathbf{repeat}$:
-	Output query
+	Output query6
 	
 	$\mathbf{if}$: Sufficient information has been gathered through output queries
 	Construct Mealy Machine proposal $L\mathrm{prop}$.
@@ -299,3 +299,4 @@ The \ac{ike}v1 protocol works in two main phases, both relying on the \ac{isakmp
 In addition to the packets shown in Figure~\ref{fig:IKEv1}, \ac{ike}v1 also specifies and uses so called \ac{isakmp} Informational Exchanges. Informational exchanges in \ac{ike}v1 are used to send \ac{isakmp} \emph{Notify} or \ac{isakmp} \emph{Delete} payloads. Following the key exchange in phase one, all Informational Exchanges are sent encrypted and authenticated. Prior, they are sent in plain. \ac{isakmp} \emph{Notify} payloads are used to transmit various error and success codes, as well as for keep-alive messages. \ac{isakmp} \emph{Delete} is used to inform the other communication partner that a \ac{sa} has been deleted locally and request that they do the same, effectively closing a connection. \\
 
 Compared to other protocols, \ac{ipsec} offers a high degree of customizability, allowing it to be fitted for many use cases. However, in a cryptographic evaluation of the protocol, Ferguson and Schneier \cite{ferguson1999cryptographic} criticize the complexity arising from the high degree of customizability as the biggest weakness of \ac{ipsec}. To address its main criticism, \ac{ipsec}-\ac{ike}v2 was introduced in RFC 7296 to replace \ac{ike}v1 \cite{rfc:ikev2}. \ac{ipsec}-\ac{ike}v2 was presented as a simpler replacement for \ac{ipsec}-\ac{ike}v1, with an \ac{ike}v2 exchange requiring only four messages, compared to the nine of its predecessor. Nevertheless, \ac{ipsec}-\ac{ike}v1 is still in wide-spread use to this day, with the largest router producer in Germany, AVM, until recently only supporting \ac{ike}v1 in their routers \cite{avm2022}. We use \ac{ipsec}-\ac{ike}v1 with Main Mode and \ac{esp} in this paper and focus on the \ac{ike} protocol as it is the most interesting from an AAL and security standpoint due to it containing the majority of cryptographic operations.
+\cleardoublepage
