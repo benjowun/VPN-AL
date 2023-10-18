@@ -793,7 +793,7 @@
 		\item Inefficient and ineffective
 	\end{itemize}
 \end{frame}
-\fi
+
 % completely random is very bad, as the protocol itself is stateful and split into two phases. If left to completely random, we likely never reach phase 2 within a reasonable 
 % timeframe --> filtering base, reuse old input sequences from learning --> have to filter them cause there are a loot --> try and choose meaningful ones that lead to new info
 % pre-fuzz them and filter out those that dont seem interesting, then fuzz only one input per sequence that is known to be interesting
@@ -872,7 +872,6 @@
 	}	
 \end{frame}
 
-\iffalse
 % note that filtering is an average over all their input sequences
 % note that all non-baseline methods discovered all the findings
 \begin{frame}{Input Sequence Generation - Comparison}
@@ -888,7 +887,7 @@
 		Genetic              		&  4.7        \\ \hline
 	\end{tabular}
 \end{frame}
-
+\fi
 
 
 \begin{frame}{Input Sequence Generation}
@@ -898,30 +897,30 @@
 		\item Genetic
 	\end{itemize}
 \end{frame}
-\fi
-%TODO maybe add some nicer hihglighting
-\section*{Fuzzing Results}
-\begin{frame}[fragile]{Finding -  ISAKMP Length}
-	\vspace{-2ex}
-	\begin{lstlisting}[]
-Fuzzing ISAKMP length field with: b'\xff\x00\x00\x00'
-Input sequence: ['sa_main_fuzz', 'key_ex_main', 'authenticate', ...]
-
-$sa_main_fuzz
-$key_ex_main
-
-**********
-Expected: ERROR_NOTIFICATION | Received: ISAKMP_SA
-Expected: None | Received: ISAKMP_KEY_EX
-**********
-	\end{lstlisting}
-\end{frame}
 
 % the corresponding ID? --> TODO check is that the name --> think initiator cookie? becomes unuseable
 \begin{frame}{Finding - libreswan Deadlock}
 	\vspace{-4em}
 	\centering
 	\includegraphics[height=1.0\textheight, trim={8em 0 0 0}]{models/LearnedModelLibreReference}
+\end{frame}
+
+%TODO maybe add some nicer hihglighting
+\section*{Fuzzing Results}
+\begin{frame}[fragile]{Finding - ISAKMP Length}
+	\vspace{-2ex}
+	\begin{lstlisting}[]
+		Fuzzing ISAKMP length field with: b'\xff\x00\x00\x00'
+		Input sequence: ['sa_main_fuzz', 'key_ex_main', 'authenticate', ...]
+		
+		$sa_main_fuzz
+		$key_ex_main
+		
+		**********
+		Expected: ERROR_NOTIFICATION | Received: ISAKMP_SA
+		Expected: None | Received: ISAKMP_KEY_EX
+		**********
+	\end{lstlisting}
 \end{frame}
 
 % wireshark shows SA response defaulting to PSK auth
